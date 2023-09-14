@@ -13,15 +13,16 @@ class VideoModel {
 
   VideoModel() {
     _playerMap = RxMap();
-    init();
   }
 
-  void init() {
+  Future<void> init() async {
     final list = perf.getStringList(kRTSPVideoModelJsonKey) ?? [];
     for (final item in list) {
       final map = jsonDecode(item);
       if (map != null) {
-        add(RTSPCamera.fromJson(map));
+        final cam = RTSPCamera.fromJson(map);
+        await cam.init();
+        _playerMap[cam.id] = cam;
       }
     }
   }
@@ -45,6 +46,7 @@ class VideoModel {
       _playerMap[device.id]!.dispose();
       _playerMap.remove(device.id);
     }
+    await device.init();
     _playerMap[device.id] = device;
     await store();
   }

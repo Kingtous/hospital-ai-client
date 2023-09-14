@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' hide Tooltip;
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
 
@@ -41,7 +42,9 @@ class _DevicesPageState extends State<DevicesPage> {
                   ))
             ],
           ),
-          const SizedBox(height: 8.0,),
+          const SizedBox(
+            height: 8.0,
+          ),
           Expanded(child: Obx(() {
             final keys = videoModel.playerMap.keys.toList();
             return ListView.builder(
@@ -68,26 +71,34 @@ class CamRecordDeviceItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expander(header: _buildTile(), content: _buildContent(context));
+    return Expander(
+        header: _buildTile(context), content: _buildContent(context));
   }
 
-  Widget _buildTile() {
+  Widget _buildTile(BuildContext context) {
     return Row(
       children: [
         const Icon(FluentIcons.camera),
-        const SizedBox(width: 16.0,),
-        Text(device.id), Expanded(child: 
-        Row(
+        const SizedBox(
+          width: 16.0,
+        ),
+        Text(device.id),
+        Expanded(
+            child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Button(child: const Tooltip(
-              message: '查看画面',
-              child: Icon(FluentIcons.play),
-            ), onPressed: () {
-
-            })
+            Button(
+                child: const Tooltip(
+                  message: '查看画面',
+                  child: Icon(FluentIcons.play),
+                ),
+                onPressed: () {
+                  context
+                      .pushNamed('player', pathParameters: {'id': device.id});
+                })
           ],
-        ))],
+        ))
+      ],
     );
   }
 
@@ -96,10 +107,12 @@ class CamRecordDeviceItem extends StatelessWidget {
       return (device as GUIConfigurable).buildForm(context);
     } else {
       return const Row(
-        children: [Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Text('该设备暂无配置项'),
-        )],
+        children: [
+          Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text('该设备暂无配置项'),
+          )
+        ],
       );
     }
   }

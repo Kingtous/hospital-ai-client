@@ -10,6 +10,8 @@ Future<void> setupDependencies() async {
   it.registerSingleton<SharedPreferences>(sp);
   it.registerSingleton<AppModel>(AppModel());
   it.registerSingleton<VideoModel>(VideoModel());
+  // init
+  await videoModel.init();
 }
 
 VideoModel get videoModel => it.get();

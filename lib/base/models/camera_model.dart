@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 part 'camera_model.g.dart';
 
 abstract interface class PlayableSource {
   // playable id
   String get id;
+
+  Future<void> init();
 
   Future<void> startPlay();
   // 重试
@@ -29,6 +34,8 @@ mixin GUIConfigurable on PlayableDevice {
 
 mixin CanPlayViaPlayer on PlayableDevice {
   Player get player;
+
+  VideoController get thumbNailController;
 }
 
 @JsonSerializable()
@@ -43,19 +50,52 @@ class RTSPCamera extends PlayableDevice
   late final Player player;
   @JsonKey(includeFromJson: false)
   var isPlaying = false;
+  @JsonKey(includeFromJson: false)
+  Timer? timer;
+  @JsonKey(includeFromJson: false)
+  StreamSubscription<String>? onError;
+  @JsonKey(includeFromJson: false)
+  StreamSubscription<bool>? onPlaying;
+  @JsonKey(includeFromJson: false)
+  late VideoController thumbNailController;
 
   RTSPCamera(this.id, {required this.rtspUrl}) {
     assert(rtspUrl.startsWith('rtsp://'));
     player = Player();
-    player.add(Media(rtspUrl));
-    player.open(Playlist([Media(rtspUrl)]), play: false);
     // no sound needed.
     player.setVolume(0.0);
     player.setPlaylistMode(PlaylistMode.loop);
+    onError = player.stream.error.listen(_onStatus);
+    onPlaying = player.stream.playing.listen((playing) {});
+  }
+
+  @override
+  Future<void> init() async {
+    thumbNailController = VideoController(player,
+        configuration: const VideoControllerConfiguration());
+    await player.open(Playlist([Media(rtspUrl)]), play: true);
+  }
+
+  void _onStatus(String evt) {
+    print("RTSP Player Error: $evt. retrying after 2 secs...");
+    onError?.cancel();
+    timer?.cancel();
+    final ws = WeakReference(this);
+    timer = Timer(const Duration(seconds: 3), () async {
+      final self = ws.target;
+      if (self != null) {
+        self.onError = player.stream.error.listen(_onStatus);
+        self.reload();
+        print("🔧reload ${self.id} on Error: $evt. retrying");
+      }
+    });
   }
 
   @override
   Future<void> dispose() {
+    timer?.cancel();
+    onError?.cancel();
+    onPlaying?.cancel();
     return player.dispose();
   }
 
@@ -74,7 +114,12 @@ class RTSPCamera extends PlayableDevice
 
   @override
   Future<void> startPlay() async {
-    debugPrint('start play rtsp from $rtspUrl');
+    if (player.state.playing) {
+      debugPrint('player $id is already playing, ignore this requests');
+      return;
+    }
+    debugPrint(
+        'start play rtsp from $rtspUrl, play queue: ${player.state.playlist.medias.length}');
     await player.play();
   }
 
@@ -209,7 +254,7 @@ class RTSPCamera extends PlayableDevice
               actions: [
                 FilledButton(
                     child: const Text('确定'),
-                    onPressed: () {
+                    onPressed: () async {
                       msg = videoModel.validate(id);
                       if (msg.isNotEmpty) {
                         setState(() {});
@@ -218,9 +263,12 @@ class RTSPCamera extends PlayableDevice
                       if (!rtspUrl.startsWith("rtsp://")) {
                         setState(() {});
                         msg = "设备地址格式有误，请与rtsp://开头";
+                        return;
                       }
-                      videoModel.add(RTSPCamera(id, rtspUrl: rtspUrl));
+                      final camera = RTSPCamera(id, rtspUrl: rtspUrl);
                       Navigator.of(context).pop();
+                      await camera.init();
+                      videoModel.add(camera);
                     }),
                 FilledButton(
                     child: const Text('取消'),

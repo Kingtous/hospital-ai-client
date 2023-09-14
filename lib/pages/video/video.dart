@@ -54,6 +54,8 @@ class _VideoHomePageState extends State<VideoHomePage> {
                     return VideoLive(
                       key: ValueKey(e),
                       id: e,
+                      width: 180,
+                      height: 320,
                       type: LiveType.thumbnail,
                     );
                   },

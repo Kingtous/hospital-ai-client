@@ -12,7 +12,12 @@ class VideoLive extends StatefulWidget {
   final double? width;
   final double? height;
   final LiveType type;
-  const VideoLive({super.key, required this.id, this.width, this.height, required this.type});
+  const VideoLive(
+      {super.key,
+      required this.id,
+      this.width,
+      this.height,
+      required this.type});
 
   @override
   State<VideoLive> createState() => _VideoLiveState();
@@ -29,8 +34,12 @@ class _VideoLiveState extends State<VideoLive> {
     final player = videoModel.get(widget.id);
     if (player != null && player is CanPlayViaPlayer) {
       isExist = true;
-      controller = VideoController(player.player);
-      controller.player.play();
+      controller = widget.type == LiveType.thumbnail
+          ? player.thumbNailController
+          : VideoController(player.player);
+      Future.delayed(Duration.zero, () {
+        player.startPlay();
+      });
     }
   }
 
@@ -75,8 +84,12 @@ class _VideoLiveState extends State<VideoLive> {
                     controller: controller,
                     width: widget.width,
                     height: widget.height,
-                    controls: (state) =>
-                        VideoControl(state: state, deviceId: widget.id, type: widget.type),
+                    // 不用开启
+                    wakelock: false,
+                    pauseUponEnteringBackgroundMode: true,
+                    resumeUponEnteringForegroundMode: true,
+                    controls: (state) => VideoControl(
+                        state: state, deviceId: widget.id, type: widget.type),
                   ),
                 ),
         ),
