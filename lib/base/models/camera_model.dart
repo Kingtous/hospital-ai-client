@@ -1,9 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 part 'camera_model.g.dart';
 
 abstract interface class PlayableSource {
@@ -38,7 +36,9 @@ class RTSPCamera extends PlayableDevice
     with GUIConfigurable
     implements PlayableSource, CanPlayViaPlayer {
   late String rtspUrl;
+  @override
   late String id;
+  @override
   @JsonKey(includeFromJson: false)
   late final Player player;
   @JsonKey(includeFromJson: false)
@@ -100,30 +100,30 @@ class RTSPCamera extends PlayableDevice
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         TextBox(
-          prefix: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: const Text('设备RTSP地址'),
+          prefix: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text('设备RTSP地址'),
           ),
           controller: TextEditingController(text: rtspUrl),
           onChanged: (s) {
             newUrl = s;
           },
         ),
-        SizedBox(
+        const SizedBox(
           height: 8.0,
         ),
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             FilledButton(
-                child: Text('保存'),
+                child: const Text('保存'),
                 onPressed: () {
                   if (!newUrl.startsWith('rtsp://')) {
                     showDialog(
                         context: context,
                         builder: (context) => ContentDialog(
-                              title: Text('数据有误'),
-                              content: Text('地址不合法，应该以rtsp://开头'),
+                              title: const Text('数据有误'),
+                              content: const Text('地址不合法，应该以rtsp://开头'),
                               actions: [
                                 Button(
                                     child: const Text('确定'),
@@ -139,11 +139,11 @@ class RTSPCamera extends PlayableDevice
                     onComplete?.call();
                   }
                 }),
-            SizedBox(
+            const SizedBox(
               width: 4.0,
             ),
             Button(
-                child: Text('取消'),
+                child: const Text('取消'),
                 onPressed: () {
                   onComplete?.call();
                 }),
@@ -182,13 +182,13 @@ class RTSPCamera extends PlayableDevice
                       ),
                     ],
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 4.0,
                   ),
                   TextBox(
-                    prefix: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text('设备名称'),
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('设备名称'),
                     ),
                     maxLength: 50,
                     onChanged: (s) {
@@ -196,9 +196,9 @@ class RTSPCamera extends PlayableDevice
                     },
                   ),
                   TextBox(
-                    prefix: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: const Text('设备串流地址'),
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('设备串流地址'),
                     ),
                     onChanged: (s) {
                       rtspUrl = s;

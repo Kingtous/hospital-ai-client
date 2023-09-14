@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
@@ -63,10 +62,10 @@ class _VideoLiveState extends State<VideoLive> {
           padding: const EdgeInsets.all(2.0),
           child: !isExist
               ? Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: Colors.black,
                   ),
-                  child: Center(
+                  child: const Center(
                     child: Text('画面丢失'),
                   ))
               : SizedBox(

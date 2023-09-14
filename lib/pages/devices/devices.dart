@@ -32,16 +32,16 @@ class _DevicesPageState extends State<DevicesPage> {
                   onPressed: _addDevice,
                   child: const Row(
                     children: [
-                      const Icon(FluentIcons.add),
+                      Icon(FluentIcons.add),
                       SizedBox(
                         width: 4.0,
                       ),
-                      const Text('添加摄像头')
+                      Text('添加摄像头')
                     ],
                   ))
             ],
           ),
-          SizedBox(height: 8.0,),
+          const SizedBox(height: 8.0,),
           Expanded(child: Obx(() {
             final keys = videoModel.playerMap.keys.toList();
             return ListView.builder(
@@ -80,9 +80,9 @@ class CamRecordDeviceItem extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Button(child: Tooltip(
+            Button(child: const Tooltip(
               message: '查看画面',
-              child: const Icon(FluentIcons.play),
+              child: Icon(FluentIcons.play),
             ), onPressed: () {
 
             })
@@ -95,9 +95,9 @@ class CamRecordDeviceItem extends StatelessWidget {
     if (device is GUIConfigurable) {
       return (device as GUIConfigurable).buildForm(context);
     } else {
-      return Row(
+      return const Row(
         children: [Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: EdgeInsets.all(8.0),
           child: Text('该设备暂无配置项'),
         )],
       );

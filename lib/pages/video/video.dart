@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
-import 'package:hospital_ai_client/components/video_control.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
-import 'package:media_kit_video/media_kit_video.dart';
 
 class VideoHomePage extends StatefulWidget {
   const VideoHomePage({super.key});

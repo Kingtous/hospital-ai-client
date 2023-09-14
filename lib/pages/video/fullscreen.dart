@@ -1,6 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/components/video_control.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
@@ -36,11 +34,12 @@ class _FullScreenLiveState extends State<FullScreenLive> {
       content: Row(
         children: [
           Flexible(
+            flex: 3,
             child: Column(
               children: [
                 Expanded(
                   child: controller == null
-                      ? Center(
+                      ? const Center(
                           child: Text('未找到源，请重试'),
                         )
                       : Video(
@@ -50,9 +49,8 @@ class _FullScreenLiveState extends State<FullScreenLive> {
                 ),
               ],
             ),
-            flex: 3,
           ),
-          Flexible(
+          const Flexible(
               child: Column(
             children: [Text('meta')],
           ))

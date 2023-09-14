@@ -29,8 +29,8 @@ class VideoControl extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text(
-                  '$deviceId',
-                  style: TextStyle(
+                  deviceId,
+                  style: const TextStyle(
                     color: Colors.white,
                   ),
                 ),
@@ -40,7 +40,7 @@ class VideoControl extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Button(
-                          child: Icon(FluentIcons.refresh),
+                          child: const Icon(FluentIcons.refresh),
                           onPressed: () async {
                             videoModel.get(deviceId)?.reload();
                           }),
@@ -48,7 +48,7 @@ class VideoControl extends StatelessWidget {
                         width: 4.0,
                       ),
                       Button(
-                          child: Icon(FluentIcons.full_screen),
+                          child: const Icon(FluentIcons.full_screen),
                           onPressed: () {
                             context.pushNamed('player',
                                 pathParameters: {'id': deviceId});
@@ -95,11 +95,11 @@ class VideoControl2 extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Button(
-                          child: Icon(FluentIcons.refresh),
+                          child: const Icon(FluentIcons.refresh),
                           onPressed: () async {
                             videoModel.get(deviceId)?.reload();
                           }),
-                      SizedBox(
+                      const SizedBox(
                         width: 4.0,
                       ),
                     ],
