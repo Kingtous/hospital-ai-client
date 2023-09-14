@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MediaKit.ensureInitialized();
-  setupDependencies();
+  await setupDependencies();
   runApp(const MyApp());
 }
 

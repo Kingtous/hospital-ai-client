@@ -1,16 +1,17 @@
 import 'dart:convert';
 
+import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
 
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
 
 class VideoModel {
-  late final Map<String, PlayableDevice> _playerMap;
-  Map<String, PlayableDevice> get playerMap => _playerMap;
+  late final RxMap<String, Playable> _playerMap;
+  RxMap<String, Playable> get playerMap => _playerMap;
 
   VideoModel() {
-    _playerMap = <String, PlayableDevice>{};
+    _playerMap = RxMap();
     init();
   }
 
@@ -24,6 +25,11 @@ class VideoModel {
     }
   }
 
+  Future<void> remove(String id) async {
+    _playerMap.remove(id);
+    await perf.setStringList(kRTSPVideoModelJsonKey, _playerMap.keys.toList());
+  }
+
   Future<void> store() async {
     await perf.setStringList(
         kRTSPVideoModelJsonKey,
@@ -33,7 +39,7 @@ class VideoModel {
             .toList());
   }
 
-  Future<void> add(PlayableDevice device) async {
+  Future<void> add(Playable device) async {
     if (_playerMap[device.id] != null) {
       _playerMap[device.id]!.dispose();
       _playerMap.remove(device.id);
@@ -42,7 +48,14 @@ class VideoModel {
     await store();
   }
 
-  PlayableDevice? get(String id) {
+  Playable? get(String id) {
     return _playerMap[id];
+  }
+
+  String validate(String id) {
+    if (playerMap[id] != null) {
+      return "已有同名设备";
+    }
+    return "";
   }
 }
