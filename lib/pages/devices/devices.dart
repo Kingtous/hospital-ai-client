@@ -17,7 +17,7 @@ class _DevicesPageState extends State<DevicesPage> {
   Widget build(BuildContext context) {
     videoModel.playerMap.values.toList(growable: false);
     return Padding(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -63,7 +63,7 @@ class _DevicesPageState extends State<DevicesPage> {
 }
 
 class CamRecordDeviceItem extends StatelessWidget {
-  final Playable device;
+  final PlayableSource device;
   const CamRecordDeviceItem({super.key, required this.device});
 
   @override
@@ -84,7 +84,7 @@ class CamRecordDeviceItem extends StatelessWidget {
               message: '查看画面',
               child: const Icon(FluentIcons.play),
             ), onPressed: () {
-              
+
             })
           ],
         ))],

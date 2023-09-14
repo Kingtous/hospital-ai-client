@@ -25,39 +25,46 @@ class _VideoHomePageState extends State<VideoHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          '监控主页',
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        SizedBox(
-          height: 8.0,
-        ),
-        Expanded(
-          child: Obx(
-            () {
-              final keys = videoModel.playerMap.keys.toList(growable: false);
-              return GridView.builder(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 400,
-                  childAspectRatio: 16 / 9,
-                  crossAxisSpacing: 4,
-                ),
-                itemCount: videoModel.playerMap.length,
-                itemBuilder: (context, idx) {
-                  final e = keys[idx];
-                  return VideoLive(
-                    key: ValueKey(e),
-                    id: e,
-                    type: LiveType.thumbnail,
-                  );
-                },
-              );
-            },
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Text(
+                '监控主页',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(
+            height: 8.0,
+          ),
+          Expanded(
+            child: Obx(
+              () {
+                final keys = videoModel.playerMap.keys.toList(growable: false);
+                return GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 400,
+                    childAspectRatio: 16 / 9,
+                    crossAxisSpacing: 4,
+                  ),
+                  itemCount: videoModel.playerMap.length,
+                  itemBuilder: (context, idx) {
+                    final e = keys[idx];
+                    return VideoLive(
+                      key: ValueKey(e),
+                      id: e,
+                      type: LiveType.thumbnail,
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

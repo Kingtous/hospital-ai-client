@@ -3,12 +3,13 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
+import 'package:media_kit/media_kit.dart';
 
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
 
 class VideoModel {
-  late final RxMap<String, Playable> _playerMap;
-  RxMap<String, Playable> get playerMap => _playerMap;
+  late final RxMap<String, PlayableDevice> _playerMap;
+  RxMap<String, PlayableDevice> get playerMap => _playerMap;
 
   VideoModel() {
     _playerMap = RxMap();
@@ -39,7 +40,7 @@ class VideoModel {
             .toList());
   }
 
-  Future<void> add(Playable device) async {
+  Future<void> add(PlayableDevice device) async {
     if (_playerMap[device.id] != null) {
       _playerMap[device.id]!.dispose();
       _playerMap.remove(device.id);
@@ -48,8 +49,20 @@ class VideoModel {
     await store();
   }
 
-  Playable? get(String id) {
+  PlayableSource? get(String id) {
     return _playerMap[id];
+  }
+
+  Player? getPlayablePlayer(String id) {
+    if (_playerMap.containsKey(id)) {
+      if (_playerMap[id]! is CanPlayViaPlayer) {
+        return (_playerMap[id]! as CanPlayViaPlayer).player;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   String validate(String id) {

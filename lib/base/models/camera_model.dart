@@ -6,7 +6,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 part 'camera_model.g.dart';
 
-abstract interface class Playable {
+abstract interface class PlayableSource {
   // playable id
   String get id;
 
@@ -21,7 +21,7 @@ abstract interface class Playable {
   Future<void> dispose();
 }
 
-abstract class PlayableDevice extends Playable {
+abstract class PlayableDevice extends PlayableSource {
   static Future<void> addNewDevice(BuildContext context) async {}
 }
 
@@ -36,7 +36,7 @@ mixin CanPlayViaPlayer on PlayableDevice {
 @JsonSerializable()
 class RTSPCamera extends PlayableDevice
     with GUIConfigurable
-    implements Playable, CanPlayViaPlayer {
+    implements PlayableSource, CanPlayViaPlayer {
   late String rtspUrl;
   late String id;
   @JsonKey(includeFromJson: false)
@@ -68,7 +68,8 @@ class RTSPCamera extends PlayableDevice
   @override
   Future<void> reload() async {
     debugPrint('reload rtsp from $rtspUrl');
-    await player.next();
+    await player.stop();
+    await player.open(Media(rtspUrl));
   }
 
   @override
