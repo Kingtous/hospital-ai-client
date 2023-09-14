@@ -28,11 +28,11 @@ class _HomePageState extends State<HomePage> {
             selected: index.value,
             items: [
               PaneItem(
-                  icon: const Icon(Icons.home),
+                  icon: const Icon(FluentIcons.screen),
                   body: const VideoHomePage(),
-                  title: const Text('主页')),
+                  title: const Text('监控大屏')),
               PaneItem(
-                  icon: const Icon(Icons.camera_alt_outlined),
+                  icon: const Icon(FluentIcons.camera),
                   body: const DevicesPage(),
                   title: const Text('摄像头设置'))
             ]),

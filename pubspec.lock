@@ -504,10 +504,9 @@ packages:
   media_kit_video:
     dependency: "direct main"
     description:
-      name: media_kit_video
-      sha256: cd3ab78e7626146f115134b82c4029ac5987ba6351719c9067d86789723e0c12
-      url: "https://mirror.sjtu.edu.cn/dart-pub/"
-    source: hosted
+      path: "../media-kit/media_kit_video"
+      relative: true
+    source: path
     version: "1.1.8"
   meta:
     dependency: transitive

@@ -72,8 +72,11 @@ class RTSPCamera extends PlayableDevice
   @override
   Future<void> init() async {
     thumbNailController = VideoController(player,
-        configuration: const VideoControllerConfiguration());
-    await player.open(Playlist([Media(rtspUrl)]), play: true);
+        configuration: const VideoControllerConfiguration(
+          width: kThumbNailLiveWidth,
+          height: kThumbNailLiveHeight,
+        ));
+    await player.open(Playlist([Media(rtspUrl)]), play: false);
   }
 
   void _onStatus(String evt) {
@@ -109,7 +112,7 @@ class RTSPCamera extends PlayableDevice
   Future<void> reload() async {
     debugPrint('reload rtsp from $rtspUrl');
     await player.stop();
-    await player.open(Media(rtspUrl));
+    await player.open(Media(rtspUrl), play: false);
   }
 
   @override

@@ -17,3 +17,6 @@ Future<void> setupDependencies() async {
 VideoModel get videoModel => it.get();
 AppModel get appModel => it.get();
 SharedPreferences get perf => it.get();
+
+const kThumbNailLiveHeight = 180;
+const kThumbNailLiveWidth = 320;

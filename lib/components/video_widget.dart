@@ -36,8 +36,12 @@ class _VideoLiveState extends State<VideoLive> {
       isExist = true;
       controller = widget.type == LiveType.thumbnail
           ? player.thumbNailController
-          : VideoController(player.player);
-      Future.delayed(Duration.zero, () {
+          : VideoController(player.player,
+              configuration: VideoControllerConfiguration(
+                  height: widget.height?.toInt(),
+                  width: widget.width?.toInt()));
+      Future.delayed(Duration.zero, () async {
+        await player.reload();
         player.startPlay();
       });
     }
@@ -46,7 +50,7 @@ class _VideoLiveState extends State<VideoLive> {
   @override
   void dispose() {
     if (isExist) {
-      controller.player.pause();
+      controller.player.stop();
     }
     super.dispose();
   }

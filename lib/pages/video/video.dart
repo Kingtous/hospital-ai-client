@@ -39,28 +39,34 @@ class _VideoHomePageState extends State<VideoHomePage> {
             height: 8.0,
           ),
           Expanded(
-            child: Obx(
-              () {
-                final keys = videoModel.playerMap.keys.toList(growable: false);
-                return GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 400,
-                    childAspectRatio: 16 / 9,
-                    crossAxisSpacing: 4,
-                  ),
-                  itemCount: videoModel.playerMap.length,
-                  itemBuilder: (context, idx) {
-                    final e = keys[idx];
-                    return VideoLive(
-                      key: ValueKey(e),
-                      id: e,
-                      width: 180,
-                      height: 320,
-                      type: LiveType.thumbnail,
-                    );
-                  },
-                );
-              },
+            child: SingleChildScrollView(
+              child: Obx(
+                () {
+                  final keys =
+                      videoModel.playerMap.keys.toList(growable: false);
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Wrap(
+                          children: [
+                            ...keys.map((e) => SizedBox(
+                                  width: kThumbNailLiveWidth.toDouble(),
+                                  height: kThumbNailLiveHeight.toDouble(),
+                                  child: VideoLive(
+                                    key: ValueKey(e),
+                                    id: e,
+                                    width: kThumbNailLiveWidth.toDouble(),
+                                    height: kTextTabBarHeight.toDouble(),
+                                    type: LiveType.thumbnail,
+                                  ),
+                                ))
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ],
