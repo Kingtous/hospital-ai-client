@@ -50,7 +50,7 @@ class _VideoLiveState extends State<VideoLive> {
   @override
   void dispose() {
     if (isExist) {
-      controller.player.stop();
+      videoModel.get(widget.id)?.stop();
     }
     super.dispose();
   }

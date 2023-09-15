@@ -88,8 +88,9 @@ class RTSPCamera extends PlayableDevice
       final self = ws.target;
       if (self != null) {
         self.onError = player.stream.error.listen(_onStatus);
-        self.reload();
+        await self.reload();
         print("🔧reload ${self.id} on Error: $evt. retrying");
+        await self.startPlay();
       }
     });
   }
@@ -136,6 +137,7 @@ class RTSPCamera extends PlayableDevice
 
   @override
   Future<void> stop() async {
+    debugPrint('player $id is stopping');
     await player.stop();
   }
 

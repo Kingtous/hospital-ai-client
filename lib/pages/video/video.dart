@@ -28,9 +28,11 @@ class _VideoHomePageState extends State<VideoHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("rebuild video screen...");
+    final height = kThumbNailLiveHeight * 3 + 50 + 8 + 40;
     return Stack(
       children: [
-        Container(
+        SizedBox(
           width: double.infinity,
           height: double.infinity,
           child: Image.asset(
@@ -38,93 +40,170 @@ class _VideoHomePageState extends State<VideoHomePage> {
             fit: BoxFit.cover,
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    '监控主页',
-                    style: Theme.of(context).textTheme.titleLarge!
-                      ..copyWith(color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 8.0,
-              ),
-              SizedBox(
-                width: kThumbNailLiveWidth * 3,
-                height: kThumbNailLiveHeight * 3 + 50,
-                child: Obx(
-                  () {
-                    final keys = videoModel.playerMap.keys
-                        .toList(growable: false)
-                      ..sort();
-                    final pages = (keys.length / 9).ceil();
-                    index.value = min(index.value, pages - 1);
-                    final pageKeys = keys
-                        .skip(index.value * 9)
-                        .take(9)
-                        .toList(growable: false);
-                    return Column(
-                      children: [
-                        Expanded(
-                          child: Wrap(
-                            // maxCrossAxisExtent: kThumbNailLiveWidth.toDouble(),
-                            // childAspectRatio: 16 / 9,
+        SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      height: 8.0,
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withAlpha(100),
+                          borderRadius: BorderRadius.circular(24.0)),
+                      padding: const EdgeInsets.all(4.0),
+                      width: kThumbNailLiveWidth * 3 + 8,
+                      height: height.toDouble(),
+                      child: Column(
+                        children: [
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              ...pageKeys.map((e) => SizedBox(
-                                    key: ValueKey(e),
-                                    width: kThumbNailLiveWidth.toDouble(),
-                                    height: kThumbNailLiveHeight.toDouble(),
-                                    child: VideoLive(
-                                      id: e,
-                                      width: kThumbNailLiveWidth.toDouble(),
-                                      height: kTextTabBarHeight.toDouble(),
-                                      type: LiveType.thumbnail,
-                                    ),
-                                  ))
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0),
+                                child: Text(
+                                  '总览',
+                                  style: TextStyle(
+                                      fontSize: 20.0, color: Colors.white),
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                        SizedBox(
-                          height: 50,
+                          Expanded(
+                            child: Obx(
+                              () {
+                                final keys = videoModel.playerMap.keys
+                                    .toList(growable: false)
+                                  ..sort();
+                                final pages = (keys.length / 9).ceil();
+                                // index.value = min(index.value, pages - 1);
+                                final pageKeys = keys
+                                    .skip(index.value * 9)
+                                    .take(9)
+                                    .toList(growable: false);
+                                return Column(
+                                  children: [
+                                    Expanded(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: Wrap(
+                                              alignment: WrapAlignment.start,
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.start,
+                                              // maxCrossAxisExtent: kThumbNailLiveWidth.toDouble(),
+                                              // childAspectRatio: 16 / 9,
+                                              children: [
+                                                ...pageKeys.map((e) => SizedBox(
+                                                      key: ValueKey(e),
+                                                      width: kThumbNailLiveWidth
+                                                          .toDouble(),
+                                                      height:
+                                                          kThumbNailLiveHeight
+                                                              .toDouble(),
+                                                      child: VideoLive(
+                                                        id: e,
+                                                        width:
+                                                            kThumbNailLiveWidth
+                                                                .toDouble(),
+                                                        height:
+                                                            kTextTabBarHeight
+                                                                .toDouble(),
+                                                        type:
+                                                            LiveType.thumbnail,
+                                                      ),
+                                                    ))
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 50,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Button(
+                                              child: const Icon(
+                                                  FluentIcons.page_left),
+                                              onPressed: () {
+                                                index.value =
+                                                    max(0, index.value - 1);
+                                                // setState(() {});
+                                              }),
+                                          const SizedBox(
+                                            width: 4.0,
+                                          ),
+                                          Obx(
+                                            () => Text(
+                                              '第${index.value + 1}/$pages页',
+                                              style: const TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 4.0,
+                                          ),
+                                          Button(
+                                              child: const Icon(
+                                                  FluentIcons.page_right),
+                                              onPressed: () {
+                                                index.value = min(
+                                                    pages - 1, index.value + 1);
+                                                // setState(() {});
+                                              }),
+                                        ],
+                                      ),
+                                    )
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  width: 16.0,
+                ),
+                Expanded(
+                  child: Container(
+                    height: height.toDouble(),
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Colors.grey.withAlpha(100),
+                        borderRadius: BorderRadius.circular(20)),
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Button(
-                                  child: const Icon(FluentIcons.page_left),
-                                  onPressed: () {
-                                    index.value = max(0, index.value - 1);
-                                  }),
-                              const SizedBox(
-                                width: 4.0,
-                              ),
                               Text(
-                                '第${index + 1}/$pages页',
-                                style: TextStyle(color: Colors.white),
+                                '报警信息',
+                                style: TextStyle(color: Colors.white, fontSize: 20),
                               ),
-                              const SizedBox(
-                                width: 4.0,
-                              ),
-                              Button(
-                                  child: const Icon(FluentIcons.page_right),
-                                  onPressed: () {
-                                    index.value =
-                                        min(pages - 1, index.value + 1);
-                                  }),
                             ],
                           ),
                         )
                       ],
-                    );
-                  },
-                ),
-              ),
-            ],
+                    ),
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ],
