@@ -22,6 +22,7 @@ class _HomePageState extends State<HomePage> {
       () => NavigationView(
         appBar: const NavigationAppBar(title: Text('视频监控报警平台')),
         pane: NavigationPane(
+            displayMode: PaneDisplayMode.top,
             onChanged: (idx) {
               index.value = idx;
             },

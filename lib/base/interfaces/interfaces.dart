@@ -1,11 +1,15 @@
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hospital_ai_client/base/models/app_model.dart';
 import 'package:hospital_ai_client/base/models/video_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:window_manager/window_manager.dart';
 
 final it = GetIt.instance;
 
 Future<void> setupDependencies() async {
+  await windowManager.ensureInitialized();
+  windowManager.setMinimumSize(const Size(1000, 720));
   final sp = await SharedPreferences.getInstance();
   it.registerSingleton<SharedPreferences>(sp);
   it.registerSingleton<AppModel>(AppModel());
