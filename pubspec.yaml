@@ -50,10 +50,12 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   window_manager: ^0.3.6
+  floor: ^1.4.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  floor_generator: ^1.4.2
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hospital_ai_client/base/models/app_model.dart';
+import 'package:hospital_ai_client/base/models/dao/db.dart';
 import 'package:hospital_ai_client/base/models/video_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
@@ -11,6 +12,8 @@ Future<void> setupDependencies() async {
   await windowManager.ensureInitialized();
   windowManager.setMinimumSize(const Size(1000, 720));
   final sp = await SharedPreferences.getInstance();
+  final db = await $FloorAppDB.databaseBuilder('cam.db').build();
+  it.registerSingleton<AppDB>(db);
   it.registerSingleton<SharedPreferences>(sp);
   it.registerSingleton<AppModel>(AppModel());
   it.registerSingleton<VideoModel>(VideoModel());
@@ -21,6 +24,7 @@ Future<void> setupDependencies() async {
 VideoModel get videoModel => it.get();
 AppModel get appModel => it.get();
 SharedPreferences get perf => it.get();
+AppDB get appDB => it.get();
 
 const kThumbNailLiveHeight = 180;
 const kThumbNailLiveWidth = 320;
