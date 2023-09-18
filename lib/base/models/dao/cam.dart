@@ -13,7 +13,11 @@
 // limitations under the License.
 
 import 'package:floor/floor.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
+
+enum CamType { rtsp }
 
 @Entity(tableName: 'cam', foreignKeys: [
   ForeignKey(
@@ -30,7 +34,12 @@ class Cam {
   @ColumnInfo(name: 'area_id')
   final int areaId;
 
-  Cam(this.name, this.areaId);
+  final String url;
+
+  @ColumnInfo(name: 'cam_type')
+  final int camType;
+
+  Cam(this.id, this.name, this.areaId, this.url, this.camType);
 }
 
 @dao
@@ -39,5 +48,19 @@ abstract class CamDao {
   Future<List<Cam>> findCamsByAreaId(int areaId);
 
   @insert
-  Future<void> insertCam(Cam cam);
+  @protected
+  Future<int> insertCam(Cam cam);
+
+  @delete
+  Future<void> deleteCam(Cam cam);
+
+  @update
+  Future<void> updateCam(Cam cam);
+
+  @transaction
+  Future<void> addCam(Cam cam, Area area) async {
+    assert(area.id != null);
+    final camId = await insertCam(cam);
+    await appDB.areaUserDao.insertAreaUser(AreaCam(null, area.id!, camId));
+  }
 }

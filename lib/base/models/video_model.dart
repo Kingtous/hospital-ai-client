@@ -27,9 +27,8 @@ class VideoModel {
     }
   }
 
-  Future<void> remove(String id) async {
+  Future<void> remove(int id) async {
     _playerMap.remove(id);
-    await perf.setStringList(kRTSPVideoModelJsonKey, _playerMap.keys.toList());
   }
 
   Future<void> store() async {

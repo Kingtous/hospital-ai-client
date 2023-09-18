@@ -17,12 +17,16 @@ import 'dart:async';
 import 'package:floor/floor.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/user.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 part 'db.g.dart';
 
-@Database(version: 1, entities: [Area, Cam])
+@Database(version: kDbVersion, entities: [Area, Cam, User, AreaUser, AreaCam])
 abstract class AppDB extends FloorDatabase {
   AreaDao get areaDao;
   CamDao get camDao;
+  AreaUserDao get areaUserDao;
+  UserDao get userDao;
 }

@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/pages/devices/devices.dart';
 import 'package:hospital_ai_client/pages/video/video.dart';

@@ -13,6 +13,8 @@
 // limitations under the License.
 
 import 'package:floor/floor.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/user.dart';
 
 const kAreaKey = 'kArea';
 
@@ -22,7 +24,49 @@ class Area {
   int? id;
   @ColumnInfo(name: 'area_name')
   final String areaName;
-  Area(this.areaName);
+  Area(this.id, this.areaName);
+}
+
+@Entity(tableName: 'rel_area_user', foreignKeys: [
+  ForeignKey(
+      childColumns: ['area_id'],
+      parentColumns: ['id'],
+      entity: Area,
+      onDelete: ForeignKeyAction.cascade),
+  ForeignKey(
+      childColumns: ['user_id'],
+      parentColumns: ['id'],
+      entity: User,
+      onDelete: ForeignKeyAction.cascade)
+])
+class AreaUser {
+  @PrimaryKey(autoGenerate: true)
+  int? id;
+
+  @ColumnInfo(name: 'area_id')
+  final int areaId;
+
+  @ColumnInfo(name: 'user_id')
+  final int userId;
+
+  AreaUser(this.id, this.userId, this.areaId);
+}
+
+@Entity(tableName: 'rel_area_cam', foreignKeys: [
+  ForeignKey(childColumns: ['area_id'], parentColumns: ['id'], entity: Area),
+  ForeignKey(childColumns: ['cam_id'], parentColumns: ['id'], entity: Cam),
+])
+class AreaCam {
+  @PrimaryKey(autoGenerate: true)
+  int? id;
+
+  @ColumnInfo(name: 'area_id')
+  final int areaId;
+
+  @ColumnInfo(name: 'cam_id')
+  final int camId;
+
+  AreaCam(this.id, this.areaId, this.camId);
 }
 
 @dao
@@ -31,5 +75,37 @@ abstract class AreaDao {
   Future<List<Area>> findAllAreas();
 
   @insert
-  Future<void> insertArea(Area area);
+  Future<int> insertArea(Area area);
+
+  @delete
+  Future<void> deleteArea(Area area);
+}
+
+@dao
+abstract class AreaUserDao {
+  @Query(
+      'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
+  Future<List<Area>> findAllAreaUsersByUser(int areaId);
+
+  @insert
+  Future<int> insertAreaUser(AreaCam area);
+
+  @delete
+  Future<void> deleteAreaUser(AreaCam area);
+}
+
+@dao
+abstract class AreaCamDao {
+  @Query('SELECT * FROM rel_area_user')
+  Future<List<AreaUser>> findAllAreaUsers();
+
+  @Query(
+      'select * from area where id IN (SELECT area_id FROM rel_area_user where user_id=:userId)')
+  Future<List<Area>> findAllAreaUsersByUser(int userId);
+
+  @insert
+  Future<int> insertAreaUser(AreaUser area);
+
+  @delete
+  Future<void> deleteAreaUser(AreaUser area);
 }

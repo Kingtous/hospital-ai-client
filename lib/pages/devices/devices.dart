@@ -82,7 +82,7 @@ class CamRecordDeviceItem extends StatelessWidget {
         const SizedBox(
           width: 16.0,
         ),
-        Text(device.id),
+        Text("${device.id}"),
         Expanded(
             child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -94,7 +94,7 @@ class CamRecordDeviceItem extends StatelessWidget {
                 ),
                 onPressed: () {
                   context
-                      .pushNamed('player', pathParameters: {'id': device.id});
+                      .pushNamed('player', pathParameters: {'id': "${device.id}"});
                 })
           ],
         ))

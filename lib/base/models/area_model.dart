@@ -28,7 +28,7 @@ class AreaModel {
   }
 
   Future<void> addArea(String areaName) async {
-    await appDB.areaDao.insertArea(Area(areaName));
+    await appDB.areaDao.insertArea(Area(null, areaName));
     await refresh();
   }
 

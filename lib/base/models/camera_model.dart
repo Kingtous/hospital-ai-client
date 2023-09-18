@@ -56,6 +56,7 @@ class RTSPCamera extends PlayableDevice
   StreamSubscription<String>? onError;
   @JsonKey(includeFromJson: false)
   StreamSubscription<bool>? onPlaying;
+  @override
   @JsonKey(includeFromJson: false)
   late VideoController thumbNailController;
 
