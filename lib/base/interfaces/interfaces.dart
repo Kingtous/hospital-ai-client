@@ -29,6 +29,7 @@ VideoModel get videoModel => it.get();
 AppModel get appModel => it.get();
 SharedPreferences get perf => it.get();
 AppDB get appDB => it.get();
+UserModel get userModel => it.get();
 
 const kThumbNailLiveHeight = 180;
 const kThumbNailLiveWidth = 320;

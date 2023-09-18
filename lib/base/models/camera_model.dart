@@ -77,7 +77,7 @@ class RTSPCamera extends PlayableDevice
           width: kThumbNailLiveWidth,
           height: kThumbNailLiveHeight,
         ));
-    await player.open(Playlist([Media(rtspUrl)]), play: false);
+    await player.open(Playlist([Media(rtspUrl)]), play: true);
   }
 
   void _onStatus(String evt) {
@@ -114,7 +114,7 @@ class RTSPCamera extends PlayableDevice
   Future<void> reload() async {
     debugPrint('reload rtsp from $rtspUrl');
     await player.stop();
-    await player.open(Media(rtspUrl), play: false);
+    await player.open(Media(rtspUrl), play: true);
   }
 
   @override
