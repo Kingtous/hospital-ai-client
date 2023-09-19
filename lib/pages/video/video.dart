@@ -120,7 +120,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
                                                     height: kThumbNailLiveHeight
                                                         .toDouble(),
                                                     child: VideoLive(
-                                                      id: e,
+                                                      cam: e,
                                                       width: kThumbNailLiveWidth
                                                           .toDouble(),
                                                       height: kTextTabBarHeight

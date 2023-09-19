@@ -235,6 +235,29 @@ class _$CamDao extends CamDao {
   }
 
   @override
+  Future<List<Cam>> getAll() async {
+    return _queryAdapter.queryList('SELECT * FROM cam',
+        mapper: (Map<String, Object?> row) => Cam(
+            row['id'] as int?,
+            row['name'] as String,
+            row['area_id'] as int,
+            row['url'] as String,
+            row['cam_type'] as int));
+  }
+
+  @override
+  Future<List<Cam>> getCamById(int id) async {
+    return _queryAdapter.queryList('SELECT * FROM cam where id = ?1',
+        mapper: (Map<String, Object?> row) => Cam(
+            row['id'] as int?,
+            row['name'] as String,
+            row['area_id'] as int,
+            row['url'] as String,
+            row['cam_type'] as int),
+        arguments: [id]);
+  }
+
+  @override
   Future<int> insertCam(Cam cam) {
     return _camInsertionAdapter.insertAndReturnId(
         cam, OnConflictStrategy.abort);
@@ -251,18 +274,18 @@ class _$CamDao extends CamDao {
   }
 
   @override
-  Future<void> addCam(
+  Future<int> addCam(
     Cam cam,
     Area area,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.addCam(cam, area);
+      return super.addCam(cam, area);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDB(changeListener)
           ..database = transaction;
-        await transactionDatabase.camDao.addCam(cam, area);
+        return transactionDatabase.camDao.addCam(cam, area);
       });
     }
   }

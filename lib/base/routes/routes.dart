@@ -16,14 +16,15 @@ final router = GoRouter(routes: [
         return const HomePage();
       })),
   GoRoute(
-      path: '/player/:id',
+      path: '/player/:name',
       name: 'player',
       builder: ((context, state) {
-        final id = state.pathParameters['id'];
-        if (id == null) {
+        final name = state.pathParameters['name'] ?? '';
+        final cam = videoModel.getPlayableByName(name);
+        if (cam == null) {
           return const HomePage();
         } else {
-          return FullScreenLive(id: id);
+          return FullScreenLive(cam: cam,);
         }
       }))
 ]);

@@ -1,63 +1,82 @@
-import 'dart:convert';
+import 'dart:async';
 
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
+import 'package:hospital_ai_client/base/models/dao/area.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:media_kit/media_kit.dart';
 
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
 
 class VideoModel {
-  late final RxMap<String, PlayableDevice> _playerMap;
-  RxMap<String, PlayableDevice> get playerMap => _playerMap;
+  late final RxMap<Cam, PlayableDevice> _playerMap;
+  RxMap<Cam, PlayableDevice> get playerMap => _playerMap;
 
   VideoModel() {
     _playerMap = RxMap();
   }
 
   Future<void> init() async {
-    final list = perf.getStringList(kRTSPVideoModelJsonKey) ?? [];
-    for (final item in list) {
-      final map = jsonDecode(item);
-      if (map != null) {
-        final cam = RTSPCamera.fromJson(map);
-        await cam.init();
-        _playerMap[cam.id] = cam;
+    // rtsp
+    final cams = await appDB.camDao.getAll();
+    for (final cam in cams) {
+      if (cam.camType == CamType.rtsp.index) {
+        final rtspCam = RTSPCamera.fromDB(cam)?..init();
+        if (rtspCam != null) {
+          _playerMap[cam] = rtspCam;
+        }
       }
     }
   }
 
-  Future<void> remove(int id) async {
-    _playerMap.remove(id);
-  }
-
-  Future<void> store() async {
-    await perf.setStringList(
-        kRTSPVideoModelJsonKey,
-        _playerMap.values
-            .whereType<RTSPCamera>()
-            .map((e) => jsonEncode(e.toJson()))
-            .toList());
-  }
-
-  Future<void> add(PlayableDevice device) async {
-    if (_playerMap[device.id] != null) {
-      _playerMap[device.id]!.dispose();
-      _playerMap.remove(device.id);
+  Future<void> remove(Cam cam) async {
+    final dev = _playerMap.remove(cam);
+    if (dev != null) {
+      appDB.camDao.deleteCam(cam);
     }
-    await device.init();
-    _playerMap[device.id] = device;
-    await store();
   }
 
-  PlayableSource? get(String id) {
-    return _playerMap[id];
+  Future<bool> addCamToArea(Cam cam, Area area) async {
+    if (_playerMap[cam] != null) {
+      return false;
+    }
+    final id = await appDB.camDao.addCam(cam, area);
+    final cams = await appDB.camDao.getCamById(id);
+    if (cams.isEmpty) {
+      return false;
+    }
+    if (cam.camType == CamType.rtsp.index) {
+      final rtspCam = RTSPCamera.fromDB(cams.first);
+      if (rtspCam != null) {
+        _playerMap[cams.first] = rtspCam;
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      throw UnimplementedError('Unimplemented');
+    }
   }
 
-  Player? getPlayablePlayer(String id) {
-    if (_playerMap.containsKey(id)) {
-      if (_playerMap[id]! is CanPlayViaPlayer) {
-        return (_playerMap[id]! as CanPlayViaPlayer).player;
+  PlayableSource? get(Cam cam) {
+    return _playerMap[cam];
+  }
+
+  Cam? getPlayableByName(String name) {
+    if (name.isEmpty) {
+      return null;
+    }
+    return _playerMap.entries
+        .where((element) => element.key.name == name)
+        .map((e) => e.key)
+        .firstOrNull;
+  }
+
+  Player? getPlayablePlayer(Cam cam) {
+    if (_playerMap.containsKey(cam)) {
+      if (_playerMap[cam]! is CanPlayViaPlayer) {
+        return (_playerMap[cam]! as CanPlayViaPlayer).player;
       } else {
         return null;
       }
@@ -66,8 +85,8 @@ class VideoModel {
     }
   }
 
-  String validate(String id) {
-    if (playerMap[id] != null) {
+  String validate(Cam cam) {
+    if (playerMap[cam] != null) {
       return "已有同名设备";
     }
     return "";

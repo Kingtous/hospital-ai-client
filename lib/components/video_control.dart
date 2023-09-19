@@ -2,16 +2,17 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/state_manager.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 class VideoControl extends StatelessWidget {
   final VideoState state;
-  final String deviceId;
+  final Cam cam;
   const VideoControl(
       {super.key,
       required this.state,
-      required this.deviceId,
+      required this.cam,
       required LiveType type});
 
   @override
@@ -29,7 +30,7 @@ class VideoControl extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Text(
-                  deviceId,
+                  cam.name,
                   style: const TextStyle(
                     color: Colors.white,
                   ),
@@ -42,7 +43,7 @@ class VideoControl extends StatelessWidget {
                       Button(
                           child: const Icon(FluentIcons.refresh),
                           onPressed: () async {
-                            videoModel.get(deviceId)?.reload();
+                            videoModel.get(cam)?.reload();
                           }),
                       const SizedBox(
                         width: 4.0,
@@ -51,7 +52,7 @@ class VideoControl extends StatelessWidget {
                           child: const Icon(FluentIcons.full_screen),
                           onPressed: () {
                             context.pushNamed('player',
-                                pathParameters: {'id': deviceId});
+                                pathParameters: {'name': cam.name});
                           })
                     ],
                   ),
@@ -65,14 +66,13 @@ class VideoControl extends StatelessWidget {
   }
 }
 
-
 class VideoControl2 extends StatelessWidget {
   final VideoState state;
-  final String deviceId;
+  final Cam cam;
   const VideoControl2(
       {super.key,
       required this.state,
-      required this.deviceId,
+      required this.cam,
       required LiveType type});
 
   @override
@@ -97,7 +97,7 @@ class VideoControl2 extends StatelessWidget {
                       Button(
                           child: const Icon(FluentIcons.refresh),
                           onPressed: () async {
-                            videoModel.get(deviceId)?.reload();
+                            videoModel.get(cam)?.reload();
                           }),
                       const SizedBox(
                         width: 4.0,

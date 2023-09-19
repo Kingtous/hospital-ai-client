@@ -17,7 +17,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 
-enum CamType { rtsp }
+enum CamType { unknown, rtsp }
 
 @Entity(tableName: 'cam', foreignKeys: [
   ForeignKey(
@@ -47,6 +47,12 @@ abstract class CamDao {
   @Query('SELECT * FROM cam WHERE area_id = :areaId')
   Future<List<Cam>> findCamsByAreaId(int areaId);
 
+  @Query('SELECT * FROM cam')
+  Future<List<Cam>> getAll();
+
+  @Query('SELECT * FROM cam where id = :id LIMIT 1')
+  Future<List<Cam>> getCamById(int id);
+
   @insert
   @protected
   Future<int> insertCam(Cam cam);
@@ -58,9 +64,9 @@ abstract class CamDao {
   Future<void> updateCam(Cam cam);
 
   @transaction
-  Future<void> addCam(Cam cam, Area area) async {
+  Future<int> addCam(Cam cam, Area area) async {
     assert(area.id != null);
     final camId = await insertCam(cam);
-    await appDB.areaUserDao.insertAreaUser(AreaCam(null, area.id!, camId));
+    return await appDB.areaUserDao.insertAreaUser(AreaCam(null, area.id!, camId));
   }
 }

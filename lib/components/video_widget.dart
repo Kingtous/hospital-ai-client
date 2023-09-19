@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/video_control.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 enum LiveType { thumbnail, fullscreen }
 
 class VideoLive extends StatefulWidget {
-  final String id;
+  final Cam cam;
   final double? width;
   final double? height;
   final LiveType type;
   const VideoLive(
       {super.key,
-      required this.id,
+      required this.cam,
       this.width,
       this.height,
       required this.type});
@@ -31,7 +32,7 @@ class _VideoLiveState extends State<VideoLive> {
   @override
   void initState() {
     super.initState();
-    final player = videoModel.get(widget.id);
+    final player = videoModel.get(widget.cam);
     if (player != null && player is CanPlayViaPlayer) {
       isExist = true;
       controller = widget.type == LiveType.thumbnail
@@ -50,7 +51,7 @@ class _VideoLiveState extends State<VideoLive> {
   @override
   void dispose() {
     if (isExist) {
-      videoModel.get(widget.id)?.stop();
+      videoModel.get(widget.cam)?.stop();
     }
     super.dispose();
   }
@@ -93,7 +94,7 @@ class _VideoLiveState extends State<VideoLive> {
                     pauseUponEnteringBackgroundMode: true,
                     resumeUponEnteringForegroundMode: true,
                     controls: (state) => VideoControl(
-                        state: state, deviceId: widget.id, type: widget.type),
+                        state: state, cam: widget.cam, type: widget.type),
                   ),
                 ),
         ),

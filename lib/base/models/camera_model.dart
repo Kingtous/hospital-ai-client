@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -36,6 +37,10 @@ mixin CanPlayViaPlayer on PlayableDevice {
   Player get player;
 
   VideoController get thumbNailController;
+}
+
+mixin CamStorable on PlayableDevice {
+  Cam toCam();
 }
 
 @JsonSerializable()
@@ -185,7 +190,6 @@ class RTSPCamera extends PlayableDevice
                             ));
                   } else {
                     (videoModel.playerMap[id]! as RTSPCamera).rtspUrl = newUrl;
-                    videoModel.store();
                     videoModel.playerMap.refresh();
                     onComplete?.call();
                   }
@@ -261,20 +265,19 @@ class RTSPCamera extends PlayableDevice
                 FilledButton(
                     child: const Text('确定'),
                     onPressed: () async {
-                      msg = videoModel.validate(id);
-                      if (msg.isNotEmpty) {
-                        setState(() {});
-                        return;
-                      }
-                      if (!rtspUrl.startsWith("rtsp://")) {
-                        setState(() {});
-                        msg = "设备地址格式有误，请与rtsp://开头";
-                        return;
-                      }
-                      final camera = RTSPCamera(id, rtspUrl: rtspUrl);
-                      Navigator.of(context).pop();
-                      await camera.init();
-                      videoModel.add(camera);
+                      // msg = videoModel.add(id);
+                      // if (msg.isNotEmpty) {
+                      //   setState(() {});
+                      //   return;
+                      // }
+                      // if (!rtspUrl.startsWith("rtsp://")) {
+                      //   setState(() {});
+                      //   msg = "设备地址格式有误，请与rtsp://开头";
+                      //   return;
+                      // }
+                      // final camera = RTSPCamera(id, rtspUrl: rtspUrl);
+                      // Navigator.of(context).pop();
+                      // await camera.init();
                     }),
                 FilledButton(
                     child: const Text('取消'),
@@ -285,5 +288,9 @@ class RTSPCamera extends PlayableDevice
             );
           });
         });
+  }
+
+  static RTSPCamera? fromDB(Cam cam) {
+    return RTSPCamera(cam.name, rtspUrl: cam.url);
   }
 }
