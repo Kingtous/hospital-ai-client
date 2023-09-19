@@ -21,8 +21,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return FluentApp.router(
       title: '医院AI视频监控',
-      theme: FluentThemeData(),
+      theme: FluentThemeData(shadowColor: Colors.white),
       routerConfig: router,
+      debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

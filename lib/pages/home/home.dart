@@ -1,6 +1,8 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/state_manager.dart';
+import 'package:hospital_ai_client/components/header.dart';
 import 'package:hospital_ai_client/pages/devices/devices.dart';
+import 'package:hospital_ai_client/pages/users/manage.dart';
 import 'package:hospital_ai_client/pages/video/video.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,27 +17,42 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
-      () => NavigationView(
-        appBar: const NavigationAppBar(title: Text('视频监控报警平台')),
-        pane: NavigationPane(
-            displayMode: PaneDisplayMode.minimal,
-            onChanged: (idx) {
-              index.value = idx;
-            },
-            selected: index.value,
-            items: [
-              PaneItem(
-                  icon: const Icon(FluentIcons.screen),
-                  body: const VideoHomePage(),
-                  title: const Text('监控大屏')),
-              PaneItem(
-                  icon: const Icon(FluentIcons.camera),
-                  body: const DevicesPage(),
-                  title: const Text('摄像头设置'))
-            ]),
-        // content: VideoHomePage(),
-      ),
+    return Column(
+      children: [
+        Row(
+          children: [Expanded(child: AppHeader())],
+        ),
+        Expanded(
+          child: Obx(
+            () => NavigationView(
+              pane: NavigationPane(
+                  displayMode: PaneDisplayMode.auto,
+                  size: NavigationPaneSize(openMaxWidth: 150.0),
+                  onChanged: (idx) {
+                    index.value = idx;
+                  },
+                  selected: index.value,
+                  items: [
+                    PaneItemSeparator(),
+                    PaneItem(
+                        icon: const Icon(FluentIcons.screen),
+                        body: const VideoHomePage(),
+                        title: const Text('监控大屏')),
+                    PaneItemSeparator(),
+                    PaneItem(
+                        icon: const Icon(FluentIcons.camera),
+                        body: const DevicesPage(),
+                        title: const Text('摄像头管理')),
+                    PaneItem(
+                        icon: const Icon(FluentIcons.people),
+                        body: const UserManagePage(),
+                        title: const Text('人员管理'))
+                  ]),
+              // content: VideoHomePage(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

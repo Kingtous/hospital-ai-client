@@ -1,4 +1,6 @@
 import 'package:crypto/crypto.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/user.dart';
 import 'package:hospital_ai_client/constants.dart';
@@ -42,9 +44,17 @@ class UserModel {
     if (!isLogin) {
       return null;
     }
+    if (_user!.userName != kDefaultAdminName) {
+      return null;
+    }
     final user =
         User(null, userName, md5.convert(password.codeUnits).toString());
     final userId = await appDB.userDao.createUser(user);
     return user..id = userId;
+  }
+
+  Future<void> logout(BuildContext context) async {
+    _user = null;
+    context.goNamed('login');
   }
 }

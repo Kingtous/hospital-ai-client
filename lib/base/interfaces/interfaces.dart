@@ -4,6 +4,7 @@ import 'package:hospital_ai_client/base/models/app_model.dart';
 import 'package:hospital_ai_client/base/models/dao/db.dart';
 import 'package:hospital_ai_client/base/models/user_model.dart';
 import 'package:hospital_ai_client/base/models/video_model.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -12,8 +13,9 @@ final it = GetIt.instance;
 Future<void> setupDependencies() async {
   await windowManager.ensureInitialized();
   windowManager.setMinimumSize(const Size(1000, 720));
+  windowManager.setTitleBarStyle(TitleBarStyle.hidden);
   final sp = await SharedPreferences.getInstance();
-  final db = await $FloorAppDB.databaseBuilder('cam.db').build();
+  final db = await $FloorAppDB.databaseBuilder(kDbName).build();
   it.registerSingleton<AppDB>(db);
   it.registerSingleton<SharedPreferences>(sp);
   final u = UserModel();

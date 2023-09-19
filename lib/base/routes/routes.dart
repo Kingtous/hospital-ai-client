@@ -10,7 +10,7 @@ final router = GoRouter(routes: [
       name: 'login',
       builder: ((context, state) => const UserLogin())),
   GoRoute(
-      path: '/',
+      path: '/home',
       name: 'home',
       builder: ((context, state) {
         return const HomePage();
