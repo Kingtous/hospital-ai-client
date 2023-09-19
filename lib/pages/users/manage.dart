@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart';
 
 class UserManagePage extends StatefulWidget {
@@ -24,6 +25,38 @@ class UserManagePage extends StatefulWidget {
 class _UserManagePageState extends State<UserManagePage> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Column(
+      children: [
+        Text(
+          '用户管理',
+          style: TextStyle(fontSize: 26),
+        ),
+        Expanded(child: UserTable())
+      ],
+    );
+  }
+}
+
+// 用户表
+class UserTable extends StatefulWidget {
+  const UserTable({super.key});
+
+  @override
+  State<UserTable> createState() => _UserTableState();
+}
+
+class _UserTableState extends State<UserTable> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        CommandBar(primaryItems: [
+          CommandBarButton(onPressed: _onAdd, icon: Icon(FluentIcons.add))
+        ])
+      ],
+    );
+  }
+
+  void _onAdd() {
   }
 }
