@@ -16,42 +16,50 @@ import 'package:floor/floor.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 
 enum CamType { unknown, rtsp }
 
 @Entity(tableName: 'cam', foreignKeys: [
   ForeignKey(
-      childColumns: ['area_id'],
+      childColumns: ['room_id'],
       parentColumns: ['id'],
-      entity: Area,
+      entity: Room,
       onDelete: ForeignKeyAction.cascade)
 ])
 class Cam {
   @PrimaryKey(autoGenerate: true)
   int? id;
-  final String name;
+  String name;
 
-  @ColumnInfo(name: 'area_id')
-  final int areaId;
+  @ColumnInfo(name: 'room_id')
+  int roomId;
 
-  final String url;
+  String url;
+
+  @ColumnInfo(name: 'enable_alert')
+  bool enableAlert;
 
   @ColumnInfo(name: 'cam_type')
-  final int camType;
+  int camType;
 
-  Cam(this.id, this.name, this.areaId, this.url, this.camType);
+  Cam(this.id, this.name, this.roomId, this.url, this.camType,
+      this.enableAlert);
 }
 
 @dao
 abstract class CamDao {
-  @Query('SELECT * FROM cam WHERE area_id = :areaId')
-  Future<List<Cam>> findCamsByAreaId(int areaId);
+  @Query('SELECT * FROM cam WHERE room_id = :roomId')
+  Future<List<Cam>> findCamsByRoomId(int roomId);
 
   @Query('SELECT * FROM cam')
   Future<List<Cam>> getAll();
 
   @Query('SELECT * FROM cam where id = :id LIMIT 1')
   Future<List<Cam>> getCamById(int id);
+
+  @Query('SELECT * FROM cam where id IN (:ids)')
+  Future<List<Cam>> getCamByIds(List<int> ids);
 
   @insert
   @protected
@@ -63,10 +71,13 @@ abstract class CamDao {
   @update
   Future<void> updateCam(Cam cam);
 
+  @insert
+  Future<int> insertRoomCam(RoomCam r);
+
   @transaction
-  Future<int> addCam(Cam cam, Area area) async {
-    assert(area.id != null);
+  Future<int> addCam(Cam cam, Room room) async {
+    assert(room.id != null);
     final camId = await insertCam(cam);
-    return await appDB.areaUserDao.insertAreaUser(AreaCam(null, area.id!, camId));
+    return await insertRoomCam(RoomCam(null, room.id!, camId));
   }
 }

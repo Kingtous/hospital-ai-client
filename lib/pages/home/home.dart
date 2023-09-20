@@ -2,6 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/components/header.dart';
 import 'package:hospital_ai_client/pages/devices/devices.dart';
+import 'package:hospital_ai_client/pages/devices/roles.dart';
 import 'package:hospital_ai_client/pages/users/manage.dart';
 import 'package:hospital_ai_client/pages/video/video.dart';
 
@@ -46,7 +47,11 @@ class _HomePageState extends State<HomePage> {
                     PaneItem(
                         icon: const Icon(FluentIcons.people),
                         body: const UserManagePage(),
-                        title: const Text('人员管理'))
+                        title: const Text('人员管理')),
+                    PaneItem(
+                        icon: const Icon(FluentIcons.device_run),
+                        body: const DeviceRolePage(),
+                        title: const Text('职责管理'))
                   ]),
               // content: VideoHomePage(),
             ),

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart' hide Colors;
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
+import 'package:hospital_ai_client/constants.dart';
 
 class VideoHomePage extends StatefulWidget {
   const VideoHomePage({super.key});
@@ -32,14 +33,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
     final height = kThumbNailLiveHeight * 3 + 50 + 8 + 40;
     return Stack(
       children: [
-        SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: Image.asset(
-            'assets/images/bg.jpeg',
-            fit: BoxFit.cover,
-          ),
-        ),
+        bgImage,
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: Row(

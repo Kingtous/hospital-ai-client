@@ -87,6 +87,10 @@ abstract class AreaUserDao {
       'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
   Future<List<Area>> findAllAreaUsersByUser(int areaId);
 
+  @Query(
+      'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=:areaId)')
+  Future<List<User>> findAllAreaUsersByArea(int areaId);
+
   @insert
   Future<int> insertAreaUser(AreaCam area);
 

@@ -39,6 +39,10 @@ class UserModel {
     }
   }
 
+  Future<List<User>> getAllUsers() async {
+    return appDB.userDao.getUsers();
+  }
+
   // 注册
   Future<User?> register(String userName, String password) async {
     if (!isLogin) {

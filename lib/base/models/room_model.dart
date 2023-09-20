@@ -12,37 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
-import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 
-class AreaModel {
-  final RxList<Area> _list = RxList();
-  RxList<Area> get list => _list;
-
-  AreaModel();
-
-  Future<void> init() async {
-    await refresh();
+class RoomModel {
+  Future<List<Room>> getAllRooms() {
+    return appDB.roomDao.getRooms();
   }
 
-  Future<void> addArea(String areaName) async {
-    await appDB.areaDao.insertArea(Area(null, areaName));
-    await refresh();
+  Future<Room> addRoom(String roomName) async {
+    final room = Room(null, roomName);
+    int id = await appDB.roomDao.insertRoom(room);
+    return room..id = id;
   }
 
-  Future<void> refresh() async {
-    _list.value = await appDB.areaDao.findAllAreas();
+  Future<void> deleteRoom(Room room) async {
+    await appDB.roomDao.deleteRoom(room);
   }
 
-  Future<List<Cam>> getAllCameras(int id) async {
-    final iter = _list.where((p0) => p0.id == id);
-    if (iter.isNotEmpty) {
-      return const [];
-    } else {
-      Area a = iter.first;
-      return appDB.camDao.findCamsByAreaId(a.id!);
-    }
+  Future<List<Cam>> getAllCamsByRoom(Room room) async {
+    return await appDB.roomDao.getCamsByRoom(room.id!);
   }
 }

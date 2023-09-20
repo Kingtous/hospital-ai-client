@@ -67,6 +67,8 @@ class _$AppDB extends AppDB {
 
   UserDao? _userDaoInstance;
 
+  RoomDao? _roomDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -91,13 +93,17 @@ class _$AppDB extends AppDB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `area` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_name` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `area_id` INTEGER NOT NULL, `url` TEXT NOT NULL, `cam_type` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+            'CREATE TABLE IF NOT EXISTS `cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `url` TEXT NOT NULL, `enable_alert` INTEGER NOT NULL, `cam_type` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `user_name` TEXT NOT NULL, `pwd_md5` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_area_user` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_area_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `room` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_name` TEXT NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `rel_room_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -123,6 +129,11 @@ class _$AppDB extends AppDB {
   @override
   UserDao get userDao {
     return _userDaoInstance ??= _$UserDao(database, changeListener);
+  }
+
+  @override
+  RoomDao get roomDao {
+    return _roomDaoInstance ??= _$RoomDao(database, changeListener);
   }
 }
 
@@ -183,9 +194,18 @@ class _$CamDao extends CamDao {
             (Cam item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
-                  'area_id': item.areaId,
+                  'room_id': item.roomId,
                   'url': item.url,
+                  'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
+                }),
+        _roomCamInsertionAdapter = InsertionAdapter(
+            database,
+            'rel_room_cam',
+            (RoomCam item) => <String, Object?>{
+                  'id': item.id,
+                  'room_id': item.roomId,
+                  'cam_id': item.camId
                 }),
         _camUpdateAdapter = UpdateAdapter(
             database,
@@ -194,8 +214,9 @@ class _$CamDao extends CamDao {
             (Cam item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
-                  'area_id': item.areaId,
+                  'room_id': item.roomId,
                   'url': item.url,
+                  'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
                 }),
         _camDeletionAdapter = DeletionAdapter(
@@ -205,8 +226,9 @@ class _$CamDao extends CamDao {
             (Cam item) => <String, Object?>{
                   'id': item.id,
                   'name': item.name,
-                  'area_id': item.areaId,
+                  'room_id': item.roomId,
                   'url': item.url,
+                  'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
                 });
 
@@ -218,20 +240,23 @@ class _$CamDao extends CamDao {
 
   final InsertionAdapter<Cam> _camInsertionAdapter;
 
+  final InsertionAdapter<RoomCam> _roomCamInsertionAdapter;
+
   final UpdateAdapter<Cam> _camUpdateAdapter;
 
   final DeletionAdapter<Cam> _camDeletionAdapter;
 
   @override
-  Future<List<Cam>> findCamsByAreaId(int areaId) async {
-    return _queryAdapter.queryList('SELECT * FROM cam WHERE area_id = ?1',
+  Future<List<Cam>> findCamsByRoomId(int roomId) async {
+    return _queryAdapter.queryList('SELECT * FROM cam WHERE room_id = ?1',
         mapper: (Map<String, Object?> row) => Cam(
             row['id'] as int?,
             row['name'] as String,
-            row['area_id'] as int,
+            row['room_id'] as int,
             row['url'] as String,
-            row['cam_type'] as int),
-        arguments: [areaId]);
+            row['cam_type'] as int,
+            (row['enable_alert'] as int) != 0),
+        arguments: [roomId]);
   }
 
   @override
@@ -240,27 +265,53 @@ class _$CamDao extends CamDao {
         mapper: (Map<String, Object?> row) => Cam(
             row['id'] as int?,
             row['name'] as String,
-            row['area_id'] as int,
+            row['room_id'] as int,
             row['url'] as String,
-            row['cam_type'] as int));
+            row['cam_type'] as int,
+            (row['enable_alert'] as int) != 0));
   }
 
   @override
   Future<List<Cam>> getCamById(int id) async {
-    return _queryAdapter.queryList('SELECT * FROM cam where id = ?1',
+    return _queryAdapter.queryList('SELECT * FROM cam where id = ?1 LIMIT 1',
         mapper: (Map<String, Object?> row) => Cam(
             row['id'] as int?,
             row['name'] as String,
-            row['area_id'] as int,
+            row['room_id'] as int,
             row['url'] as String,
-            row['cam_type'] as int),
+            row['cam_type'] as int,
+            (row['enable_alert'] as int) != 0),
         arguments: [id]);
+  }
+
+  @override
+  Future<List<Cam>> getCamByIds(List<int> ids) async {
+    const offset = 1;
+    final _sqliteVariablesForIds =
+        Iterable<String>.generate(ids.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * FROM cam where id IN (' + _sqliteVariablesForIds + ')',
+        mapper: (Map<String, Object?> row) => Cam(
+            row['id'] as int?,
+            row['name'] as String,
+            row['room_id'] as int,
+            row['url'] as String,
+            row['cam_type'] as int,
+            (row['enable_alert'] as int) != 0),
+        arguments: [...ids]);
   }
 
   @override
   Future<int> insertCam(Cam cam) {
     return _camInsertionAdapter.insertAndReturnId(
         cam, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> insertRoomCam(RoomCam r) {
+    return _roomCamInsertionAdapter.insertAndReturnId(
+        r, OnConflictStrategy.abort);
   }
 
   @override
@@ -276,16 +327,16 @@ class _$CamDao extends CamDao {
   @override
   Future<int> addCam(
     Cam cam,
-    Area area,
+    Room room,
   ) async {
     if (database is sqflite.Transaction) {
-      return super.addCam(cam, area);
+      return super.addCam(cam, room);
     } else {
       return (database as sqflite.Database)
           .transaction<int>((transaction) async {
         final transactionDatabase = _$AppDB(changeListener)
           ..database = transaction;
-        return transactionDatabase.camDao.addCam(cam, area);
+        return transactionDatabase.camDao.addCam(cam, room);
       });
     }
   }
@@ -329,6 +380,14 @@ class _$AreaUserDao extends AreaUserDao {
     return _queryAdapter.queryList(
         'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
         mapper: (Map<String, Object?> row) => Area(row['id'] as int?, row['area_name'] as String),
+        arguments: [areaId]);
+  }
+
+  @override
+  Future<List<User>> findAllAreaUsersByArea(int areaId) async {
+    return _queryAdapter.queryList(
+        'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=?1)',
+        mapper: (Map<String, Object?> row) => User(row['id'] as int?, row['user_name'] as String, row['pwd_md5'] as String),
         arguments: [areaId]);
   }
 
@@ -407,5 +466,114 @@ class _$UserDao extends UserDao {
   @override
   Future<void> deleteUser(User user) async {
     await _userDeletionAdapter.delete(user);
+  }
+}
+
+class _$RoomDao extends RoomDao {
+  _$RoomDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _roomInsertionAdapter = InsertionAdapter(
+            database,
+            'room',
+            (Room item) =>
+                <String, Object?>{'id': item.id, 'room_name': item.roomName}),
+        _roomCamInsertionAdapter = InsertionAdapter(
+            database,
+            'rel_room_cam',
+            (RoomCam item) => <String, Object?>{
+                  'id': item.id,
+                  'room_id': item.roomId,
+                  'cam_id': item.camId
+                }),
+        _roomDeletionAdapter = DeletionAdapter(
+            database,
+            'room',
+            ['id'],
+            (Room item) =>
+                <String, Object?>{'id': item.id, 'room_name': item.roomName}),
+        _roomCamDeletionAdapter = DeletionAdapter(
+            database,
+            'rel_room_cam',
+            ['id'],
+            (RoomCam item) => <String, Object?>{
+                  'id': item.id,
+                  'room_id': item.roomId,
+                  'cam_id': item.camId
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Room> _roomInsertionAdapter;
+
+  final InsertionAdapter<RoomCam> _roomCamInsertionAdapter;
+
+  final DeletionAdapter<Room> _roomDeletionAdapter;
+
+  final DeletionAdapter<RoomCam> _roomCamDeletionAdapter;
+
+  @override
+  Future<List<Room>> getRooms() async {
+    return _queryAdapter.queryList('SELECT * FROM room',
+        mapper: (Map<String, Object?> row) =>
+            Room(row['id'] as int?, row['room_name'] as String));
+  }
+
+  @override
+  Future<List<Room>> getRoomById(int id) async {
+    return _queryAdapter.queryList('SELECT * FROM room WHERE id = ?1',
+        mapper: (Map<String, Object?> row) =>
+            Room(row['id'] as int?, row['room_name'] as String),
+        arguments: [id]);
+  }
+
+  @override
+  Future<List<RoomCam>> getCamIdsByRoom(int roomId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM rel_room_cam WHERE room_id = ?1',
+        mapper: (Map<String, Object?> row) => RoomCam(
+            row['id'] as int?, row['room_id'] as int, row['cam_id'] as int),
+        arguments: [roomId]);
+  }
+
+  @override
+  Future<List<Cam>> getCamsByRoom(int roomId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM cam WHERE id IN (SELECT cam_id FROM rel_room_cam WHERE room_id = ?1)',
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        arguments: [roomId]);
+  }
+
+  @override
+  Future<List<RoomCam>> getAll() async {
+    return _queryAdapter.queryList('SELECT * FROM rel_room_cam',
+        mapper: (Map<String, Object?> row) => RoomCam(
+            row['id'] as int?, row['room_id'] as int, row['cam_id'] as int));
+  }
+
+  @override
+  Future<int> insertRoom(Room r) {
+    return _roomInsertionAdapter.insertAndReturnId(r, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> insertRoomCam(RoomCam r) {
+    return _roomCamInsertionAdapter.insertAndReturnId(
+        r, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteRoom(Room r) async {
+    await _roomDeletionAdapter.delete(r);
+  }
+
+  @override
+  Future<void> deleteRoomCam(RoomCam r) async {
+    await _roomCamDeletionAdapter.delete(r);
   }
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -26,7 +27,7 @@ abstract interface class PlayableSource {
 }
 
 abstract class PlayableDevice extends PlayableSource {
-  static Future<void> addNewDevice(BuildContext context) async {}
+  static Future<void> addNewDevice(BuildContext context, Room room) async {}
 }
 
 mixin GUIConfigurable on PlayableDevice {
@@ -208,7 +209,7 @@ class RTSPCamera extends PlayableDevice
     );
   }
 
-  static Future<void> addNewDevice(BuildContext context) async {
+  static Future<void> addNewDevice(BuildContext context, Room room) async {
     var rtspUrl = "";
     var id = "";
     var msg = "";
@@ -265,19 +266,19 @@ class RTSPCamera extends PlayableDevice
                 FilledButton(
                     child: const Text('确定'),
                     onPressed: () async {
-                      // msg = videoModel.add(id);
-                      // if (msg.isNotEmpty) {
-                      //   setState(() {});
-                      //   return;
-                      // }
-                      // if (!rtspUrl.startsWith("rtsp://")) {
-                      //   setState(() {});
-                      //   msg = "设备地址格式有误，请与rtsp://开头";
-                      //   return;
-                      // }
-                      // final camera = RTSPCamera(id, rtspUrl: rtspUrl);
-                      // Navigator.of(context).pop();
-                      // await camera.init();
+                      if (!rtspUrl.startsWith("rtsp://")) {
+                        setState(() {});
+                        msg = "设备地址格式有误，请与rtsp://开头";
+                        return;
+                      }
+                      Navigator.of(context).pop();
+                      int camId = await videoModel.addCamToRoom(
+                          Cam(null, id, room.id!, rtspUrl, CamType.rtsp.index,
+                              false),
+                          room);
+                      print("create cam with $camId");
+                      final camera = RTSPCamera(id, rtspUrl: rtspUrl);
+                      await camera.init();
                     }),
                 FilledButton(
                     child: const Text('取消'),

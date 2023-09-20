@@ -24,7 +24,13 @@ class _UserLoginState extends State<UserLogin> {
         Expanded(
           child: Scaffold(
             body: Stack(
-              children: [bgImage, _buildLoginForm(context)],
+              children: [
+                Container(
+                  decoration: BoxDecoration(color: Colors.white),
+                ),
+                bgImage,
+                _buildLoginForm(context)
+              ],
             ),
           ),
         ),
@@ -35,64 +41,73 @@ class _UserLoginState extends State<UserLogin> {
   Widget _buildLoginForm(BuildContext context) {
     return Center(
       child: Container(
-        width: 600,
+        width: 800,
         height: 250,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20.0),
             color: Colors.white.withAlpha(170)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text(
-                '登录',
-                style: TextStyle(color: Colors.white, fontSize: 20.0),
-              ).paddingAll(16.0),
-              Row(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/login-mg.png',
+              width: 340,
+              fit: BoxFit.fitWidth,
+            ),
+            SizedBox(
+              width: 120,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Expanded(child: InfoBar(title: Text('请使用管理员提供的用户名密码登录本系统'))),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: InfoBar(title: Text('请使用管理员提供的用户名密码登录本系统'))),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: TextBox(
+                        onChanged: (v) {
+                          userName = v;
+                        },
+                        prefix: Text('用户名').paddingOnly(left: 16.0),
+                      )),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                          child: TextBox(
+                        obscureText: true,
+                        onChanged: (v) {
+                          password = v;
+                        },
+                        onSubmitted: (value) {
+                          password = value;
+                          _login(WeakReference(context));
+                        },
+                        prefix: Text('密码').paddingOnly(left: 16.0),
+                      )),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      FilledButton(
+                          child: Text('登录'),
+                          autofocus: true,
+                          onPressed: () => _login(WeakReference(context))),
+                    ],
+                  )
                 ],
               ),
-              Row(
-                children: [
-                  Expanded(
-                      child: TextBox(
-                    onChanged: (v) {
-                      userName = v;
-                    },
-                    prefix: Text('用户名').paddingOnly(left: 16.0),
-                  )),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                      child: TextBox(
-                    obscureText: true,
-                    onChanged: (v) {
-                      password = v;
-                    },
-                    onSubmitted: (value) {
-                      password = value;
-                      _login(WeakReference(context));
-                    },
-                    prefix: Text('密码').paddingOnly(left: 16.0),
-                  )),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  FilledButton(
-                      child: Text('登录'),
-                      autofocus: true,
-                      onPressed: () => _login(WeakReference(context))),
-                ],
-              )
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

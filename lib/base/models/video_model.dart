@@ -5,6 +5,7 @@ import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:media_kit/media_kit.dart';
 
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
@@ -37,22 +38,27 @@ class VideoModel {
     }
   }
 
-  Future<bool> addCamToArea(Cam cam, Area area) async {
+  Future<Room> addRoom(Room room) async {
+    final id = await appDB.roomDao.insertRoom(room);
+    return room..id = id;
+  }
+
+  Future<int> addCamToRoom(Cam cam, Room room) async {
     if (_playerMap[cam] != null) {
-      return false;
+      return -1;
     }
-    final id = await appDB.camDao.addCam(cam, area);
+    final id = await appDB.camDao.addCam(cam, room);
     final cams = await appDB.camDao.getCamById(id);
     if (cams.isEmpty) {
-      return false;
+      return -1;
     }
     if (cam.camType == CamType.rtsp.index) {
       final rtspCam = RTSPCamera.fromDB(cams.first);
       if (rtspCam != null) {
         _playerMap[cams.first] = rtspCam;
-        return true;
+        return id;
       } else {
-        return false;
+        return -1;
       }
     } else {
       throw UnimplementedError('Unimplemented');
@@ -90,5 +96,21 @@ class VideoModel {
       return "已有同名设备";
     }
     return "";
+  }
+
+  Future<List<Room>> getRooms() {
+    return appDB.roomDao.getRooms();
+  }
+
+  Future<void> deleteRoom(Room e) {
+    return appDB.roomDao.deleteRoom(e);
+  }
+
+  Future<void> updateCam(Cam cam) {
+    return appDB.camDao.updateCam(cam);
+  }
+
+  Future<void> deleteCam(Cam cam) {
+    return appDB.camDao.deleteCam(cam);
   }
 }

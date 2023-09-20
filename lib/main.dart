@@ -21,7 +21,19 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return FluentApp.router(
       title: '医院AI视频监控',
-      theme: FluentThemeData(shadowColor: Colors.white),
+      theme: FluentThemeData(
+          shadowColor: Colors.white,
+          // typography: Typography.raw(body: TextStyle(color: Color(0x333333E5))),
+          navigationPaneTheme: NavigationPaneThemeData(
+              animationCurve: Curves.ease,
+              backgroundColor: Color(0xFF0E1726),
+              highlightColor: Color(0x0DB6FF1A),
+              selectedTextStyle:
+                  ButtonState.all(TextStyle(color: Color(0xFF409EFF))),
+              unselectedTextStyle:
+                  ButtonState.all(TextStyle(color: Colors.white)),
+              unselectedIconColor: ButtonState.all(Colors.white),
+              selectedIconColor: ButtonState.all(Color(0xFF409EFF)))),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [
