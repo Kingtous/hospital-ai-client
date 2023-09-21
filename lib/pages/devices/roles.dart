@@ -17,6 +17,8 @@ import 'package:get/get.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/constants.dart';
 
 class DeviceRolePage extends StatefulWidget {
@@ -50,7 +52,7 @@ class _DeviceRolePageState extends State<DeviceRolePage> {
             ),
           ),
           Expanded(
-            child: RolesAreaPrivPage(),
+            child: RolesAreaPrivPage(role: idx),
           )
         ],
       ),
@@ -83,7 +85,7 @@ class RolesList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             '用户角色',
             style: TextStyle(
                 fontSize: 14.0,
@@ -195,7 +197,8 @@ class RolesList extends StatelessWidget {
 }
 
 class RolesAreaPrivPage extends StatefulWidget {
-  const RolesAreaPrivPage({super.key});
+  final Rx<Area?> role;
+  const RolesAreaPrivPage({super.key, required this.role});
 
   @override
   State<RolesAreaPrivPage> createState() => _RolesAreaPrivPageState();
@@ -204,10 +207,130 @@ class RolesAreaPrivPage extends StatefulWidget {
 class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
   @override
   Widget build(BuildContext context) {
+    return Obx(
+      () => Container(
+          margin: EdgeInsets.only(top: 16.0, bottom: 16.0, right: 16.0),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(kRadius),
+              color: Colors.white),
+          child: widget.role.value == null
+              ? Center(
+                  child: Text('点击左侧角色进行配置'),
+                )
+              : _buildTable()),
+    );
+  }
+
+  Widget _buildTable() {
     return Container(
-      margin: EdgeInsets.only(top: 16.0, bottom: 16.0, right: 16.0),
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(kRadius), color: Colors.white),
+      height: double.infinity,
+      padding: const EdgeInsets.all(40.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${widget.role.value!.areaName}',
+            style: TextStyle(fontSize: 20),
+          ),
+          SizedBox(
+            height: 4.0,
+          ),
+          Text(
+            '请勾选可见内容',
+            style: TextStyle(fontSize: 14),
+          ),
+          SizedBox(
+            height: 8.0,
+          ),
+          SingleChildScrollView(
+            child: FutureBuilder(
+                future: Future.wait([
+                  videoModel.getAllCams(),
+                  roleModel.getAllRels(),
+                  roomModel.getAllRooms()
+                ]),
+                builder: (context, data) {
+                  if (!data.hasData) {
+                    return ProgressRing();
+                  } else {
+                    final cams = data.data!;
+                    return _buildCheckBoxes(cams[0] as List<Cam>,
+                        cams[1] as List<RoomCam>, cams[2] as List<Room>);
+                  }
+                }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCheckBoxes(
+      List<Cam> cams, List<RoomCam> rels, List<Room> rooms) {
+    Map<Room, List<Cam>> m = Map();
+    print(rels);
+    print(rooms);
+    print(cams);
+    for (final rel in rels) {
+      final room =
+          rooms.where((element) => element.id == rel.roomId).firstOrNull;
+      if (room == null) {
+        continue;
+      }
+      final cam = cams.where((element) => element.id == rel.camId).firstOrNull;
+      if (cam == null) {
+        continue;
+      }
+      if (m.containsKey(room)) {
+        m[room]!.add(cam);
+      } else {
+        m[room] = [cam];
+      }
+    }
+    return Column(
+      children: [
+        ...m.entries.map((entry) => Column(
+              children: [
+                Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: kBgColor,
+                  ),
+                  child: Row(
+                    children: [
+                      Text('${entry.key.roomName}').paddingOnly(left: 4.0)
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 4.0,
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Wrap(
+                        alignment: WrapAlignment.start,
+                        children: [
+                          ...entry.value.map((e) => Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Checkbox(
+                                  checked: false,
+                                  onChanged: (s) {
+                                    // todo
+                                  },
+                                  content: Text("${e.name}"),
+                                ),
+                              ))
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 16.0,
+                )
+              ],
+            ))
+      ],
     );
   }
 }

@@ -31,6 +31,10 @@ class VideoModel {
     }
   }
 
+  Future<List<Cam>> getAllCams() async {
+    return appDB.camDao.getAll();
+  }
+
   Future<void> remove(Cam cam) async {
     final dev = _playerMap.remove(cam);
     if (dev != null) {

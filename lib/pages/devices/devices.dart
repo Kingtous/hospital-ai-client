@@ -261,9 +261,11 @@ class _CameraInRoomPageState extends State<CameraInRoomPage> {
                           ),
                           Expanded(
                               child: CameraTable(
-                            room: widget.room.value!,
-                            cams: cams,
-                          )),
+                                  room: widget.room.value!,
+                                  cams: cams,
+                                  onCamUpdate: () {
+                                    setState(() {});
+                                  })),
                         ],
                       ),
                     );
@@ -283,7 +285,12 @@ class _CameraInRoomPageState extends State<CameraInRoomPage> {
 class CameraTable extends StatefulWidget {
   final Room room;
   final List<Cam> cams;
-  const CameraTable({super.key, required this.room, required this.cams});
+  final VoidCallback onCamUpdate;
+  const CameraTable(
+      {super.key,
+      required this.room,
+      required this.cams,
+      required this.onCamUpdate});
 
   @override
   State<CameraTable> createState() => _CameraTableState();
@@ -310,7 +317,7 @@ class _CameraTableState extends State<CameraTable> {
 
   _toggleDelete(Cam cam) {
     videoModel.deleteCam(cam).then((value) {
-      setState(() {});
+      widget.onCamUpdate();
     });
   }
 

@@ -53,8 +53,16 @@ class AreaUser {
 }
 
 @Entity(tableName: 'rel_area_cam', foreignKeys: [
-  ForeignKey(childColumns: ['area_id'], parentColumns: ['id'], entity: Area),
-  ForeignKey(childColumns: ['cam_id'], parentColumns: ['id'], entity: Cam),
+  ForeignKey(
+      childColumns: ['area_id'],
+      parentColumns: ['id'],
+      entity: Area,
+      onDelete: ForeignKeyAction.cascade),
+  ForeignKey(
+      childColumns: ['cam_id'],
+      parentColumns: ['id'],
+      entity: Cam,
+      onDelete: ForeignKeyAction.cascade),
 ])
 class AreaCam {
   @PrimaryKey(autoGenerate: true)
@@ -85,17 +93,14 @@ abstract class AreaDao {
 abstract class AreaUserDao {
   @Query(
       'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
-  Future<List<Area>> findAllAreaUsersByUser(int areaId);
+  Future<List<Cam>> findAllCamUsersByRole(int areaId);
 
   @Query(
       'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=:areaId)')
   Future<List<User>> findAllAreaUsersByArea(int areaId);
 
-  @insert
-  Future<int> insertAreaUser(AreaCam area);
-
   @delete
-  Future<void> deleteAreaUser(AreaCam area);
+  Future<void> deleteAreaUser(AreaUser area);
 }
 
 @dao

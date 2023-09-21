@@ -95,11 +95,11 @@ class _$AppDB extends AppDB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `url` TEXT NOT NULL, `enable_alert` INTEGER NOT NULL, `cam_type` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `user_name` TEXT NOT NULL, `pwd_md5` TEXT NOT NULL)');
+            'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `user_name` TEXT NOT NULL, `phone` TEXT NOT NULL, `pwd_md5` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_area_user` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_id` INTEGER NOT NULL, `user_id` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `rel_area_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `rel_area_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`area_id`) REFERENCES `area` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `room` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_name` TEXT NOT NULL)');
         await database.execute(
@@ -347,22 +347,14 @@ class _$AreaUserDao extends AreaUserDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
-        _areaCamInsertionAdapter = InsertionAdapter(
+        _areaUserDeletionAdapter = DeletionAdapter(
             database,
-            'rel_area_cam',
-            (AreaCam item) => <String, Object?>{
-                  'id': item.id,
-                  'area_id': item.areaId,
-                  'cam_id': item.camId
-                }),
-        _areaCamDeletionAdapter = DeletionAdapter(
-            database,
-            'rel_area_cam',
+            'rel_area_user',
             ['id'],
-            (AreaCam item) => <String, Object?>{
+            (AreaUser item) => <String, Object?>{
                   'id': item.id,
                   'area_id': item.areaId,
-                  'cam_id': item.camId
+                  'user_id': item.userId
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -371,15 +363,13 @@ class _$AreaUserDao extends AreaUserDao {
 
   final QueryAdapter _queryAdapter;
 
-  final InsertionAdapter<AreaCam> _areaCamInsertionAdapter;
-
-  final DeletionAdapter<AreaCam> _areaCamDeletionAdapter;
+  final DeletionAdapter<AreaUser> _areaUserDeletionAdapter;
 
   @override
-  Future<List<Area>> findAllAreaUsersByUser(int areaId) async {
+  Future<List<Cam>> findAllCamUsersByRole(int areaId) async {
     return _queryAdapter.queryList(
         'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
-        mapper: (Map<String, Object?> row) => Area(row['id'] as int?, row['area_name'] as String),
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
         arguments: [areaId]);
   }
 
@@ -387,19 +377,13 @@ class _$AreaUserDao extends AreaUserDao {
   Future<List<User>> findAllAreaUsersByArea(int areaId) async {
     return _queryAdapter.queryList(
         'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=?1)',
-        mapper: (Map<String, Object?> row) => User(row['id'] as int?, row['user_name'] as String, row['pwd_md5'] as String),
+        mapper: (Map<String, Object?> row) => User(row['id'] as int?, row['user_name'] as String, row['phone'] as String, row['pwd_md5'] as String),
         arguments: [areaId]);
   }
 
   @override
-  Future<int> insertAreaUser(AreaCam area) {
-    return _areaCamInsertionAdapter.insertAndReturnId(
-        area, OnConflictStrategy.abort);
-  }
-
-  @override
-  Future<void> deleteAreaUser(AreaCam area) async {
-    await _areaCamDeletionAdapter.delete(area);
+  Future<void> deleteAreaUser(AreaUser area) async {
+    await _areaUserDeletionAdapter.delete(area);
   }
 }
 
@@ -414,6 +398,25 @@ class _$UserDao extends UserDao {
             (User item) => <String, Object?>{
                   'id': item.id,
                   'user_name': item.userName,
+                  'phone': item.phone,
+                  'pwd_md5': item.passwordMd5
+                }),
+        _areaUserInsertionAdapter = InsertionAdapter(
+            database,
+            'rel_area_user',
+            (AreaUser item) => <String, Object?>{
+                  'id': item.id,
+                  'area_id': item.areaId,
+                  'user_id': item.userId
+                }),
+        _userUpdateAdapter = UpdateAdapter(
+            database,
+            'users',
+            ['id'],
+            (User item) => <String, Object?>{
+                  'id': item.id,
+                  'user_name': item.userName,
+                  'phone': item.phone,
                   'pwd_md5': item.passwordMd5
                 }),
         _userDeletionAdapter = DeletionAdapter(
@@ -423,6 +426,7 @@ class _$UserDao extends UserDao {
             (User item) => <String, Object?>{
                   'id': item.id,
                   'user_name': item.userName,
+                  'phone': item.phone,
                   'pwd_md5': item.passwordMd5
                 });
 
@@ -434,13 +438,20 @@ class _$UserDao extends UserDao {
 
   final InsertionAdapter<User> _userInsertionAdapter;
 
+  final InsertionAdapter<AreaUser> _areaUserInsertionAdapter;
+
+  final UpdateAdapter<User> _userUpdateAdapter;
+
   final DeletionAdapter<User> _userDeletionAdapter;
 
   @override
   Future<List<User>> getUsers() async {
     return _queryAdapter.queryList('select * from users',
-        mapper: (Map<String, Object?> row) => User(row['id'] as int?,
-            row['user_name'] as String, row['pwd_md5'] as String));
+        mapper: (Map<String, Object?> row) => User(
+            row['id'] as int?,
+            row['user_name'] as String,
+            row['phone'] as String,
+            row['pwd_md5'] as String));
   }
 
   @override
@@ -452,9 +463,23 @@ class _$UserDao extends UserDao {
   @override
   Future<User?> getUserByUserName(String userName) async {
     return _queryAdapter.query('select * from users where user_name = ?1',
-        mapper: (Map<String, Object?> row) => User(row['id'] as int?,
-            row['user_name'] as String, row['pwd_md5'] as String),
+        mapper: (Map<String, Object?> row) => User(
+            row['id'] as int?,
+            row['user_name'] as String,
+            row['phone'] as String,
+            row['pwd_md5'] as String),
         arguments: [userName]);
+  }
+
+  @override
+  Future<User?> getUserByPhone(String phone) async {
+    return _queryAdapter.query('select * from users where phone = ?1',
+        mapper: (Map<String, Object?> row) => User(
+            row['id'] as int?,
+            row['user_name'] as String,
+            row['phone'] as String,
+            row['pwd_md5'] as String),
+        arguments: [phone]);
   }
 
   @override
@@ -464,8 +489,36 @@ class _$UserDao extends UserDao {
   }
 
   @override
-  Future<void> deleteUser(User user) async {
-    await _userDeletionAdapter.delete(user);
+  Future<int> insertAreaUser(AreaUser area) {
+    return _areaUserInsertionAdapter.insertAndReturnId(
+        area, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateUser(User user) async {
+    await _userUpdateAdapter.update(user, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> deleteUser(User user) {
+    return _userDeletionAdapter.deleteAndReturnChangedRows(user);
+  }
+
+  @override
+  Future<int> createUserWithRoles(
+    User user,
+    List<Area> areas,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.createUserWithRoles(user, areas);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDB(changeListener)
+          ..database = transaction;
+        return transactionDatabase.userDao.createUserWithRoles(user, areas);
+      });
+    }
   }
 }
 

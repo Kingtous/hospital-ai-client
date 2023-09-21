@@ -32,3 +32,21 @@ warning(BuildContext context, String warnText) {
             severity: InfoBarSeverity.error,
           ));
 }
+
+info(BuildContext context, String infoText) {
+  displayInfoBar(context,
+      alignment: Alignment.topCenter,
+      builder: (context, close) => InfoBar(
+            title: Text(infoText),
+            severity: InfoBarSeverity.info,
+          ));
+}
+
+success(BuildContext context, String infoText) {
+  displayInfoBar(context,
+      alignment: Alignment.topCenter,
+      builder: (context, close) => InfoBar(
+            title: Text(infoText),
+            severity: InfoBarSeverity.success,
+          ));
+}

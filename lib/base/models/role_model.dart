@@ -16,6 +16,7 @@ import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/base/models/dao/user.dart';
 
 /// 虽然叫Area，但是是角色权限
@@ -32,6 +33,10 @@ class RoleModel {
   Future<void> addRole(String roleName) async {
     await appDB.areaDao.insertArea(Area(null, roleName));
     await refresh();
+  }
+
+  Future<List<Area>> getAllRoles() async {
+    return await appDB.areaDao.findAllAreas();
   }
 
   Future<void> refresh() async {
@@ -55,5 +60,9 @@ class RoleModel {
     } else {
       return appDB.areaUserDao.findAllAreaUsersByArea(areaId);
     }
+  }
+
+  Future<List<RoomCam>> getAllRels() async {
+    return appDB.roomDao.getAll();
   }
 }

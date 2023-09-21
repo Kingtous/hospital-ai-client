@@ -14,7 +14,7 @@ class UserLogin extends StatefulWidget {
 }
 
 class _UserLoginState extends State<UserLogin> {
-  var userName = "";
+  var phone = "";
   var password = "";
   @override
   Widget build(BuildContext context) {
@@ -73,9 +73,9 @@ class _UserLoginState extends State<UserLogin> {
                       Expanded(
                           child: TextBox(
                         onChanged: (v) {
-                          userName = v;
+                          phone = v;
                         },
-                        prefix: Text('用户名').paddingOnly(left: 16.0),
+                        prefix: Text('手机号').paddingOnly(left: 16.0),
                       )),
                     ],
                   ),
@@ -114,7 +114,7 @@ class _UserLoginState extends State<UserLogin> {
   }
 
   _login(WeakReference<BuildContext> wc) async {
-    final isLogin = await userModel.login(userName, password);
+    final isLogin = await userModel.login(phone, password);
     final context = wc.target;
     if (context == null) {
       return;
@@ -126,7 +126,7 @@ class _UserLoginState extends State<UserLogin> {
       // ignore: use_build_context_synchronously
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
-            title: Text('登录账号或密码不正确'),
+            title: Text('登录手机号或密码不正确'),
             severity: InfoBarSeverity.warning,
             action: Button(
               child: Icon(FluentIcons.accept),
