@@ -65,4 +65,12 @@ class RoleModel {
   Future<List<RoomCam>> getAllRels() async {
     return appDB.roomDao.getAll();
   }
+
+  Future<List<Area>> getRolesByUser(User user) async {
+    return appDB.areaUserDao.findAllAreasByUser(user.id!);
+  }
+
+  Future<bool> setRoles(User user, Iterable<Area> roles) async {
+    return (await appDB.areaUserDao.setRoles(user, roles)) > 0;
+  }
 }

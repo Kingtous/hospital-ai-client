@@ -347,6 +347,14 @@ class _$AreaUserDao extends AreaUserDao {
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
+        _areaUserInsertionAdapter = InsertionAdapter(
+            database,
+            'rel_area_user',
+            (AreaUser item) => <String, Object?>{
+                  'id': item.id,
+                  'area_id': item.areaId,
+                  'user_id': item.userId
+                }),
         _areaUserDeletionAdapter = DeletionAdapter(
             database,
             'rel_area_user',
@@ -363,12 +371,14 @@ class _$AreaUserDao extends AreaUserDao {
 
   final QueryAdapter _queryAdapter;
 
+  final InsertionAdapter<AreaUser> _areaUserInsertionAdapter;
+
   final DeletionAdapter<AreaUser> _areaUserDeletionAdapter;
 
   @override
   Future<List<Cam>> findAllCamUsersByRole(int areaId) async {
     return _queryAdapter.queryList(
-        'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
+        'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
         mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
         arguments: [areaId]);
   }
@@ -376,14 +386,59 @@ class _$AreaUserDao extends AreaUserDao {
   @override
   Future<List<User>> findAllAreaUsersByArea(int areaId) async {
     return _queryAdapter.queryList(
-        'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=?1)',
+        'SELECT * from users where id IN (SELECT user_id FROM rel_area_user where area_id=?1)',
         mapper: (Map<String, Object?> row) => User(row['id'] as int?, row['user_name'] as String, row['phone'] as String, row['pwd_md5'] as String),
         arguments: [areaId]);
   }
 
   @override
+  Future<List<Area>> findAllAreasByUser(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * from area where id IN (SELECT area_id FROM rel_area_user where user_id=?1)',
+        mapper: (Map<String, Object?> row) => Area(row['id'] as int?, row['area_name'] as String),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<List<AreaUser>> findAllAreaUsersByUser(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM rel_area_user where user_id=?1',
+        mapper: (Map<String, Object?> row) => AreaUser(
+            row['id'] as int?, row['user_id'] as int, row['area_id'] as int),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<List<int>> insertAreaUser(List<AreaUser> rels) {
+    return _areaUserInsertionAdapter.insertListAndReturnIds(
+        rels, OnConflictStrategy.abort);
+  }
+
+  @override
   Future<void> deleteAreaUser(AreaUser area) async {
     await _areaUserDeletionAdapter.delete(area);
+  }
+
+  @override
+  Future<void> deleteAreaUsers(List<AreaUser> area) async {
+    await _areaUserDeletionAdapter.deleteList(area);
+  }
+
+  @override
+  Future<int> setRoles(
+    User user,
+    Iterable<Area> roles,
+  ) async {
+    if (database is sqflite.Transaction) {
+      return super.setRoles(user, roles);
+    } else {
+      return (database as sqflite.Database)
+          .transaction<int>((transaction) async {
+        final transactionDatabase = _$AppDB(changeListener)
+          ..database = transaction;
+        return transactionDatabase.areaUserDao.setRoles(user, roles);
+      });
+    }
   }
 }
 

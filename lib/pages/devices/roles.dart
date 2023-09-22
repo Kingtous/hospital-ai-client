@@ -233,7 +233,7 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
             style: TextStyle(fontSize: 20),
           ),
           SizedBox(
-            height: 4.0,
+            height: 8.0,
           ),
           Text(
             '请勾选可见内容',
@@ -242,23 +242,37 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
           SizedBox(
             height: 8.0,
           ),
-          SingleChildScrollView(
-            child: FutureBuilder(
-                future: Future.wait([
-                  videoModel.getAllCams(),
-                  roleModel.getAllRels(),
-                  roomModel.getAllRooms()
-                ]),
-                builder: (context, data) {
-                  if (!data.hasData) {
-                    return ProgressRing();
-                  } else {
-                    final cams = data.data!;
-                    return _buildCheckBoxes(cams[0] as List<Cam>,
-                        cams[1] as List<RoomCam>, cams[2] as List<Room>);
-                  }
-                }),
+          Expanded(
+            child: SingleChildScrollView(
+              child: FutureBuilder(
+                  future: Future.wait([
+                    videoModel.getAllCams(),
+                    roleModel.getAllRels(),
+                    roomModel.getAllRooms()
+                  ]),
+                  builder: (context, data) {
+                    if (!data.hasData) {
+                      return ProgressRing();
+                    } else {
+                      final cams = data.data!;
+                      return _buildCheckBoxes(cams[0] as List<Cam>,
+                          cams[1] as List<RoomCam>, cams[2] as List<Room>);
+                    }
+                  }),
+            ),
           ),
+          SizedBox(
+            height: 100,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                SizedBox(
+                    width: 100,
+                    child:
+                        FilledButton(child: Text('保存'), onPressed: _toggleSave))
+              ],
+            ),
+          )
         ],
       ),
     );
@@ -333,4 +347,6 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
       ],
     );
   }
+
+  void _toggleSave() {}
 }

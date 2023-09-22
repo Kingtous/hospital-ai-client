@@ -25,6 +25,20 @@ class Area {
   @ColumnInfo(name: 'area_name')
   final String areaName;
   Area(this.id, this.areaName);
+
+  @override
+  String toString() {
+    return "$id $areaName";
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (other is Area) {
+      return id == other.id && this.areaName == other.areaName;
+    } else {
+      return false;
+    }
+  }
 }
 
 @Entity(tableName: 'rel_area_user', foreignKeys: [
@@ -50,6 +64,11 @@ class AreaUser {
   final int userId;
 
   AreaUser(this.id, this.userId, this.areaId);
+
+  @override
+  String toString() {
+    return "$id $userId $areaId";
+  }
 }
 
 @Entity(tableName: 'rel_area_cam', foreignKeys: [
@@ -92,15 +111,37 @@ abstract class AreaDao {
 @dao
 abstract class AreaUserDao {
   @Query(
-      'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
+      'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
   Future<List<Cam>> findAllCamUsersByRole(int areaId);
 
   @Query(
-      'select * from users where id IN (SELECT user_id UNIQUE FROM rel_area_user where area_id=:areaId)')
+      'SELECT * from users where id IN (SELECT user_id FROM rel_area_user where area_id=:areaId)')
   Future<List<User>> findAllAreaUsersByArea(int areaId);
+
+  @Query(
+      'SELECT * from area where id IN (SELECT area_id FROM rel_area_user where user_id=:userId)')
+  Future<List<Area>> findAllAreasByUser(int userId);
+
+  @Query('SELECT * FROM rel_area_user where user_id=:userId')
+  Future<List<AreaUser>> findAllAreaUsersByUser(int userId);
 
   @delete
   Future<void> deleteAreaUser(AreaUser area);
+
+  @delete
+  Future<void> deleteAreaUsers(List<AreaUser> area);
+
+  @insert
+  Future<List<int>> insertAreaUser(List<AreaUser> rels);
+
+  @transaction
+  Future<int> setRoles(User user, Iterable<Area> roles) async {
+    final rels = await findAllAreaUsersByUser(user.id!);
+    await deleteAreaUsers(rels);
+    return (await insertAreaUser(
+            roles.map((e) => AreaUser(null, user.id!, e.id!)).toList()))
+        .length;
+  }
 }
 
 @dao

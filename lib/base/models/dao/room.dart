@@ -49,6 +49,15 @@ class RoomCam {
   final int camId;
 
   RoomCam(this.id, this.roomId, this.camId);
+
+  @override
+  bool operator ==(Object obj) {
+    if (obj is RoomCam) {
+      return obj.id == id && obj.roomId == roomId && obj.camId == camId;
+    } else {
+      return false;
+    }
+  }
 }
 
 @dao

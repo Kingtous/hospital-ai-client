@@ -16,6 +16,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:hospital_ai_client/pages/users/manage.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AppHeader extends StatefulWidget {
@@ -150,11 +151,20 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
     controller.showFlyout(
         dismissOnPointerMoveAway: true,
         builder: (context) => MenuFlyout(
-              items: [MenuFlyoutItem(text: Text('登出'), onPressed: _logout)],
+              items: [
+                MenuFlyoutItem(text: Text('登出'), onPressed: _logout),
+                MenuFlyoutItem(text: Text('修改密码'), onPressed: _changePassword)
+              ],
             ));
   }
 
   void _logout() {
     userModel.logout(context);
+  }
+
+  void _changePassword() {
+    showDialog(
+        context: context,
+        builder: (context) => UserChangePasswordDialog(user: userModel.user!));
   }
 }

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:async';
+
 import 'package:crypto/crypto.dart';
 import 'package:data_table_2/data_table_2.dart';
 import 'package:fluent_ui/fluent_ui.dart';
@@ -190,9 +192,21 @@ class _UserTableState extends State<UserTable> {
         },
         onUserEditPassword: () {
           // TODO: 用户修改密码
+          showDialog(
+              context: context,
+              builder: (context) => UserChangePasswordDialog(
+                    user: user,
+                  ));
         },
         onConfigureRoles: () {
           // TODO: 配置权限
+          showDialog(
+              context: context,
+              barrierDismissible: true,
+              dismissWithEsc: true,
+              builder: (context) => UserRoleDialog(
+                    user: user,
+                  ));
         },
       ));
     }
@@ -481,6 +495,183 @@ class AddUserDialog extends StatelessWidget {
                 );
               })
         ],
+      ),
+    );
+  }
+}
+
+class UserChangePasswordDialog extends StatelessWidget {
+  final User user;
+  final RxString originPassword = "".obs;
+  final RxString password = "".obs;
+  final RxString repeatPassword = "".obs;
+  UserChangePasswordDialog({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 500,
+      child: ContentDialog(
+        title: Text('修改密码'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 8.0,
+            ),
+            userModel.user?.userName == kDefaultAdminName
+                ? Offstage()
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('原密码'),
+                      SizedBox(
+                          width: 200,
+                          child: TextBox(
+                            onChanged: (v) {
+                              originPassword.value = v;
+                            },
+                          ))
+                    ],
+                  ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('新密码'),
+                SizedBox(
+                    width: 200,
+                    child: TextBox(
+                      onChanged: (s) {
+                        password.value = s;
+                      },
+                    ))
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('确认密码'),
+                SizedBox(
+                    width: 200,
+                    child: TextBox(
+                      onChanged: (s) {
+                        repeatPassword.value = s;
+                      },
+                    ))
+              ],
+            ),
+          ],
+        ),
+        actions: [
+          FilledButton(
+              child: Text('提交'),
+              onPressed: () async {
+                if (repeatPassword.value != password.value) {
+                  warning(context, '两次输入密码不一致');
+                  return;
+                }
+                if (password.value.isEmpty) {
+                  warning(context, '密码不能为空');
+                  return;
+                }
+                if (userModel.isAdmin) {
+                  unawaited(userModel.updatePassword(user, password.value));
+                } else {
+                  final res = await userModel.updatePasswordAsUser(
+                      originPassword.value, user, password.value);
+                  if (!res) {
+                    warning(context, '原密码验证失败');
+                    return;
+                  }
+                }
+
+                Navigator.pop(context);
+              }),
+          Button(
+              child: Text('取消'),
+              onPressed: () {
+                Navigator.pop(context);
+              })
+        ],
+      ),
+    );
+  }
+}
+
+class UserRoleDialog extends StatelessWidget {
+  final User user;
+  const UserRoleDialog({super.key, required this.user});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 500,
+      child: ContentDialog(
+        title: Text('权限编辑'),
+        content: FutureBuilder(
+            future: Future.wait(
+                [roleModel.getAllRoles(), roleModel.getRolesByUser(user)]),
+            builder: (context, data) {
+              if (!data.hasData) {
+                return ProgressBar();
+              } else {
+                var [allRoles, currentRoles] = data.data!;
+                final currentRolesObx = currentRoles.obs;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...allRoles
+                        .map((e) => Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: Row(
+                                children: [
+                                  Obx(
+                                    () => Checkbox(
+                                      checked: currentRolesObx.contains(e),
+                                      onChanged: (v) {
+                                        v = v ?? false;
+                                        if (v) {
+                                          currentRolesObx.add(e);
+                                        } else {
+                                          currentRolesObx.remove(e);
+                                        }
+                                      },
+                                      content: Text('${e.areaName}'),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ))
+                        .toList(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        FilledButton(
+                            child: Text('提交'),
+                            onPressed: () async {
+                              final res = await roleModel.setRoles(
+                                  user, currentRolesObx);
+                              if (res) {
+                                success(context, '修改角色成功');
+                                Navigator.pop(context);
+                              } else {
+                                warning(context, '失败');
+                              }
+                            }),
+                        SizedBox(
+                          width: 4.0,
+                        ),
+                        Button(
+                            child: Text('取消'),
+                            onPressed: () {
+                              Navigator.pop(context);
+                            })
+                      ],
+                    )
+                  ],
+                );
+              }
+            }),
       ),
     );
   }

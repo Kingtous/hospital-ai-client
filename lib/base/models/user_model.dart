@@ -16,6 +16,8 @@ class UserModel {
     _user = user;
   }
 
+  bool get isAdmin => isLogin ? _user?.phone == kDefaultAdminName : false;
+
   Future<void> init() async {
     // create super admin
     final admin = await appDB.userDao.getUserByUserName(kDefaultAdminName);
@@ -77,6 +79,21 @@ class UserModel {
 
   Future<void> updateUser(User user) async {
     await appDB.userDao.updateUser(user);
+  }
+
+  Future<void> updatePassword(User user, String password) async {
+    final md5Str = md5.convert(password.codeUnits).toString();
+    await appDB.userDao.updateUser(user..passwordMd5 = md5Str);
+  }
+
+  Future<bool> updatePasswordAsUser(
+      String originPassword, User user, String password) async {
+    if (user.passwordMd5 != md5.convert(originPassword.codeUnits).toString()) {
+      return false;
+    }
+    final md5Str = md5.convert(password.codeUnits).toString();
+    await appDB.userDao.updateUser(user..passwordMd5 = md5Str);
+    return true;
   }
 
   Future<void> logout(BuildContext context) async {
