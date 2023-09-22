@@ -27,7 +27,7 @@ class _HomePageState extends State<HomePage> {
           child: Obx(
             () => NavigationView(
               pane: NavigationPane(
-                  displayMode: PaneDisplayMode.auto,
+                  displayMode: PaneDisplayMode.compact,
                   size: NavigationPaneSize(openMaxWidth: 150.0),
                   onChanged: (idx) {
                     index.value = idx;

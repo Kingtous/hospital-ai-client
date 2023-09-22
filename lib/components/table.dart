@@ -14,16 +14,52 @@
 
 import 'package:flutter/material.dart';
 
-class MyDataTable extends StatefulWidget {
-  const MyDataTable({super.key});
+class Frame extends StatefulWidget {
+  final Widget title;
+  const Frame({super.key, required this.title});
 
   @override
-  State<MyDataTable> createState() => _MyDataTableState();
+  State<Frame> createState() => _FrameState();
 }
 
-class _MyDataTableState extends State<MyDataTable> {
+class _FrameState extends State<Frame> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Container(
+      padding: EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(9),
+          border: Border.all(width: 2.0, color: Colors.white),
+          gradient: LinearGradient(colors: [
+            Color(0xFFFFFFC2).withAlpha((255 * 0.76).toInt()),
+            Color(0xFFDEFFC2).withAlpha((255 * 0.76).toInt()),
+          ])),
+      child: Column(
+        children: [
+          Row(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.asset(
+                'asset/images/frame_tile_prefix_icon.png',
+                width: 20,
+                height: 20,
+              ),
+              SizedBox(
+                width: 8.0,
+              ),
+              widget.title,
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
   }
 }
