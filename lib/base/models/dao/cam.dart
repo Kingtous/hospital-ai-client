@@ -14,11 +14,20 @@
 
 import 'package:floor/floor.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
-import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 
 enum CamType { unknown, rtsp }
+
+extension ToString on CamType {
+  @override
+  String toHumanString() {
+    if (this == CamType.unknown) {
+      return '未知';
+    } else {
+      return 'RTSP';
+    }
+  }
+}
 
 @Entity(tableName: 'cam', foreignKeys: [
   ForeignKey(

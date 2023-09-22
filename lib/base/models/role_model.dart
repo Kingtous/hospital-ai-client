@@ -52,6 +52,10 @@ class RoleModel {
   //     return appDB.camDao.findCamsByAreaId(a.id!);
   //   }
   // }
+  // 获得对于role有权限的摄像头
+  Future<List<Cam>> getHasPrivForRole(int areaId) async {
+    return await appDB.areaCamDao.findAllCamsByArea(areaId);
+  }
 
   Future<List<User>> getAllUsers(int areaId) async {
     final iter = _list.where((p0) => p0.id == areaId);
@@ -72,5 +76,15 @@ class RoleModel {
 
   Future<bool> setRoles(User user, Iterable<Area> roles) async {
     return (await appDB.areaUserDao.setRoles(user, roles)) > 0;
+  }
+
+  Future<bool> setAreaCamForArea(Area area, List<Cam> cams) async {
+    return await appDB.areaCamDao.setAreaCamForArea(area, cams);
+  }
+
+  Future<bool> deleteRole(Area area) async {
+    final res = (await appDB.areaDao.deleteArea(area)) > 0;
+    await refresh();
+    return res;
   }
 }

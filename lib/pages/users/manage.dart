@@ -14,8 +14,6 @@
 
 import 'dart:async';
 
-import 'package:crypto/crypto.dart';
-import 'package:data_table_2/data_table_2.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
 // import 'package:flutter/material.dart' hide FilledButton, ButtonStyle;
@@ -35,9 +33,9 @@ class _UserManagePageState extends State<UserManagePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: kBgColor),
+      decoration: const BoxDecoration(color: kBgColor),
       padding: const EdgeInsets.all(16.0),
-      child: Row(
+      child: const Row(
         children: [
           Expanded(
             child: Column(
@@ -80,7 +78,7 @@ class _UserTableState extends State<UserTable> {
         future: userModel.getAllUsers(),
         builder: (context, data) {
           if (!data.hasData) {
-            return Center(
+            return const Center(
               child: ProgressRing(),
             );
           }
@@ -88,7 +86,7 @@ class _UserTableState extends State<UserTable> {
           return Column(
             children: [
               Container(
-                padding: EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16.0),
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(8)),
@@ -100,8 +98,8 @@ class _UserTableState extends State<UserTable> {
                         onPressed: _onAdd,
                         style: ButtonStyle(
                             backgroundColor: ButtonState.all(kBlueColor)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(4.0),
+                        child: const Padding(
+                          padding: EdgeInsets.all(4.0),
                           child: Row(
                             children: [
                               Icon(FluentIcons.add_bookmark),
@@ -112,14 +110,14 @@ class _UserTableState extends State<UserTable> {
                             ],
                           ),
                         )),
-                    SizedBox(
+                    const SizedBox(
                       width: 20.0,
                     ),
                     SizedBox(
                         width: 320,
                         child: TextBox(
                           prefix:
-                              Icon(FluentIcons.search).marginOnly(left: 8.0),
+                              const Icon(FluentIcons.search).marginOnly(left: 8.0),
                           placeholder: '请输入员工姓名、登录账号进行搜索',
                         ))
                   ],
@@ -131,7 +129,7 @@ class _UserTableState extends State<UserTable> {
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8.0),
                       color: Colors.white),
-                  margin: EdgeInsets.only(top: 16.0),
+                  margin: const EdgeInsets.only(top: 16.0),
                   child: buildUsers(users),
                 ),
               )
@@ -212,7 +210,7 @@ class _UserTableState extends State<UserTable> {
     }
 
     return rows.isEmpty
-        ? Center(
+        ? const Center(
             child: Text('无账号'),
           )
         : SingleChildScrollView(
@@ -222,13 +220,13 @@ class _UserTableState extends State<UserTable> {
                   child: Column(
                     children: [
                       Container(
-                        padding: EdgeInsets.symmetric(vertical: 8.0),
-                        decoration: BoxDecoration(color: kTableGreyColor),
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        decoration: const BoxDecoration(color: kTableGreyColor),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             ...kTableColumnNames.map((e) => Expanded(
-                                child: Text('$e').paddingOnly(left: 4.0)))
+                                child: Text(e).paddingOnly(left: 4.0)))
                           ],
                         ),
                       ),
@@ -259,33 +257,33 @@ class UserTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
       decoration: BoxDecoration(color: bgColor),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Expanded(
-            child: Text('${user.id}').paddingOnly(left: 4.0),
             flex: 1,
+            child: Text('${user.id}').paddingOnly(left: 4.0),
           ),
           Expanded(
+            flex: 1,
             child: Text(
-              '${user.userName}',
+              user.userName,
               textAlign: TextAlign.start,
             ).paddingOnly(left: 4.0),
-            flex: 1,
           ),
           Expanded(
-            child: Text('${user.phone}').paddingOnly(left: 4.0),
             flex: 1,
+            child: Text(user.phone).paddingOnly(left: 4.0),
           ),
           Expanded(
+            flex: 1,
             child: _buildOperRoleBtn(),
-            flex: 1,
           ),
           Expanded(
-            child: _buildOperBtns(),
             flex: 1,
+            child: _buildOperBtns(),
           )
         ],
       ),
@@ -297,9 +295,9 @@ class UserTile extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         FilledButton(
-            child: Text('配置角色'),
             onPressed:
-                user.phone == kDefaultAdminName ? null : _toggleEditAreas),
+                user.phone == kDefaultAdminName ? null : _toggleEditAreas,
+            child: const Text('配置角色')),
       ],
     );
   }
@@ -307,16 +305,16 @@ class UserTile extends StatelessWidget {
   Widget _buildOperBtns() {
     return Wrap(
       children: [
-        Button(child: Text('修改密码'), onPressed: _toggleChangePassword),
-        SizedBox(
+        Button(onPressed: _toggleChangePassword, child: const Text('修改密码')),
+        const SizedBox(
           width: 4.0,
         ),
         FilledButton(
-          child: Text('删除用户'),
           onPressed: user.phone == kDefaultAdminName ? null : _toggleDeleteUser,
           style: ButtonStyle(
               backgroundColor: ButtonState.all(
                   user.phone == kDefaultAdminName ? Colors.grey : Colors.red)),
+          child: const Text('删除用户'),
         ),
       ],
     );
@@ -344,18 +342,18 @@ class AddUserDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ContentDialog(
-      title: Row(
+      title: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('新增账号'),
         ],
       ),
-      constraints: BoxConstraints.tight(Size(540, 420)),
+      constraints: BoxConstraints.tight(const Size(540, 420)),
       content: _buildDialog(context),
       actions: [
-        FilledButton(child: Text('保存'), onPressed: () => _onStore(context)),
+        FilledButton(child: const Text('保存'), onPressed: () => _onStore(context)),
         Button(
-          child: Text('取消'),
+          child: const Text('取消'),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -391,13 +389,13 @@ class AddUserDialog extends StatelessWidget {
         children: [
           Row(
             children: [
-              SizedBox(
+              const SizedBox(
                   width: 100,
                   child: Text(
                     '姓名',
                     textAlign: TextAlign.end,
                   )),
-              SizedBox(
+              const SizedBox(
                 width: 16.0,
               ),
               Expanded(child: TextBox(
@@ -405,19 +403,19 @@ class AddUserDialog extends StatelessWidget {
                   user.value.userName = v;
                 },
               )),
-              SizedBox(
+              const SizedBox(
                 width: 69.0,
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 16.0,
           ),
           Row(
             children: [
-              SizedBox(
+              const SizedBox(
                   width: 100, child: Text('手机号', textAlign: TextAlign.end)),
-              SizedBox(
+              const SizedBox(
                 width: 16.0,
               ),
               Expanded(child: TextBox(
@@ -425,19 +423,19 @@ class AddUserDialog extends StatelessWidget {
                   user.value.phone = v;
                 },
               )),
-              SizedBox(
+              const SizedBox(
                 width: 69.0,
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 16.0,
           ),
           Row(
             children: [
-              SizedBox(
+              const SizedBox(
                   width: 100, child: Text('原始密码', textAlign: TextAlign.end)),
-              SizedBox(
+              const SizedBox(
                 width: 16.0,
               ),
               Expanded(child: TextBox(
@@ -446,30 +444,30 @@ class AddUserDialog extends StatelessWidget {
                   user.value.passwordMd5 = v;
                 },
               )),
-              SizedBox(
+              const SizedBox(
                 width: 69.0,
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 16.0,
           ),
           FutureBuilder(
               future: roleModel.getAllRoles(),
               builder: (context, data) {
                 if (!data.hasData) {
-                  return ProgressBar();
+                  return const ProgressBar();
                 }
                 final allRoles = data.data!;
                 return Row(
                   children: [
-                    SizedBox(
+                    const SizedBox(
                         width: 100,
                         child: Text(
                           '角色',
                           textAlign: TextAlign.end,
                         )),
-                    SizedBox(
+                    const SizedBox(
                       width: 16.0,
                     ),
                     Expanded(
@@ -479,7 +477,7 @@ class AddUserDialog extends StatelessWidget {
                         children: allRoles
                             .map((role) => Checkbox(
                                 checked: roles.contains(role),
-                                content: Text('${role.areaName}'),
+                                content: Text(role.areaName),
                                 onChanged: (r) {
                                   r = r ?? false;
                                   if (r) {
@@ -512,19 +510,19 @@ class UserChangePasswordDialog extends StatelessWidget {
     return SizedBox(
       width: 500,
       child: ContentDialog(
-        title: Text('修改密码'),
+        title: const Text('修改密码'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
+            const SizedBox(
               height: 8.0,
             ),
             userModel.user?.userName == kDefaultAdminName
-                ? Offstage()
+                ? const Offstage()
                 : Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('原密码'),
+                      const Text('原密码'),
                       SizedBox(
                           width: 200,
                           child: TextBox(
@@ -537,7 +535,7 @@ class UserChangePasswordDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('新密码'),
+                const Text('新密码'),
                 SizedBox(
                     width: 200,
                     child: TextBox(
@@ -550,7 +548,7 @@ class UserChangePasswordDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('确认密码'),
+                const Text('确认密码'),
                 SizedBox(
                     width: 200,
                     child: TextBox(
@@ -564,7 +562,7 @@ class UserChangePasswordDialog extends StatelessWidget {
         ),
         actions: [
           FilledButton(
-              child: Text('提交'),
+              child: const Text('提交'),
               onPressed: () async {
                 if (repeatPassword.value != password.value) {
                   warning(context, '两次输入密码不一致');
@@ -588,7 +586,7 @@ class UserChangePasswordDialog extends StatelessWidget {
                 Navigator.pop(context);
               }),
           Button(
-              child: Text('取消'),
+              child: const Text('取消'),
               onPressed: () {
                 Navigator.pop(context);
               })
@@ -607,13 +605,13 @@ class UserRoleDialog extends StatelessWidget {
     return SizedBox(
       width: 500,
       child: ContentDialog(
-        title: Text('权限编辑'),
+        title: const Text('权限编辑'),
         content: FutureBuilder(
             future: Future.wait(
                 [roleModel.getAllRoles(), roleModel.getRolesByUser(user)]),
             builder: (context, data) {
               if (!data.hasData) {
-                return ProgressBar();
+                return const ProgressBar();
               } else {
                 var [allRoles, currentRoles] = data.data!;
                 final currentRolesObx = currentRoles.obs;
@@ -636,7 +634,7 @@ class UserRoleDialog extends StatelessWidget {
                                           currentRolesObx.remove(e);
                                         }
                                       },
-                                      content: Text('${e.areaName}'),
+                                      content: Text(e.areaName),
                                     ),
                                   )
                                 ],
@@ -647,7 +645,7 @@ class UserRoleDialog extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         FilledButton(
-                            child: Text('提交'),
+                            child: const Text('提交'),
                             onPressed: () async {
                               final res = await roleModel.setRoles(
                                   user, currentRolesObx);
@@ -658,11 +656,11 @@ class UserRoleDialog extends StatelessWidget {
                                 warning(context, '失败');
                               }
                             }),
-                        SizedBox(
+                        const SizedBox(
                           width: 4.0,
                         ),
                         Button(
-                            child: Text('取消'),
+                            child: const Text('取消'),
                             onPressed: () {
                               Navigator.pop(context);
                             })

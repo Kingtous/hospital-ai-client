@@ -5,7 +5,6 @@ import 'package:flutter/material.dart' hide Colors;
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
-import 'package:hospital_ai_client/constants.dart';
 
 class VideoHomePage extends StatefulWidget {
   const VideoHomePage({super.key});
@@ -33,7 +32,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
     const height = kThumbNailLiveHeight * 3 + 50 + 8 + 40;
     return Stack(
       children: [
-        SizedBox(
+        const SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: ColoredBox(color: Color(0xFFE7F3FF))),
@@ -47,7 +46,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
           width: double.infinity,
           fit: BoxFit.fill,
         ),
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Column(
@@ -71,7 +70,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
           ],
         ),
         Container(
-          margin: EdgeInsets.only(top: 88),
+          margin: const EdgeInsets.only(top: 88),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -81,32 +80,12 @@ class _VideoHomePageState extends State<VideoHomePage> {
                   const SizedBox(
                     height: 8.0,
                   ),
-                  SizedBox(
-                    height: 8.0,
-                  ),
                   Container(
-                    decoration: BoxDecoration(
-                        color: Colors.grey.withAlpha(100),
-                        borderRadius: BorderRadius.circular(24.0)),
                     padding: const EdgeInsets.all(4.0),
                     width: kThumbNailLiveWidth * 3 + 8,
                     height: height.toDouble(),
                     child: Column(
                       children: [
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16.0, vertical: 8.0),
-                              child: Text(
-                                '总览',
-                                style: TextStyle(
-                                    fontSize: 20.0, color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
                         Expanded(
                           child: Obx(
                             () {
@@ -217,8 +196,8 @@ class _VideoHomePageState extends State<VideoHomePage> {
                       borderRadius: BorderRadius.circular(20)),
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
                         child: Row(
                           children: [
                             Text(
@@ -248,7 +227,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
                                                 children: [
                                                   const Text('白大褂报警'),
                                                   Button(
-                                                    child: Icon(
+                                                    child: const Icon(
                                                         FluentIcons.page_right),
                                                     onPressed: () {},
                                                   )

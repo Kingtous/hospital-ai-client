@@ -20,7 +20,7 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Row(
+        const Row(
           children: [Expanded(child: AppHeader())],
         ),
         Expanded(
@@ -28,7 +28,7 @@ class _HomePageState extends State<HomePage> {
             () => NavigationView(
               pane: NavigationPane(
                   displayMode: PaneDisplayMode.compact,
-                  size: NavigationPaneSize(openMaxWidth: 150.0),
+                  size: const NavigationPaneSize(openMaxWidth: 150.0),
                   onChanged: (idx) {
                     index.value = idx;
                   },

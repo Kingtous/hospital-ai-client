@@ -26,14 +26,14 @@ class _FrameState extends State<Frame> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(9),
           border: Border.all(width: 2.0, color: Colors.white),
           gradient: LinearGradient(colors: [
-            Color(0xFFFFFFC2).withAlpha((255 * 0.76).toInt()),
-            Color(0xFFDEFFC2).withAlpha((255 * 0.76).toInt()),
+            const Color(0xFFFFFFC2).withAlpha((255 * 0.76).toInt()),
+            const Color(0xFFDEFFC2).withAlpha((255 * 0.76).toInt()),
           ])),
       child: Column(
         children: [
@@ -46,11 +46,11 @@ class _FrameState extends State<Frame> {
                 width: 20,
                 height: 20,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 8.0,
               ),
               widget.title,
-              Expanded(
+              const Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [],

@@ -14,7 +14,6 @@
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
-import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
@@ -40,7 +39,7 @@ class _DeviceRolePageState extends State<DeviceRolePage> {
   Widget build(BuildContext context) {
     final roles = roleModel.list;
     return Container(
-      decoration: BoxDecoration(color: kBgColor),
+      decoration: const BoxDecoration(color: kBgColor),
       child: Row(
         children: [
           SizedBox(
@@ -49,6 +48,9 @@ class _DeviceRolePageState extends State<DeviceRolePage> {
               list: roles,
               onRoleToggled: _onRoleToggled,
               selected: idx,
+              onRolesUpdate: () {
+                setState(() {});
+              },
             ),
           ),
           Expanded(
@@ -68,12 +70,14 @@ class RolesList extends StatelessWidget {
   final RxList<Area> list;
   final Rx<Area?> selected;
   final Function(Area) onRoleToggled;
+  final VoidCallback onRolesUpdate;
   final FlyoutController controller = FlyoutController();
   RolesList(
       {super.key,
       required this.list,
       required this.onRoleToggled,
-      required this.selected});
+      required this.selected,
+      required this.onRolesUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +85,7 @@ class RolesList extends StatelessWidget {
       height: double.infinity,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(kRadius), color: Colors.white),
-      margin: EdgeInsets.all(16.0),
+      margin: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -98,7 +102,7 @@ class RolesList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     height: 10.0,
                   ),
                   ...list.map(
@@ -107,9 +111,9 @@ class RolesList extends StatelessWidget {
                       width: double.infinity,
                       child: Button(
                           style: ButtonStyle(
-                              shadowColor: ButtonState.all(Color(0xFFE0EDFF)),
+                              shadowColor: ButtonState.all(const Color(0xFFE0EDFF)),
                               padding:
-                                  ButtonState.all(EdgeInsets.only(left: 12.0)),
+                                  ButtonState.all(const EdgeInsets.only(left: 12.0)),
                               border: ButtonState.all(BorderSide.none),
                               backgroundColor: ButtonState.all(
                                   selected.value != element
@@ -119,7 +123,30 @@ class RolesList extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.center,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(element.areaName),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(element.areaName),
+                                  GestureDetector(
+                                    onTap: () async {
+                                      final res =
+                                          await roleModel.deleteRole(element);
+                                      if (res) {
+                                        success(context, '删除成功');
+                                      }
+                                      if (selected.value == element) {
+                                        selected.value = null;
+                                      }
+                                      onRolesUpdate.call();
+                                    },
+                                    child: Icon(
+                                      FluentIcons.delete,
+                                      color: Colors.red,
+                                    ).paddingOnly(right: 4.0),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                           onPressed: () => onRoleToggled(element)),
@@ -133,8 +160,9 @@ class RolesList extends StatelessWidget {
                           style: ButtonStyle(
                               border: ButtonState.all(BorderSide.none),
                               padding:
-                                  ButtonState.all(EdgeInsets.only(left: 12.0))),
-                          child: Row(
+                                  ButtonState.all(const EdgeInsets.only(left: 12.0))),
+                          onPressed: _toggleNewArea,
+                          child: const Row(
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               Text(
@@ -142,8 +170,7 @@ class RolesList extends StatelessWidget {
                                 style: TextStyle(color: kBlueColor),
                               )
                             ],
-                          ),
-                          onPressed: _toggleNewArea),
+                          )),
                     ),
                   )
                 ],
@@ -160,7 +187,7 @@ class RolesList extends StatelessWidget {
     controller.showFlyout(
         placementMode: FlyoutPlacementMode.bottomCenter,
         builder: (context) => Container(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(kRadius)),
@@ -171,13 +198,13 @@ class RolesList extends StatelessWidget {
                       child: TextBox(
                     onChanged: (value) => roleName.value = value,
                     onSubmitted: (value) => roleName.value = value,
-                    prefix: Text('名称').paddingOnly(left: 4.0),
+                    prefix: const Text('名称').paddingOnly(left: 4.0),
                   )),
-                  SizedBox(
+                  const SizedBox(
                     width: 8.0,
                   ),
                   Button(
-                      child: Text('添加角色'),
+                      child: const Text('添加角色'),
                       onPressed: () {
                         _addRole(context, roleName.value);
                       })
@@ -209,12 +236,12 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
   Widget build(BuildContext context) {
     return Obx(
       () => Container(
-          margin: EdgeInsets.only(top: 16.0, bottom: 16.0, right: 16.0),
+          margin: const EdgeInsets.only(top: 16.0, bottom: 16.0, right: 16.0),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(kRadius),
               color: Colors.white),
           child: widget.role.value == null
-              ? Center(
+              ? const Center(
                   child: Text('点击左侧角色进行配置'),
                 )
               : _buildTable()),
@@ -229,62 +256,71 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${widget.role.value!.areaName}',
-            style: TextStyle(fontSize: 20),
+            widget.role.value!.areaName,
+            style: const TextStyle(fontSize: 20),
           ),
-          SizedBox(
+          const SizedBox(
             height: 8.0,
           ),
-          Text(
+          const Text(
             '请勾选可见内容',
             style: TextStyle(fontSize: 14),
           ),
-          SizedBox(
+          const SizedBox(
             height: 8.0,
           ),
           Expanded(
-            child: SingleChildScrollView(
-              child: FutureBuilder(
-                  future: Future.wait([
-                    videoModel.getAllCams(),
-                    roleModel.getAllRels(),
-                    roomModel.getAllRooms(),
-                    
-                  ]),
-                  builder: (context, data) {
-                    if (!data.hasData) {
-                      return ProgressRing();
-                    } else {
-                      final cams = data.data!;
-                      return _buildCheckBoxes(cams[0] as List<Cam>,
-                          cams[1] as List<RoomCam>, cams[2] as List<Room>);
-                    }
-                  }),
-            ),
+            child: FutureBuilder(
+                future: Future.wait([
+                  videoModel.getAllCams(),
+                  roleModel.getAllRels(),
+                  roomModel.getAllRooms(),
+                  roleModel.getHasPrivForRole(widget.role.value!.id!)
+                ]),
+                builder: (context, data) {
+                  if (!data.hasData) {
+                    return const ProgressRing();
+                  } else {
+                    final cams = data.data!;
+                    final privsObx = (cams[3] as List<Cam>).obs;
+                    return Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: _buildCheckBoxes(
+                                cams[0] as List<Cam>,
+                                cams[1] as List<RoomCam>,
+                                cams[2] as List<Room>,
+                                privsObx),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 100,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              SizedBox(
+                                  width: 100,
+                                  child: FilledButton(
+                                      child: const Text('保存'),
+                                      onPressed: () =>
+                                          _toggleSave(privsObx.value)))
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  }
+                }),
           ),
-          SizedBox(
-            height: 100,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                SizedBox(
-                    width: 100,
-                    child:
-                        FilledButton(child: Text('保存'), onPressed: _toggleSave))
-              ],
-            ),
-          )
         ],
       ),
     );
   }
 
-  Widget _buildCheckBoxes(
-      List<Cam> cams, List<RoomCam> rels, List<Room> rooms) {
-    Map<Room, List<Cam>> m = Map();
-    print(rels);
-    print(rooms);
-    print(cams);
+  Widget _buildCheckBoxes(List<Cam> cams, List<RoomCam> rels, List<Room> rooms,
+      RxList<Cam> hasPrivs) {
+    Map<Room, List<Cam>> m = {};
     for (final rel in rels) {
       final room =
           rooms.where((element) => element.id == rel.roomId).firstOrNull;
@@ -307,16 +343,16 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
               children: [
                 Container(
                   height: 40,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: kBgColor,
                   ),
                   child: Row(
                     children: [
-                      Text('${entry.key.roomName}').paddingOnly(left: 4.0)
+                      Text(entry.key.roomName).paddingOnly(left: 4.0)
                     ],
                   ),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 4.0,
                 ),
                 Row(
@@ -327,12 +363,20 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
                         children: [
                           ...entry.value.map((e) => Padding(
                                 padding: const EdgeInsets.all(4.0),
-                                child: Checkbox(
-                                  checked: false,
-                                  onChanged: (s) {
-                                    // todo
-                                  },
-                                  content: Text("${e.name}"),
+                                child: Obx(
+                                  () => Checkbox(
+                                    checked: hasPrivs.contains(e),
+                                    onChanged: (s) {
+                                      // todo
+                                      s = s ?? false;
+                                      if (s) {
+                                        hasPrivs.add(e);
+                                      } else {
+                                        hasPrivs.remove(e);
+                                      }
+                                    },
+                                    content: Text(e.name),
+                                  ),
                                 ),
                               ))
                         ],
@@ -340,7 +384,7 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
                     ),
                   ],
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 16.0,
                 )
               ],
@@ -349,5 +393,12 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
     );
   }
 
-  void _toggleSave() {}
+  void _toggleSave(List<Cam> cams) async {
+    final res = await roleModel.setAreaCamForArea(widget.role.value!, cams);
+    if (res) {
+      success(context, '保存成功');
+    } else {
+      warning(context, '保存失败，请重试');
+    }
+  }
 }

@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -26,14 +25,14 @@ class MyApp extends StatelessWidget {
           // typography: Typography.raw(body: TextStyle(color: Color(0x333333E5))),
           navigationPaneTheme: NavigationPaneThemeData(
               animationCurve: Curves.ease,
-              backgroundColor: Color(0xFF0E1726),
-              highlightColor: Color(0x0DB6FF1A),
+              backgroundColor: const Color(0xFF0E1726),
+              highlightColor: const Color(0x0DB6FF1A),
               selectedTextStyle:
-                  ButtonState.all(TextStyle(color: Color(0xFF409EFF))),
+                  ButtonState.all(const TextStyle(color: Color(0xFF409EFF))),
               unselectedTextStyle:
-                  ButtonState.all(TextStyle(color: Colors.white)),
+                  ButtonState.all(const TextStyle(color: Colors.white)),
               unselectedIconColor: ButtonState.all(Colors.white),
-              selectedIconColor: ButtonState.all(Color(0xFF409EFF)))),
+              selectedIconColor: ButtonState.all(const Color(0xFF409EFF)))),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: const [

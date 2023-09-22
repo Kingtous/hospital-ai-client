@@ -34,7 +34,7 @@ class Area {
   @override
   bool operator ==(Object other) {
     if (other is Area) {
-      return id == other.id && this.areaName == other.areaName;
+      return id == other.id && areaName == other.areaName;
     } else {
       return false;
     }
@@ -105,7 +105,7 @@ abstract class AreaDao {
   Future<int> insertArea(Area area);
 
   @delete
-  Future<void> deleteArea(Area area);
+  Future<int> deleteArea(Area area);
 }
 
 @dao
@@ -147,20 +147,34 @@ abstract class AreaUserDao {
 @dao
 abstract class AreaCamDao {
   @Query('SELECT * FROM rel_area_cam')
-  Future<List<AreaUser>> findAllAreaCams();
+  Future<List<AreaCam>> findAllAreaCams();
+
+  @Query('SELECT * FROM rel_area_cam WHERE area_id = :areaId')
+  Future<List<AreaCam>> findAreaCamsByArea(int areaId);
 
   @Query(
-      'select * from cam where id IN (SELECT cam_id FROM rel_area_user where area_id=:areaId)')
+      'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=:areaId)')
   Future<List<Cam>> findAllCamsByArea(int areaId);
 
   @insert
   Future<int> insertAreaCam(AreaCam rel);
 
+  @insert
+  Future<List<int>> insertAreaCams(List<AreaCam> rel);
+
   @delete
   Future<void> deleteAreaCam(AreaCam rel);
 
+  @delete
+  Future<void> deleteAreaCams(List<AreaCam> rel);
+
   @transaction
-  Future<void> setAreaCamForArea(Area area, List<Cam> cams) async {
+  Future<bool> setAreaCamForArea(Area area, List<Cam> cams) async {
     // final await findAllCamsByArea(area.id!);
+    final dels = await findAreaCamsByArea(area.id!);
+    await deleteAreaCams(dels);
+    await insertAreaCams(
+        cams.map((e) => AreaCam(null, area.id!, e.id!)).toList());
+    return true;
   }
 }

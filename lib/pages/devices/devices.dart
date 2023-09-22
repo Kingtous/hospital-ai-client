@@ -25,7 +25,7 @@ class _DevicesPageState extends State<DevicesPage> {
         future: videoModel.getRooms(),
         builder: (context, data) {
           if (!data.hasData) {
-            return Loading();
+            return const Loading();
           }
           final rooms = data.data!;
           return Stack(
@@ -33,7 +33,7 @@ class _DevicesPageState extends State<DevicesPage> {
               Container(
                 width: double.infinity,
                 height: double.infinity,
-                decoration: BoxDecoration(color: kBgColor),
+                decoration: const BoxDecoration(color: kBgColor),
               ),
               Row(
                 children: [
@@ -41,7 +41,7 @@ class _DevicesPageState extends State<DevicesPage> {
                     children: [
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.all(16.0),
+                          margin: const EdgeInsets.all(16.0),
                           width: 200,
                           decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(kRadius),
@@ -82,11 +82,11 @@ class RoomList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '组别',
           style: TextStyle(fontSize: 16),
         ),
-        SizedBox(
+        const SizedBox(
           height: 10.0,
         ),
         ...rooms.map((e) => SizedBox(
@@ -98,9 +98,9 @@ class RoomList extends StatelessWidget {
                     child: Obx(
                       () => Button(
                           style: ButtonStyle(
-                              shadowColor: ButtonState.all(Color(0xFFE0EDFF)),
+                              shadowColor: ButtonState.all(const Color(0xFFE0EDFF)),
                               padding:
-                                  ButtonState.all(EdgeInsets.only(left: 12.0)),
+                                  ButtonState.all(const EdgeInsets.only(left: 12.0)),
                               border: ButtonState.all(BorderSide.none),
                               backgroundColor: ButtonState.all(
                                   selected.value != e
@@ -115,9 +115,9 @@ class RoomList extends StatelessWidget {
                                     MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text('${e.roomName}'),
+                                  Text(e.roomName),
                                   GestureDetector(
-                                    child: Icon(FluentIcons.delete),
+                                    child: const Icon(FluentIcons.delete),
                                     onTap: () async {
                                       await videoModel.deleteRoom(e);
                                       if (selected.value == e) {
@@ -141,12 +141,12 @@ class RoomList extends StatelessWidget {
         FlyoutTarget(
           controller: controller,
           child: Button(
-              child: Text(
+              style: ButtonStyle(border: ButtonState.all(BorderSide.none)),
+              onPressed: _toggleAdd,
+              child: const Text(
                 '+新增组别',
                 style: TextStyle(color: kBlueColor),
-              ),
-              style: ButtonStyle(border: ButtonState.all(BorderSide.none)),
-              onPressed: _toggleAdd),
+              )),
         )
       ],
     ).paddingAll(16.0);
@@ -157,7 +157,7 @@ class RoomList extends StatelessWidget {
     controller.showFlyout(
         placementMode: FlyoutPlacementMode.bottomCenter,
         builder: (context) => Container(
-              padding: EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8.0),
               decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(kRadius)),
@@ -168,13 +168,13 @@ class RoomList extends StatelessWidget {
                       child: TextBox(
                     onChanged: (value) => roomName.value = value,
                     onSubmitted: (value) => roomName.value = value,
-                    prefix: Text('组名').paddingOnly(left: 4.0),
+                    prefix: const Text('组名').paddingOnly(left: 4.0),
                   )),
-                  SizedBox(
+                  const SizedBox(
                     width: 8.0,
                   ),
                   Button(
-                      child: Text('添加组'),
+                      child: const Text('添加组'),
                       onPressed: () {
                         _addRoom(context, roomName.value);
                       })
@@ -220,7 +220,7 @@ class _CameraInRoomPageState extends State<CameraInRoomPage> {
                   builder: (context, data) {
                     print(data);
                     if (!data.hasData) {
-                      return Loading();
+                      return const Loading();
                     }
                     final cams = data.data!;
                     return Padding(
@@ -233,7 +233,7 @@ class _CameraInRoomPageState extends State<CameraInRoomPage> {
                             children: [
                               Text(
                                 '设备列表 ${widget.room.value?.roomName}',
-                                style: TextStyle(fontSize: 20),
+                                style: const TextStyle(fontSize: 20),
                               ),
                             ],
                           ),
@@ -256,7 +256,7 @@ class _CameraInRoomPageState extends State<CameraInRoomPage> {
                                   )),
                             ],
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10.0,
                           ),
                           Expanded(
@@ -333,9 +333,24 @@ class _CameraTableState extends State<CameraTable> {
                   0),
               ...list.map((e) => genRow([
                     SelectableText('${e.id}'),
-                    SelectableText('${e.name}'),
-                    SelectableText('${CamType.values[e.camType]}'),
-                    SelectableText('${e.url}'),
+                    SelectableText(e.name),
+                    SelectableText(
+                        CamType.values[e.camType].toHumanString()),
+                    Row(
+                      children: [
+                        Expanded(child: SelectableText(e.url)),
+                        // FlyoutTarget(
+                        //   controller: FlyoutController(),
+                        //   child: Button(
+                        //     child: Icon(FluentIcons.edit),
+                        //     onPressed: () {},
+                        //   ),
+                        // ),
+                        // SizedBox(
+                        //   width: 16.0,
+                        // )
+                      ],
+                    ),
                     Row(
                       children: [
                         ToggleSwitch(
@@ -352,10 +367,10 @@ class _CameraTableState extends State<CameraTable> {
                     Row(
                       children: [
                         FilledButton(
-                          child: Text('删除'),
                           onPressed: () => _toggleDelete(e),
                           style: ButtonStyle(
                               backgroundColor: ButtonState.all(Colors.red)),
+                          child: const Text('删除'),
                         )
                       ],
                     ),
@@ -375,40 +390,40 @@ class _CameraTableState extends State<CameraTable> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[0])],
             ),
-            flex: 1,
           ),
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[1])],
             ),
-            flex: 1,
           ),
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[2])],
             ),
-            flex: 1,
           ),
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[3])],
             ),
-            flex: 1,
           ),
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[4])],
             ),
-            flex: 1,
           ),
           Flexible(
+            flex: 1,
             child: Row(
               children: [Expanded(child: cells[5])],
             ),
-            flex: 1,
           ),
         ],
       ).paddingSymmetric(horizontal: 12.0, vertical: 9.0),
@@ -433,7 +448,7 @@ class CamRecordDeviceItem extends StatelessWidget {
         const SizedBox(
           width: 16.0,
         ),
-        Text("${device.id}"),
+        Text(device.id),
         Expanded(
             child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
@@ -445,7 +460,7 @@ class CamRecordDeviceItem extends StatelessWidget {
                 ),
                 onPressed: () {
                   context.pushNamed('player',
-                      pathParameters: {'id': "${device.id}"});
+                      pathParameters: {'id': device.id});
                 })
           ],
         ))

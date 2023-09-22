@@ -20,13 +20,13 @@ class _UserLoginState extends State<UserLogin> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        AppHeader(),
+        const AppHeader(),
         Expanded(
           child: Scaffold(
             body: Stack(
               children: [
                 Container(
-                  decoration: BoxDecoration(color: Colors.white),
+                  decoration: const BoxDecoration(color: Colors.white),
                 ),
                 bgImage,
                 _buildLoginForm(context)
@@ -54,7 +54,7 @@ class _UserLoginState extends State<UserLogin> {
               width: 340,
               fit: BoxFit.fitWidth,
             ),
-            SizedBox(
+            const SizedBox(
               width: 120,
             ),
             Expanded(
@@ -62,7 +62,7 @@ class _UserLoginState extends State<UserLogin> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Row(
+                  const Row(
                     children: [
                       Expanded(
                           child: InfoBar(title: Text('请使用管理员提供的用户名密码登录本系统'))),
@@ -75,7 +75,7 @@ class _UserLoginState extends State<UserLogin> {
                         onChanged: (v) {
                           phone = v;
                         },
-                        prefix: Text('手机号').paddingOnly(left: 16.0),
+                        prefix: const Text('手机号').paddingOnly(left: 16.0),
                       )),
                     ],
                   ),
@@ -91,7 +91,7 @@ class _UserLoginState extends State<UserLogin> {
                           password = value;
                           _login(WeakReference(context));
                         },
-                        prefix: Text('密码').paddingOnly(left: 16.0),
+                        prefix: const Text('密码').paddingOnly(left: 16.0),
                       )),
                     ],
                   ),
@@ -99,9 +99,9 @@ class _UserLoginState extends State<UserLogin> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       FilledButton(
-                          child: Text('登录'),
                           autofocus: true,
-                          onPressed: () => _login(WeakReference(context))),
+                          onPressed: () => _login(WeakReference(context)),
+                          child: const Text('登录')),
                     ],
                   )
                 ],
@@ -126,11 +126,11 @@ class _UserLoginState extends State<UserLogin> {
       // ignore: use_build_context_synchronously
       displayInfoBar(context, builder: (context, close) {
         return InfoBar(
-            title: Text('登录手机号或密码不正确'),
+            title: const Text('登录手机号或密码不正确'),
             severity: InfoBarSeverity.warning,
             action: Button(
-              child: Icon(FluentIcons.accept),
               onPressed: close,
+              child: const Icon(FluentIcons.accept),
             ));
       }, alignment: Alignment.topCenter);
     }

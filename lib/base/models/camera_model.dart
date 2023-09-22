@@ -79,7 +79,7 @@ class RTSPCamera extends PlayableDevice
 
   @override
   Future<void> init() async {
-    print('初始化縮略圖 for ${rtspUrl}');
+    print('初始化縮略圖 for $rtspUrl');
     thumbNailController = VideoController(player,
         configuration: const VideoControllerConfiguration(
           width: kThumbNailLiveWidth,

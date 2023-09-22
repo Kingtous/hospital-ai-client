@@ -12,7 +12,45 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:typed_data';
 import 'package:floor/floor.dart';
 
-@entity
-class Alerts {}
+@Entity(
+  tableName: 'alerts',
+)
+class Alerts {
+  @PrimaryKey(autoGenerate: true)
+  int? id;
+
+  @ColumnInfo(name: 'create_at')
+  final int createAt;
+
+  @ColumnInfo(name: 'img')
+  final Uint8List img;
+
+  @ColumnInfo(name: 'alert_type')
+  final int alertType;
+
+  @ColumnInfo(name: 'cam_id')
+  final int camId;
+
+  Alerts(this.id, this.createAt, this.img, this.camId, this.alertType);
+}
+
+@dao
+abstract class AlertDao {
+  @insert
+  Future<int> insertAlert(Alerts a);
+
+  @delete
+  Future<int> deleteAlert(Alerts a);
+
+  @Query('SELECT * FROM alerts WHERE create_at BETWEEN :st AND :ed')
+  Future<List<Alerts>> getAlertsFromTo(int st, int ed);
+
+  @Query('SELECT * FROM alerts WHERE create_at >= :st')
+  Future<List<Alerts>> getAlertsFrom(int st);
+
+  @Query('DELETE FROM alerts WHERE create_at <= :st')
+  Future<void> deleteAlertsBefore(int st);
+}

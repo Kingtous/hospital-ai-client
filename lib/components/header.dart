@@ -37,14 +37,14 @@ class _AppHeaderState extends State<AppHeader> {
           padding: const EdgeInsets.only(left: 16.0),
           child: Row(
             children: [
-              Icon(
+              const Icon(
                 FluentIcons.security_camera,
                 color: Colors.white,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 16.0,
               ),
-              Text(
+              const Text(
                 '慧眼AI管理平台',
                 style: TextStyle(color: Colors.white),
               ),
@@ -52,7 +52,7 @@ class _AppHeaderState extends State<AppHeader> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    AppHeaderAvatar(),
+                    const AppHeaderAvatar(),
                     WindowCaptionButton.minimize(
                       brightness: Brightness.dark,
                       onPressed: () {
@@ -99,7 +99,7 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
     final user = userModel.user;
     final isHovered = false.obs;
     return user == null
-        ? Offstage()
+        ? const Offstage()
         : Obx(
             () => MouseRegion(
               onEnter: (_) => isHovered.value = true,
@@ -113,7 +113,7 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
                 child: GestureDetector(
                   onTap: _onAvatarClicked,
                   child: Container(
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8.0),
                         color: isHovered.value
@@ -121,16 +121,16 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
                             : Colors.grey.withAlpha(50)),
                     child: Row(
                       children: [
-                        Icon(
+                        const Icon(
                           FluentIcons.user_event,
                           color: Colors.white,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8.0,
                         ),
                         Text(
                           '${user.userName} 您好',
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         )
                       ],
                     ),
@@ -152,8 +152,8 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
         dismissOnPointerMoveAway: true,
         builder: (context) => MenuFlyout(
               items: [
-                MenuFlyoutItem(text: Text('登出'), onPressed: _logout),
-                MenuFlyoutItem(text: Text('修改密码'), onPressed: _changePassword)
+                MenuFlyoutItem(text: const Text('登出'), onPressed: _logout),
+                MenuFlyoutItem(text: const Text('修改密码'), onPressed: _changePassword)
               ],
             ));
   }

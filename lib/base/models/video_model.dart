@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
-import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:media_kit/media_kit.dart';

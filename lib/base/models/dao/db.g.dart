@@ -71,6 +71,8 @@ class _$AppDB extends AppDB {
 
   RoomDao? _roomDaoInstance;
 
+  AlertDao? _alertDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -106,6 +108,8 @@ class _$AppDB extends AppDB {
             'CREATE TABLE IF NOT EXISTS `room` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_name` TEXT NOT NULL)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_room_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB NOT NULL, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -141,6 +145,11 @@ class _$AppDB extends AppDB {
   @override
   RoomDao get roomDao {
     return _roomDaoInstance ??= _$RoomDao(database, changeListener);
+  }
+
+  @override
+  AlertDao get alertDao {
+    return _alertDaoInstance ??= _$AlertDao(database, changeListener);
   }
 }
 
@@ -185,8 +194,8 @@ class _$AreaDao extends AreaDao {
   }
 
   @override
-  Future<void> deleteArea(Area area) async {
-    await _areaDeletionAdapter.delete(area);
+  Future<int> deleteArea(Area area) {
+    return _areaDeletionAdapter.deleteAndReturnChangedRows(area);
   }
 }
 
@@ -483,16 +492,25 @@ class _$AreaCamDao extends AreaCamDao {
   final DeletionAdapter<AreaCam> _areaCamDeletionAdapter;
 
   @override
-  Future<List<AreaUser>> findAllAreaCams() async {
+  Future<List<AreaCam>> findAllAreaCams() async {
     return _queryAdapter.queryList('SELECT * FROM rel_area_cam',
-        mapper: (Map<String, Object?> row) => AreaUser(
-            row['id'] as int?, row['user_id'] as int, row['area_id'] as int));
+        mapper: (Map<String, Object?> row) => AreaCam(
+            row['id'] as int?, row['area_id'] as int, row['cam_id'] as int));
+  }
+
+  @override
+  Future<List<AreaCam>> findAreaCamsByArea(int areaId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM rel_area_cam WHERE area_id = ?1',
+        mapper: (Map<String, Object?> row) => AreaCam(
+            row['id'] as int?, row['area_id'] as int, row['cam_id'] as int),
+        arguments: [areaId]);
   }
 
   @override
   Future<List<Cam>> findAllCamsByArea(int areaId) async {
     return _queryAdapter.queryList(
-        'select * from cam where id IN (SELECT cam_id FROM rel_area_user where area_id=?1)',
+        'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
         mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
         arguments: [areaId]);
   }
@@ -504,23 +522,34 @@ class _$AreaCamDao extends AreaCamDao {
   }
 
   @override
+  Future<List<int>> insertAreaCams(List<AreaCam> rel) {
+    return _areaCamInsertionAdapter.insertListAndReturnIds(
+        rel, OnConflictStrategy.abort);
+  }
+
+  @override
   Future<void> deleteAreaCam(AreaCam rel) async {
     await _areaCamDeletionAdapter.delete(rel);
   }
 
   @override
-  Future<void> setAreaCamForArea(
+  Future<void> deleteAreaCams(List<AreaCam> rel) async {
+    await _areaCamDeletionAdapter.deleteList(rel);
+  }
+
+  @override
+  Future<bool> setAreaCamForArea(
     Area area,
     List<Cam> cams,
   ) async {
     if (database is sqflite.Transaction) {
-      await super.setAreaCamForArea(area, cams);
+      return super.setAreaCamForArea(area, cams);
     } else {
-      await (database as sqflite.Database)
-          .transaction<void>((transaction) async {
+      return (database as sqflite.Database)
+          .transaction<bool>((transaction) async {
         final transactionDatabase = _$AppDB(changeListener)
           ..database = transaction;
-        await transactionDatabase.areaCamDao.setAreaCamForArea(area, cams);
+        return transactionDatabase.areaCamDao.setAreaCamForArea(area, cams);
       });
     }
   }
@@ -767,5 +796,89 @@ class _$RoomDao extends RoomDao {
   @override
   Future<void> deleteRoomCam(RoomCam r) async {
     await _roomCamDeletionAdapter.delete(r);
+  }
+}
+
+class _$AlertDao extends AlertDao {
+  _$AlertDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _alertsInsertionAdapter = InsertionAdapter(
+            database,
+            'alerts',
+            (Alerts item) => <String, Object?>{
+                  'id': item.id,
+                  'create_at': item.createAt,
+                  'img': item.img,
+                  'alert_type': item.alertType,
+                  'cam_id': item.camId
+                }),
+        _alertsDeletionAdapter = DeletionAdapter(
+            database,
+            'alerts',
+            ['id'],
+            (Alerts item) => <String, Object?>{
+                  'id': item.id,
+                  'create_at': item.createAt,
+                  'img': item.img,
+                  'alert_type': item.alertType,
+                  'cam_id': item.camId
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Alerts> _alertsInsertionAdapter;
+
+  final DeletionAdapter<Alerts> _alertsDeletionAdapter;
+
+  @override
+  Future<List<Alerts>> getAlertsFromTo(
+    int st,
+    int ed,
+  ) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM alerts WHERE create_at BETWEEN ?1 AND ?2',
+        mapper: (Map<String, Object?> row) => Alerts(
+            row['id'] as int?,
+            row['create_at'] as int,
+            row['img'] as Uint8List,
+            row['cam_id'] as int,
+            row['alert_type'] as int),
+        arguments: [st, ed]);
+  }
+
+  @override
+  Future<List<Alerts>> getAlertsFrom(int st) async {
+    return _queryAdapter.queryList('SELECT * FROM alerts WHERE create_at >= ?1',
+        mapper: (Map<String, Object?> row) => Alerts(
+            row['id'] as int?,
+            row['create_at'] as int,
+            row['img'] as Uint8List,
+            row['cam_id'] as int,
+            row['alert_type'] as int),
+        arguments: [st]);
+  }
+
+  @override
+  Future<void> deleteAlertsBefore(int st) async {
+    await _queryAdapter.queryNoReturn(
+        'DELETE FROM alerts WHERE create_at <= ?1',
+        arguments: [st]);
+  }
+
+  @override
+  Future<int> insertAlert(Alerts a) {
+    return _alertsInsertionAdapter.insertAndReturnId(
+        a, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> deleteAlert(Alerts a) {
+    return _alertsDeletionAdapter.deleteAndReturnChangedRows(a);
   }
 }

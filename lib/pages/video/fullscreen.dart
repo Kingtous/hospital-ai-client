@@ -1,5 +1,4 @@
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/video_control.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';

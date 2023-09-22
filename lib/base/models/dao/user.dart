@@ -1,5 +1,4 @@
 import 'package:floor/floor.dart';
-import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 
 @Entity(tableName: 'users')

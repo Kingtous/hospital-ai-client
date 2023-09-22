@@ -13,8 +13,9 @@
 // limitations under the License.
 
 import 'dart:async';
-
+import 'dart:typed_data';
 import 'package:floor/floor.dart';
+import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
@@ -26,7 +27,7 @@ part 'db.g.dart';
 
 @Database(
     version: kDbVersion,
-    entities: [Area, Cam, User, AreaUser, AreaCam, Room, RoomCam])
+    entities: [Area, Cam, User, AreaUser, AreaCam, Room, RoomCam, Alerts])
 abstract class AppDB extends FloorDatabase {
   AreaDao get areaDao;
   CamDao get camDao;
@@ -34,4 +35,5 @@ abstract class AppDB extends FloorDatabase {
   AreaCamDao get areaCamDao;
   UserDao get userDao;
   RoomDao get roomDao;
+  AlertDao get alertDao;
 }
