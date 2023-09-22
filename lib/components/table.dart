@@ -31,18 +31,22 @@ class _FrameState extends State<Frame> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(9),
           border: Border.all(width: 2.0, color: Colors.white),
-          gradient: LinearGradient(colors: [
-            const Color(0xFFFFFFC2).withAlpha((255 * 0.76).toInt()),
-            const Color(0xFFDEFFC2).withAlpha((255 * 0.76).toInt()),
+          gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                const Color(0xFFDEEFFF).withAlpha((255 * 0.76).toInt()),
+                const Color(0xFFFFFFFF).withAlpha((255 * 0.76).toInt()),
           ])),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             // mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Image.asset(
-                'asset/images/frame_tile_prefix_icon.png',
+                'assets/images/frame_tile_prefix_icon.png',
                 width: 20,
                 height: 20,
               ),
@@ -50,6 +54,7 @@ class _FrameState extends State<Frame> {
                 width: 8.0,
               ),
               widget.title,
+              
               const Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -57,7 +62,23 @@ class _FrameState extends State<Frame> {
                 ),
               )
             ],
-          )
+          ),
+          SizedBox(
+            height: 8.0,
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 2,
+                  child: Image.asset(
+                    'assets/images/frame_line.png',
+                    fit: BoxFit.fill,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

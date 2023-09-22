@@ -474,6 +474,7 @@ class AddUserDialog extends StatelessWidget {
                         child: Obx(
                       () => Wrap(
                         spacing: 20,
+                        runSpacing: 4,
                         children: allRoles
                             .map((role) => Checkbox(
                                 checked: roles.contains(role),

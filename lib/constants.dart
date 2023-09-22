@@ -1,4 +1,3 @@
-
 import 'package:fluent_ui/fluent_ui.dart';
 
 const kDbVersion = 1;
@@ -6,6 +5,7 @@ const kDefaultAdminName = 'admin';
 const kDefaultAdminPassword = 'admin';
 const kDbName = 'cam.db';
 const kHeaderHeight = 48.0;
+const kDefaultName = '监控平台';
 
 const kBgColor = Color(0xFFEFF4FA);
 const kRadius = 8.0;

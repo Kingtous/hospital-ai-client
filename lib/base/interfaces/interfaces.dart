@@ -41,5 +41,5 @@ UserModel get userModel => it.get();
 RoleModel get roleModel => it.get();
 RoomModel get roomModel => it.get();
 
-const kThumbNailLiveHeight = 180;
-const kThumbNailLiveWidth = 320;
+const kThumbNailLiveHeight = 207;
+const kThumbNailLiveWidth = 368;

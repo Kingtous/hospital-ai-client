@@ -4,6 +4,7 @@ import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/video_control.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 enum LiveType { thumbnail, fullscreen }
@@ -68,12 +69,11 @@ class _VideoLiveState extends State<VideoLive> {
       onExit: (evt) {
         isHovered.value = false;
       },
-      child: Obx(
-        () => Container(
-          decoration: BoxDecoration(
-            color: isHovered.value ? Colors.blue : Colors.transparent,
+      child: Container(
+        decoration: const BoxDecoration(
+          color: kBlueColor,
           ),
-          padding: const EdgeInsets.all(2.0),
+        padding: const EdgeInsets.all(1.0),
           child: !isExist
               ? Container(
                   decoration: const BoxDecoration(
@@ -97,7 +97,6 @@ class _VideoLiveState extends State<VideoLive> {
                         state: state, cam: widget.cam, type: widget.type),
                   ),
                 ),
-        ),
       ),
     );
   }
