@@ -65,6 +65,8 @@ class _$AppDB extends AppDB {
 
   AreaUserDao? _areaUserDaoInstance;
 
+  AreaCamDao? _areaCamDaoInstance;
+
   UserDao? _userDaoInstance;
 
   RoomDao? _roomDaoInstance;
@@ -124,6 +126,11 @@ class _$AppDB extends AppDB {
   @override
   AreaUserDao get areaUserDao {
     return _areaUserDaoInstance ??= _$AreaUserDao(database, changeListener);
+  }
+
+  @override
+  AreaCamDao get areaCamDao {
+    return _areaCamDaoInstance ??= _$AreaCamDao(database, changeListener);
   }
 
   @override
@@ -437,6 +444,83 @@ class _$AreaUserDao extends AreaUserDao {
         final transactionDatabase = _$AppDB(changeListener)
           ..database = transaction;
         return transactionDatabase.areaUserDao.setRoles(user, roles);
+      });
+    }
+  }
+}
+
+class _$AreaCamDao extends AreaCamDao {
+  _$AreaCamDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _areaCamInsertionAdapter = InsertionAdapter(
+            database,
+            'rel_area_cam',
+            (AreaCam item) => <String, Object?>{
+                  'id': item.id,
+                  'area_id': item.areaId,
+                  'cam_id': item.camId
+                }),
+        _areaCamDeletionAdapter = DeletionAdapter(
+            database,
+            'rel_area_cam',
+            ['id'],
+            (AreaCam item) => <String, Object?>{
+                  'id': item.id,
+                  'area_id': item.areaId,
+                  'cam_id': item.camId
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<AreaCam> _areaCamInsertionAdapter;
+
+  final DeletionAdapter<AreaCam> _areaCamDeletionAdapter;
+
+  @override
+  Future<List<AreaUser>> findAllAreaCams() async {
+    return _queryAdapter.queryList('SELECT * FROM rel_area_cam',
+        mapper: (Map<String, Object?> row) => AreaUser(
+            row['id'] as int?, row['user_id'] as int, row['area_id'] as int));
+  }
+
+  @override
+  Future<List<Cam>> findAllCamsByArea(int areaId) async {
+    return _queryAdapter.queryList(
+        'select * from cam where id IN (SELECT cam_id FROM rel_area_user where area_id=?1)',
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        arguments: [areaId]);
+  }
+
+  @override
+  Future<int> insertAreaCam(AreaCam rel) {
+    return _areaCamInsertionAdapter.insertAndReturnId(
+        rel, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteAreaCam(AreaCam rel) async {
+    await _areaCamDeletionAdapter.delete(rel);
+  }
+
+  @override
+  Future<void> setAreaCamForArea(
+    Area area,
+    List<Cam> cams,
+  ) async {
+    if (database is sqflite.Transaction) {
+      await super.setAreaCamForArea(area, cams);
+    } else {
+      await (database as sqflite.Database)
+          .transaction<void>((transaction) async {
+        final transactionDatabase = _$AppDB(changeListener)
+          ..database = transaction;
+        await transactionDatabase.areaCamDao.setAreaCamForArea(area, cams);
       });
     }
   }

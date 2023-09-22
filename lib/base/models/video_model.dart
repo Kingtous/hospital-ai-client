@@ -47,23 +47,17 @@ class VideoModel {
     return room..id = id;
   }
 
-  Future<int> addCamToRoom(Cam cam, Room room) async {
+  Future<bool> addCamToRoom(Cam cam, Room room) async {
     if (_playerMap[cam] != null) {
-      return -1;
+      return false;
     }
     final id = await appDB.camDao.addCam(cam, room);
-    final cams = await appDB.camDao.getCamById(id);
-    if (cams.isEmpty) {
-      return -1;
-    }
+    cam.id = id;
     if (cam.camType == CamType.rtsp.index) {
-      final rtspCam = RTSPCamera.fromDB(cams.first);
-      if (rtspCam != null) {
-        _playerMap[cams.first] = rtspCam;
-        return id;
-      } else {
-        return -1;
-      }
+      final rtspCam = RTSPCamera(cam.name, rtspUrl: cam.url);
+      await rtspCam.init();
+      _playerMap[cam] = rtspCam;
+      return true;
     } else {
       throw UnimplementedError('Unimplemented');
     }

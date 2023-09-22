@@ -146,16 +146,21 @@ abstract class AreaUserDao {
 
 @dao
 abstract class AreaCamDao {
-  @Query('SELECT * FROM rel_area_user')
-  Future<List<AreaUser>> findAllAreaUsers();
+  @Query('SELECT * FROM rel_area_cam')
+  Future<List<AreaUser>> findAllAreaCams();
 
   @Query(
-      'select * from area where id IN (SELECT area_id FROM rel_area_user where user_id=:userId)')
-  Future<List<Area>> findAllAreaUsersByUser(int userId);
+      'select * from cam where id IN (SELECT cam_id FROM rel_area_user where area_id=:areaId)')
+  Future<List<Cam>> findAllCamsByArea(int areaId);
 
   @insert
-  Future<int> insertAreaUser(AreaUser area);
+  Future<int> insertAreaCam(AreaCam rel);
 
   @delete
-  Future<void> deleteAreaUser(AreaUser area);
+  Future<void> deleteAreaCam(AreaCam rel);
+
+  @transaction
+  Future<void> setAreaCamForArea(Area area, List<Cam> cams) async {
+    // final await findAllCamsByArea(area.id!);
+  }
 }

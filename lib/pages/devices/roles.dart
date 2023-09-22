@@ -248,7 +248,8 @@ class _RolesAreaPrivPageState extends State<RolesAreaPrivPage> {
                   future: Future.wait([
                     videoModel.getAllCams(),
                     roleModel.getAllRels(),
-                    roomModel.getAllRooms()
+                    roomModel.getAllRooms(),
+                    
                   ]),
                   builder: (context, data) {
                     if (!data.hasData) {

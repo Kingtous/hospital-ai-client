@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -78,6 +79,7 @@ class RTSPCamera extends PlayableDevice
 
   @override
   Future<void> init() async {
+    print('初始化縮略圖 for ${rtspUrl}');
     thumbNailController = VideoController(player,
         configuration: const VideoControllerConfiguration(
           width: kThumbNailLiveWidth,
@@ -271,14 +273,16 @@ class RTSPCamera extends PlayableDevice
                         msg = "设备地址格式有误，请与rtsp://开头";
                         return;
                       }
-                      Navigator.of(context).pop();
-                      int camId = await videoModel.addCamToRoom(
+                      bool res = await videoModel.addCamToRoom(
                           Cam(null, id, room.id!, rtspUrl, CamType.rtsp.index,
                               false),
                           room);
-                      print("create cam with $camId");
-                      final camera = RTSPCamera(id, rtspUrl: rtspUrl);
-                      await camera.init();
+                      if (res) {
+                        success(context, '添加成功');
+                      } else {
+                        warning(context, '添加失败');
+                      }
+                      Navigator.of(context).pop();
                     }),
                 FilledButton(
                     child: const Text('取消'),

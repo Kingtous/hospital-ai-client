@@ -31,6 +31,7 @@ abstract class AppDB extends FloorDatabase {
   AreaDao get areaDao;
   CamDao get camDao;
   AreaUserDao get areaUserDao;
+  AreaCamDao get areaCamDao;
   UserDao get userDao;
   RoomDao get roomDao;
 }

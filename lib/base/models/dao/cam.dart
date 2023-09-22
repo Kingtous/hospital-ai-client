@@ -45,6 +45,12 @@ class Cam {
 
   Cam(this.id, this.name, this.roomId, this.url, this.camType,
       this.enableAlert);
+
+  @override
+  int get hashCode => id ?? -1;
+
+  @override
+  bool operator ==(Object other) => other is Cam && other.id == id;
 }
 
 @dao
