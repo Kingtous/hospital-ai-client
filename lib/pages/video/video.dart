@@ -104,23 +104,16 @@ class _VideoHomePageState extends State<VideoHomePage> {
                     return Column(
                       children: [
                         Expanded(
+                          flex: 2,
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              SizedBox(
+                                width: 16.0,
+                              ),
                               Expanded(
-                                child: GridView.count(
-                                  crossAxisCount: 3,
-                                  shrinkWrap: true,
-                                  // maxCrossAxisExtent: kThumbNailLiveWidth.toDouble(),
-                                  crossAxisSpacing: 10,
-                                  mainAxisSpacing: 10,
-                                  childAspectRatio: 2.25,
-                                  children: [
-                                    ...nineGridCams.map((e) => VideoLiveMain(
-                                          e: e,
-                                        ))
-                                  ],
-                                ),
+                                child:
+                                    NineGridLive(cams: nineGridCams.toList()),
                               ),
                               SizedBox(
                                 width: 50,
@@ -168,7 +161,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
                             ],
                           ),
                         ),
-                        const AlertStatCharts()
+                        Expanded(flex: 1, child: const AlertStatCharts())
                       ],
                     );
                   },
@@ -273,6 +266,61 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   }
 }
 
+class NineGridLive extends StatelessWidget {
+  final List<Cam?> cams;
+  const NineGridLive({super.key, required this.cams})
+      : assert(cams.length == 9);
+
+  @override
+  Widget build(BuildContext context) {
+    const hg = SizedBox(
+      width: 20,
+    );
+    const vg = SizedBox(
+      height: 20,
+    );
+    return Column(
+      children: [
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[0])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[1])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[2])),
+            ],
+          ),
+        ),
+        vg,
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[3])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[4])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[5])),
+            ],
+          ),
+        ),
+        vg,
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[6])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[7])),
+              hg,
+              Expanded(flex: 1, child: VideoLiveMain(e: cams[8])),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class VideoLiveMain extends StatelessWidget {
   final Cam? e;
   const VideoLiveMain({super.key, required this.e});
@@ -369,9 +417,9 @@ class VideoLiveMain extends StatelessWidget {
                     height: kTextTabBarHeight.toDouble(),
                     type: LiveType.thumbnail,
                   ),
-          ),
-        ),
-      ],
-    );
+                ),
+              ),
+            ],
+          );
   }
 }

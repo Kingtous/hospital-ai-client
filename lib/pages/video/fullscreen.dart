@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/video_control.dart';
@@ -29,35 +30,37 @@ class _FullScreenLiveState extends State<FullScreenLive> {
   @override
   Widget build(BuildContext context) {
     final controller = this.controller;
-    return Container(
-      decoration: BoxDecoration(color: kBgColor),
-      child: Row(
-        children: [
-          Flexible(
-            flex: 3,
-            child: Column(
-              children: [
-                Expanded(
-                  child: controller == null
-                      ? const Center(
-                          child: Text('未找到源，请重试'),
-                        )
-                      : Video(
-                          controller: controller,
-                          controls: (state) => VideoControl2(
-                              state: state,
-                              cam: widget.cam,
-                              type: LiveType.fullscreen),
-                        ),
-                ),
-              ],
-            ),
-          ),
-          const Flexible(
+    return NavigationView(
+      content: Container(
+        decoration: BoxDecoration(color: kBgColor),
+        child: Row(
+          children: [
+            Flexible(
+              flex: 3,
               child: Column(
-            children: [Text('meta')],
-          ))
-        ],
+                children: [
+                  Expanded(
+                    child: controller == null
+                        ? const Center(
+                            child: Text('未找到源，请重试'),
+                          )
+                        : Video(
+                            controller: controller,
+                            controls: (state) => VideoControl2(
+                                state: state,
+                                cam: widget.cam,
+                                type: LiveType.fullscreen),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const Flexible(
+                child: Column(
+              children: [Text('meta')],
+            ))
+          ],
+        ),
       ),
     );
   }
