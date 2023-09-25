@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hospital_ai_client/base/models/app_model.dart';
 import 'package:hospital_ai_client/base/models/role_model.dart';
@@ -13,9 +14,11 @@ import 'package:window_manager/window_manager.dart';
 final it = GetIt.instance;
 
 Future<void> setupDependencies() async {
-  await windowManager.ensureInitialized();
-  windowManager.setMinimumSize(const Size(1000, 720));
-  windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+  if (!kIsWeb) {
+    await windowManager.ensureInitialized();
+    windowManager.setMinimumSize(const Size(1000, 720));
+    windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+  }
   final sp = await SharedPreferences.getInstance();
   final db = await $FloorAppDB.databaseBuilder(kDbName).build();
   it.registerSingleton<AppDB>(db);
