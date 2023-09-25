@@ -606,7 +606,7 @@ class UserRoleDialog extends StatelessWidget {
     return SizedBox(
       width: 500,
       child: ContentDialog(
-        title: const Text('权限编辑'),
+        title: const Text('角色配置'),
         content: FutureBuilder(
             future: Future.wait(
                 [roleModel.getAllRoles(), roleModel.getRolesByUser(user)]),

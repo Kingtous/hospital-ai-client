@@ -128,7 +128,8 @@ class RTSPCamera extends PlayableDevice
   @override
   Future<void> startPlay() async {
     if (player.state.playing) {
-      debugPrint('player $id is already playing, ignore this requests');
+      debugPrint('player $id is already playing, ignore [startPlay] requests');
+      debugPrintStack();
       return;
     }
     debugPrint(
@@ -258,6 +259,7 @@ class RTSPCamera extends PlayableDevice
                       padding: EdgeInsets.all(8.0),
                       child: Text('设备串流地址'),
                     ),
+                    autofillHints: ['rtsp://'],
                     onChanged: (s) {
                       rtspUrl = s;
                     },
@@ -268,9 +270,26 @@ class RTSPCamera extends PlayableDevice
                 FilledButton(
                     child: const Text('确定'),
                     onPressed: () async {
-                      if (!rtspUrl.startsWith("rtsp://")) {
+                      final rtspUri = Uri.tryParse(rtspUrl);
+                      if (rtspUri == null) {
+                        msg = "不是一个有效的URL地址";
+                        setState(() {});
+                        return;
+                      }
+                      print(rtspUri.scheme);
+                      if (rtspUri.scheme != "rtsp") {
                         setState(() {});
                         msg = "设备地址格式有误，请与rtsp://开头";
+                        return;
+                      }
+                      if (rtspUri.host.isEmpty) {
+                        msg = "地址内域名/IP地址填写错误";
+                        setState(() {});
+                        return;
+                      }
+                      if (rtspUri.path.isEmpty) {
+                        msg = "地址内没有path路径";
+                        setState(() {});
                         return;
                       }
                       bool res = await videoModel.addCamToRoom(

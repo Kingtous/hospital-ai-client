@@ -108,6 +108,9 @@ class VideoModel {
   }
 
   Future<void> deleteCam(Cam cam) {
+    if (_playerMap[cam] != null) {
+      _playerMap[cam]!.dispose();
+    }
     _playerMap.remove(cam);
     return appDB.camDao.deleteCam(cam);
   }
