@@ -14,9 +14,19 @@
 
 import 'dart:typed_data';
 import 'package:floor/floor.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
+
+enum AlertType { unknown, whiteShirt }
 
 @Entity(
   tableName: 'alerts',
+  foreignKeys: [
+  ForeignKey(
+      childColumns: ['cam_id'],
+      parentColumns: ['id'],
+      entity: Cam,
+      onDelete: ForeignKeyAction.cascade)
+]
 )
 class Alerts {
   @PrimaryKey(autoGenerate: true)
@@ -53,4 +63,8 @@ abstract class AlertDao {
 
   @Query('DELETE FROM alerts WHERE create_at <= :st')
   Future<void> deleteAlertsBefore(int st);
+
+  @Query('SELECT * FROM alerts WHERE create_at >= :st AND cam_id IN (:cams)')
+  Future<List<Alerts>> getAlertsInCamsFrom(List<int> cams, int st);
+
 }

@@ -95,4 +95,8 @@ abstract class CamDao {
     final camId = await insertCam(cam);
     return await insertRoomCam(RoomCam(null, room.id!, camId));
   }
+
+  @Query(
+      'SELECT * FROM cam where id IN (SELECT DISTINCT cam_id FROM rel_area_cam WHERE area_id IN (SELECT DISTINCT area_id FROM rel_area_user WHERE user_id = :userId))')
+  Future<List<Cam>> getAllowedCamByUserId(int userId);
 }
