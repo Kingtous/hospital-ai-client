@@ -265,11 +265,13 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SizedBox(
-                height: 200,
-                width: 200,
-                child: KPieChart(
-                  data: KPieChartData(kMockDataType, '例'),
+              Transform(transform: Matrix4.identity()..rotateZ(0.1)..rotateY(0.1),
+                child: SizedBox(
+                  height: 200,
+                  width: 200,
+                  child: KPieChart(
+                    data: KPieChartData(kMockDataType, '例'),
+                  ),
                 ),
               ),
               SizedBox(width: 16,),
