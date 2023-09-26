@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' hide Colors;
 import 'package:get/get.dart';
+import 'package:graphic/graphic.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/components/charts.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
@@ -217,15 +219,15 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   }
 
   Widget _buildRtAlertTable() {
-    return const Frame(title: Text('实时报警'));
+    return const Frame(title: Text('实时报警'), content: Offstage(),);
   }
 
   Widget _buildHistoryAlertTable() {
-    return const Frame(title: Text('实时报警'));
+    return const Frame(title: Text('实时报警'), content: Offstage(),);
   }
 
   Widget _buildCamAlertTable() {
-    return const Frame(title: Text('实时报警'));
+    return const Frame(title: Text('实时报警'), content:  Offstage() ,);
   }
 }
 
@@ -258,11 +260,52 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   }
 
   Widget _buildCamAlertTypeTable() {
-    return const Frame(title: Text('报警类型分布'));
+    final li = kMockDataType.entries.toList();
+    return Frame(title: Text('报警类型分布'), content: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                height: 200,
+                width: 200,
+                child: KPieChart(
+                  data: KPieChartData(kMockDataType, '例'),
+                ),
+              ),
+              SizedBox(width: 16,),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: li.map((e) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4.0),
+                    child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      padding: EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Defaults.colors10[li.indexOf(e)])
+                      ),
+                      child: ColoredBox(color: Defaults.colors10[li.indexOf(e)]),
+                    ),
+                    SizedBox(width: 6.0,),
+                    Expanded(
+                      child: Text('${e.key} ${e.value}例', style: TextStyle(
+                        color: Color(0xFF415B73)
+                      ), overflow: TextOverflow.clip,),
+                    )
+                                  ],),
+                  )).toList(),),
+              )
+            ],
+          ),);
   }
 
   Widget _buildCamDataStatTable() {
-    return const Frame(title: Text('报警数据统计'));
+    return const Frame(title: Text('报警数据统计'), content: Offstage(),);
   }
 }
 

@@ -49,3 +49,5 @@ success(BuildContext context, String infoText) {
             severity: InfoBarSeverity.success,
           ));
 }
+
+const kMockDataType =<String,int> {"未穿防护服": 2, "未消毒": 1, "擅自离岗": 3, "未戴口罩": 4};

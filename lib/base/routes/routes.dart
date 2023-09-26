@@ -5,7 +5,7 @@ import 'package:hospital_ai_client/pages/users/login.dart';
 import 'package:hospital_ai_client/pages/video/fullscreen.dart';
 
 final router = GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/',
     routes: [
   GoRoute(
       path: '/',

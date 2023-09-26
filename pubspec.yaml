@@ -60,6 +60,7 @@ dependencies:
   data_table_2: ^2.5.8
   excel: ^2.1.0
   bruno: ^3.4.3
+  graphic: ^2.2.0
 
 dev_dependencies:
   flutter_test:

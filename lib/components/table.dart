@@ -13,10 +13,13 @@
 // limitations under the License.
 
 import 'package:flutter/material.dart';
+import 'package:hospital_ai_client/components/charts.dart';
+import 'package:hospital_ai_client/constants.dart';
 
 class Frame extends StatefulWidget {
   final Widget title;
-  const Frame({super.key, required this.title});
+  final Widget content;
+  const Frame({super.key, required this.title, required this.content});
 
   @override
   State<Frame> createState() => _FrameState();
@@ -37,7 +40,7 @@ class _FrameState extends State<Frame> {
               colors: [
                 const Color(0xFFDEEFFF).withAlpha((255 * 0.76).toInt()),
                 const Color(0xFFFFFFFF).withAlpha((255 * 0.76).toInt()),
-          ])),
+              ])),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -54,11 +57,12 @@ class _FrameState extends State<Frame> {
                 width: 8.0,
               ),
               widget.title,
-              
               const Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
-                  children: [],
+                  children: [
+                    
+                  ],
                 ),
               )
             ],
@@ -79,6 +83,11 @@ class _FrameState extends State<Frame> {
               ),
             ],
           ),
+          SizedBox(
+            height: 4.0,
+          ),
+          Expanded(
+              child: widget.content)
         ],
       ),
     );

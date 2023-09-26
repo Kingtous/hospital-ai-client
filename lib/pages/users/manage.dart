@@ -471,25 +471,25 @@ class AddUserDialog extends StatelessWidget {
                       width: 16.0,
                     ),
                     Expanded(
-                        child: Obx(
-                      () => Wrap(
+                        child: Wrap(
                         spacing: 20,
                         runSpacing: 4,
                         children: allRoles
-                            .map((role) => Checkbox(
-                                checked: roles.contains(role),
-                                content: Text(role.areaName),
-                                onChanged: (r) {
-                                  r = r ?? false;
-                                  if (r) {
-                                    roles.add(role);
-                                  } else {
-                                    roles.remove(role);
-                                  }
-                                }))
+                            .map((role) => Obx(
+                              () => Checkbox(
+                                  checked: roles.contains(role),
+                                  content: Text(role.areaName),
+                                  onChanged: (r) {
+                                    r = r ?? false;
+                                    if (r) {
+                                      roles.add(role);
+                                    } else {
+                                      roles.remove(role);
+                                    }
+                                  }),
+                            ))
                             .toList(),
-                      ),
-                    ))
+                      ))
                   ],
                 );
               })
