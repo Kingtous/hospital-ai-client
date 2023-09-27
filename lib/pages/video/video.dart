@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' hide Colors;
 import 'package:get/get.dart';
@@ -10,6 +11,8 @@ import 'package:hospital_ai_client/components/charts.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
+
+import '../../base/models/dao/alerts.dart';
 
 class VideoHomePage extends StatefulWidget {
   const VideoHomePage({super.key});
@@ -239,23 +242,53 @@ class AlertStatCharts extends StatefulWidget {
 }
 
 class _AlertStatChartsState extends State<AlertStatCharts> {
+
+  Future<List<int>>? res;
+
+  @override
+  void initState() {
+    res = getData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-      height: 271,
-      child: Row(
-        children: [
-          const SizedBox(
-            width: 16.0,
-          ),
-          Expanded(flex: 1, child: _buildCamAlertTypeTable()),
-          const SizedBox(
-            width: 20,
-          ),
-          Expanded(flex: 2, child: _buildCamDataStatTable()),
-        ],
-      ),
+    return FutureBuilder(
+      //异步操作的future对象
+      future: res,
+        builder: (BuildContext context,AsyncSnapshot<List<int>> snapshot){
+          if(snapshot.hasData){
+            //通过snapshot.data，你可以访问到res所代表的异步操作返回的List<int>类型的数据。
+            List<int> data = snapshot.data!;
+            //测试数据
+            // List<int> dataTest = [80,79,60,97,77,65,77,56,90,60,77,59,0];
+            // List<int> dataTest = [30,29,10,47,27,15,27,6,40,10,27,9,0];
+            // List<int> dataTest = [0,0,0,0,0,0,0,0,0,0,0,0,0];
+            // List<int> dataTest = [1,1,2,3,1,2,3,1,1,1,1,1,1];
+            // List<int> dataTest = [5,6,5,9,5,5,5,5,5,5,1,6,1];
+            return Container(
+              padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+              height: 271,
+              child: Row(
+                children: [
+                  const SizedBox(
+                    width: 16.0,
+                  ),
+                  Expanded(flex: 1, child: _buildCamAlertTypeTable()),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  Expanded(flex: 2, child: _buildCamDataStatTable(data)),
+                ],
+              ),
+            );
+          }else if(snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }else{
+            return CircularProgressIndicator();
+          }
+
+        }
     );
   }
 
@@ -306,9 +339,171 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
           ),);
   }
 
-  Widget _buildCamDataStatTable() {
-    return const Frame(title: Text('报警数据统计'), content: Offstage(),);
+   _buildCamDataStatTable(res) {
+     List<int> alertsData = res;
+    return Frame(title: Text("报警数据统计"), content: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+            child: Column(
+              children: <Widget>[
+                SizedBox(
+                  height: 0,
+                ),
+                 BrnBrokenLine(
+                  showPointDashLine: true,
+                  yHintLineOffset: 30,
+                  isTipWindowAutoDismiss: false,
+                  lines: [
+                    BrnPointsLine(
+                        isShowPointText: false,
+                        lineWidth: 3,
+                        pointRadius: 4,
+                        isShowPoint: true,
+                        isCurve: true,
+                        points: _linePointsForDemo1(res),
+                        shaderColors: [
+                          Colors.green.withOpacity(0.3),
+                          Colors.green.withOpacity(0.01)
+                        ],
+                        lineColor: Colors.green,
+                    )
+                  ],
+                  size: Size(MediaQuery.of(context).size.width / 3+100,
+                    MediaQuery.of(context).size.height / 5 - 50,),
+                  isShowXHintLine: true,
+                  //X 轴刻度数据
+                  xDialValues: _getXDialValuesForDemo1(alertsData),
+                  //X 轴展示范围最小值
+                  xDialMin: 0,
+                  //X 轴展示范围最大值
+                  xDialMax: _getXDialValuesForDemo1(alertsData).length.toDouble(),
+                  //Y 轴刻度数据
+                  yDialValues: _getYDialValuesForDemo1(alertsData),
+                  //Y 轴展示范围最小值
+                  yDialMin: 0,
+                  //Y 轴展示范围最大值,断言>0
+                  yDialMax: _getMaxValueForDemo1(alertsData)  <= 10 ? 10:_getMaxValueForDemo1(alertsData),
+                  isHintLineSolid: false,
+                  isShowYDialText: true,
+                  isShowXDialText: true,
+                )
+              ],
+            )
+        )
+      ],
+
+    ));
   }
+
+  List<BrnPointData> _linePointsForDemo1(List<int> brokenData) {
+    List<int> hours = List<int>.generate(13, (index) => index);
+    return hours.map((hour) {
+      int dataIndex = hour; // 获取对应的brokenData索引
+      int value = brokenData[hour];
+      if(hour == 12){
+        //24点和0点值一样
+        value = brokenData[0];
+      }
+      return BrnPointData(
+        pointText: value.toString(),
+        x: dataIndex.toDouble(),
+        y: double.parse(value.toString()),
+        lineTouchData: BrnLineTouchData(
+          tipWindowSize: Size(60, 40),
+          onTouch: () {
+            return value.toString();
+          },
+        ),
+      );
+    }).toList();
+  }
+
+  List<BrnDialItem> _getYDialValuesForDemo1(List<int> brokenData) {
+    // double min = _getMinValueForDemo1(brokenData);
+    double max = _getMaxValueForDemo1(brokenData)*1.1;
+    int step = ((max - 0) / 5).ceil();
+    List<BrnDialItem> _yDialValue = [];
+    //如果没有预警或者预警过低会报错或导致折线图超出预期大小
+    if(max <= 10){
+      max = 10;
+      step = 2;
+      for (int index = 0; index <= 5; index++) {
+        _yDialValue.add(BrnDialItem(
+          dialText: '${(0 + index * step).ceil()}',
+          dialTextStyle: TextStyle(fontSize: 12.0, color: Color(0xFF999999)),
+          value: (0 + index * step).ceilToDouble(),
+        ));
+      }
+    }
+    // double dValue = (max - min) / 10;
+    else{
+      for (int index = 0; index <= 5; index++) {
+        _yDialValue.add(BrnDialItem(
+          dialText: '${(0 + index * step).ceil()}',
+          dialTextStyle: TextStyle(fontSize: 12.0, color: Color(0xFF999999)),
+          value: (0 + index * step).ceilToDouble(),
+        ));
+      }
+    }
+
+    return _yDialValue;
+  }
+
+  double _getMinValueForDemo1(List<int> brokenData) {
+    double minValue = double.tryParse(brokenData[0].toString()) ?? 0;
+    for (int point in brokenData) {
+      minValue = min(double.tryParse(point.toString()) ?? 0, minValue);
+    }
+    return minValue;
+  }
+
+  double _getMaxValueForDemo1(List<int> brokenData) {
+    double maxValue = double.tryParse(brokenData[0].toString()) ?? 0;
+    for (int point in brokenData) {
+      maxValue = max(double.tryParse(point.toString()) ?? 0, maxValue);
+    }
+    return maxValue;
+  }
+
+
+  List<BrnDialItem> _getXDialValuesForDemo1(List<int> brokenData) {
+    List<BrnDialItem> _xDialValue = [];
+    for (int index = 0; index < brokenData.length; index++) {
+      // int hour = brokenData[index] % 24;
+      //返回"xx:00"的形式
+      String dialText = '${(index*2).toString().padLeft(2, '0')}:00';
+
+      _xDialValue.add(BrnDialItem(
+        dialText: dialText,
+        dialTextStyle: TextStyle(fontSize: 12.0, color: Color(0xFF999999),height: 1.0),
+        value: index.toDouble(),
+      ));
+    }
+    return _xDialValue;
+  }
+
+   Future<List<int>> getData() async {
+    // res[0] = (await alertsModel.getAlertsFromTo(0, 2)).length;
+    List<Alerts> list1 = await alertsModel.getAlertsFromTo(0, 2);
+    List<Alerts> list2 = await alertsModel.getAlertsFromTo(2, 4);
+    List<Alerts> list3 = await alertsModel.getAlertsFromTo(4, 6);
+    List<Alerts> list4 = await alertsModel.getAlertsFromTo(6, 8);
+    List<Alerts> list5 = await alertsModel.getAlertsFromTo(8, 10);
+    List<Alerts> list6 = await alertsModel.getAlertsFromTo(10, 12);
+    List<Alerts> list7 = await alertsModel.getAlertsFromTo(12, 14);
+    List<Alerts> list8 = await alertsModel.getAlertsFromTo(14, 16);
+    List<Alerts> list9 = await alertsModel.getAlertsFromTo(16, 18);
+    List<Alerts> list10 = await alertsModel.getAlertsFromTo(18, 20);
+    List<Alerts> list11 = await alertsModel.getAlertsFromTo(20, 22);
+    List<Alerts> list12 = await alertsModel.getAlertsFromTo(22, 24);
+    List<int> res = [list1.length,list2.length,list3.length,list4.length,list5.length,list6.length,
+      list7.length,list8.length,list9.length,list10.length,list11.length,list12.length,0];
+    return res;
+  }
+
+
 }
 
 class NineGridLive extends StatelessWidget {

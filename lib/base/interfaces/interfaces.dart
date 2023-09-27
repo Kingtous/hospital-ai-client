@@ -1,6 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:hospital_ai_client/base/models/alerts_model.dart';
 import 'package:hospital_ai_client/base/models/app_model.dart';
 import 'package:hospital_ai_client/base/models/role_model.dart';
 import 'package:hospital_ai_client/base/models/dao/db.dart';
@@ -28,6 +29,7 @@ Future<void> setupDependencies() async {
   it.registerSingleton<UserModel>(u);
   it.registerSingleton<AppModel>(AppModel());
   it.registerSingleton<VideoModel>(VideoModel());
+  it.registerSingleton<AlertsModel>(AlertsModel());
   final r = RoleModel();
   await r.init();
   it.registerSingleton<RoleModel>(r);
@@ -43,6 +45,7 @@ AppDB get appDB => it.get();
 UserModel get userModel => it.get();
 RoleModel get roleModel => it.get();
 RoomModel get roomModel => it.get();
+AlertsModel get alertsModel => it.get();
 
 const kThumbNailLiveHeight = 207;
 const kThumbNailLiveWidth = 368;
