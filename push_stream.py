@@ -18,5 +18,17 @@ import sys
 # 
 # ffmpeg -re -stream_loop -1 -i 3.mp4  -f rtsp -rtsp_transport tcp rtsp://127.0.0.1:8554/stream
 
+
+# test valid: rtsp://admin:12345@172.0.0.15:554/h264/ch1/main/av_stream
+
+# NVR: rtsp://admin:z1234567@172.0.0.2:554/Streaming/Channels/101
+# 101指的是1通道，01主码流
+# 回放: rtsp://admin:z1234567@172.0.0.2:554/Streaming/Tracks/101\?starttime=20230927t080000z&endtime=20230927t200000z
+
+# ffmpeg -rtsp_transport tcp -i rtsp://admin:z1234567@172.0.0.2:554/Streaming/Channels/101?starttime=20230916t083812z&endtime=20230910t084816z -vcodec copy -acodec copy -f flv rtmp://localhost:8554/stream
+
+# ?starttime=20131013t093812z&endtime=20131013t104816z
+
+
 if __name__ == "__main__":
     pass
