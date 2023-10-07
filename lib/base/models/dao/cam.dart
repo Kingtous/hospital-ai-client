@@ -29,6 +29,21 @@ extension ToString on CamType {
   }
 }
 
+@Entity(tableName: 'recorder')
+class Recorder {
+  @PrimaryKey(autoGenerate: true)
+  int? id;
+
+  @ColumnInfo(name: 'name')
+  String recorderName;
+
+  String ip;
+  int port;
+  String u;
+  String p;
+  Recorder(this.id, this.recorderName, this.ip, this.port, this.u, this.p);
+}
+
 @Entity(tableName: 'cam', foreignKeys: [
   ForeignKey(
       childColumns: ['room_id'],
@@ -44,7 +59,20 @@ class Cam {
   @ColumnInfo(name: 'room_id')
   int roomId;
 
-  String url;
+  // 通道号
+  @ColumnInfo(name: 'channel_id')
+  int channelId;
+
+  // // NVR录像机ID
+  // @ColumnInfo(name: 'recorder_id')
+  // int recorderId;
+
+  String host;
+  int port;
+
+  @ColumnInfo(name: 'auth_user')
+  String authUser;
+  String password;
 
   @ColumnInfo(name: 'enable_alert')
   bool enableAlert;
@@ -52,14 +80,26 @@ class Cam {
   @ColumnInfo(name: 'cam_type')
   int camType;
 
-  Cam(this.id, this.name, this.roomId, this.url, this.camType,
-      this.enableAlert);
+  Cam(this.id, this.name, this.roomId, this.channelId,
+      this.camType, this.enableAlert, this.authUser, this.password, this.port, this.host);
 
   @override
   int get hashCode => id ?? -1;
 
   @override
   bool operator ==(Object other) => other is Cam && other.id == id;
+}
+
+@dao
+abstract class RecorderDao {
+  @Query('SELECT * FROM recorder WHERE id = :id')
+  Future<List<Recorder>> getRecorder(int id);
+
+  @insert
+  Future<int> addRecorder(Recorder recorder);
+
+  @delete
+  Future<int> deleteRecorder(Recorder recorder);
 }
 
 @dao

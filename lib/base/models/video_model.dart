@@ -53,7 +53,8 @@ class VideoModel {
     final id = await appDB.camDao.addCam(cam, room);
     cam.id = id;
     if (cam.camType == CamType.rtsp.index) {
-      final rtspCam = RTSPCamera(cam.name, rtspUrl: cam.url);
+      final url = "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}02";
+      final rtspCam = RTSPCamera(cam.name, rtspUrl: url);
       await rtspCam.init();
       _playerMap[cam] = rtspCam;
       return true;

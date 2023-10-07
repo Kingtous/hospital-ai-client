@@ -216,6 +216,11 @@ class RTSPCamera extends PlayableDevice
     var rtspUrl = "";
     var id = "";
     var msg = "";
+    var channelId = -1;
+    var userName = "";
+    var password = "";
+    var port = 554;
+    var host = "172.0.0.1";
     await showDialog(
         context: context,
         builder: (context) {
@@ -263,7 +268,15 @@ class RTSPCamera extends PlayableDevice
                     onChanged: (s) {
                       rtspUrl = s;
                     },
-                  )
+                  ),
+                  ComboBox(items: [
+                    ...List.generate(512, (idx) {
+                      return ComboBoxItem(
+                        child: Text('通道$idx'),
+                        value: idx,
+                      );
+                    }),
+                  ])
                 ],
               ),
               actions: [
@@ -293,8 +306,8 @@ class RTSPCamera extends PlayableDevice
                         return;
                       }
                       bool res = await videoModel.addCamToRoom(
-                          Cam(null, id, room.id!, rtspUrl, CamType.rtsp.index,
-                              false),
+                          Cam(null, id, room.id!, channelId, CamType.rtsp.index,
+                              false, userName, password, port, host),
                           room);
                       if (res) {
                         success(context, '添加成功');
@@ -315,6 +328,7 @@ class RTSPCamera extends PlayableDevice
   }
 
   static RTSPCamera? fromDB(Cam cam) {
-    return RTSPCamera(cam.name, rtspUrl: cam.url);
+    return RTSPCamera(cam.name,
+        rtspUrl: getRtSpStreamUrl(cam, mainStream: false));
   }
 }

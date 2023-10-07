@@ -98,9 +98,10 @@ class RoomList extends StatelessWidget {
                     child: Obx(
                       () => Button(
                           style: ButtonStyle(
-                              shadowColor: ButtonState.all(const Color(0xFFE0EDFF)),
-                              padding:
-                                  ButtonState.all(const EdgeInsets.only(left: 12.0)),
+                              shadowColor:
+                                  ButtonState.all(const Color(0xFFE0EDFF)),
+                              padding: ButtonState.all(
+                                  const EdgeInsets.only(left: 12.0)),
                               border: ButtonState.all(BorderSide.none),
                               backgroundColor: ButtonState.all(
                                   selected.value != e
@@ -334,11 +335,10 @@ class _CameraTableState extends State<CameraTable> {
               ...list.map((e) => genRow([
                     SelectableText('${e.id}'),
                     SelectableText(e.name),
-                    SelectableText(
-                        CamType.values[e.camType].toHumanString()),
+                    SelectableText(CamType.values[e.camType].toHumanString()),
                     Row(
                       children: [
-                        Expanded(child: SelectableText(e.url)),
+                        Expanded(child: SelectableText("通道${e.channelId}")),
                         // FlyoutTarget(
                         //   controller: FlyoutController(),
                         //   child: Button(
@@ -459,8 +459,8 @@ class CamRecordDeviceItem extends StatelessWidget {
                   child: Icon(FluentIcons.play),
                 ),
                 onPressed: () {
-                  context.pushNamed('player',
-                      pathParameters: {'id': device.id});
+                  context
+                      .pushNamed('player', pathParameters: {'id': device.id});
                 })
           ],
         ))

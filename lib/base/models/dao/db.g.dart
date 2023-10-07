@@ -73,6 +73,8 @@ class _$AppDB extends AppDB {
 
   AlertDao? _alertDaoInstance;
 
+  RecorderDao? _recorderDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -97,7 +99,7 @@ class _$AppDB extends AppDB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `area` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `area_name` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `url` TEXT NOT NULL, `enable_alert` INTEGER NOT NULL, `cam_type` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+            'CREATE TABLE IF NOT EXISTS `cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `channel_id` INTEGER NOT NULL, `host` TEXT NOT NULL, `port` INTEGER NOT NULL, `auth_user` TEXT NOT NULL, `password` TEXT NOT NULL, `enable_alert` INTEGER NOT NULL, `cam_type` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `users` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `user_name` TEXT NOT NULL, `phone` TEXT NOT NULL, `pwd_md5` TEXT NOT NULL)');
         await database.execute(
@@ -110,6 +112,8 @@ class _$AppDB extends AppDB {
             'CREATE TABLE IF NOT EXISTS `rel_room_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB NOT NULL, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `recorder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `ip` TEXT NOT NULL, `port` INTEGER NOT NULL, `u` TEXT NOT NULL, `p` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -150,6 +154,11 @@ class _$AppDB extends AppDB {
   @override
   AlertDao get alertDao {
     return _alertDaoInstance ??= _$AlertDao(database, changeListener);
+  }
+
+  @override
+  RecorderDao get recorderDao {
+    return _recorderDaoInstance ??= _$RecorderDao(database, changeListener);
   }
 }
 
@@ -211,7 +220,11 @@ class _$CamDao extends CamDao {
                   'id': item.id,
                   'name': item.name,
                   'room_id': item.roomId,
-                  'url': item.url,
+                  'channel_id': item.channelId,
+                  'host': item.host,
+                  'port': item.port,
+                  'auth_user': item.authUser,
+                  'password': item.password,
                   'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
                 }),
@@ -231,7 +244,11 @@ class _$CamDao extends CamDao {
                   'id': item.id,
                   'name': item.name,
                   'room_id': item.roomId,
-                  'url': item.url,
+                  'channel_id': item.channelId,
+                  'host': item.host,
+                  'port': item.port,
+                  'auth_user': item.authUser,
+                  'password': item.password,
                   'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
                 }),
@@ -243,7 +260,11 @@ class _$CamDao extends CamDao {
                   'id': item.id,
                   'name': item.name,
                   'room_id': item.roomId,
-                  'url': item.url,
+                  'channel_id': item.channelId,
+                  'host': item.host,
+                  'port': item.port,
+                  'auth_user': item.authUser,
+                  'password': item.password,
                   'enable_alert': item.enableAlert ? 1 : 0,
                   'cam_type': item.camType
                 });
@@ -269,9 +290,13 @@ class _$CamDao extends CamDao {
             row['id'] as int?,
             row['name'] as String,
             row['room_id'] as int,
-            row['url'] as String,
+            row['channel_id'] as int,
             row['cam_type'] as int,
-            (row['enable_alert'] as int) != 0),
+            (row['enable_alert'] as int) != 0,
+            row['auth_user'] as String,
+            row['password'] as String,
+            row['port'] as int,
+            row['host'] as String),
         arguments: [roomId]);
   }
 
@@ -282,9 +307,13 @@ class _$CamDao extends CamDao {
             row['id'] as int?,
             row['name'] as String,
             row['room_id'] as int,
-            row['url'] as String,
+            row['channel_id'] as int,
             row['cam_type'] as int,
-            (row['enable_alert'] as int) != 0));
+            (row['enable_alert'] as int) != 0,
+            row['auth_user'] as String,
+            row['password'] as String,
+            row['port'] as int,
+            row['host'] as String));
   }
 
   @override
@@ -294,9 +323,13 @@ class _$CamDao extends CamDao {
             row['id'] as int?,
             row['name'] as String,
             row['room_id'] as int,
-            row['url'] as String,
+            row['channel_id'] as int,
             row['cam_type'] as int,
-            (row['enable_alert'] as int) != 0),
+            (row['enable_alert'] as int) != 0,
+            row['auth_user'] as String,
+            row['password'] as String,
+            row['port'] as int,
+            row['host'] as String),
         arguments: [id]);
   }
 
@@ -312,9 +345,13 @@ class _$CamDao extends CamDao {
             row['id'] as int?,
             row['name'] as String,
             row['room_id'] as int,
-            row['url'] as String,
+            row['channel_id'] as int,
             row['cam_type'] as int,
-            (row['enable_alert'] as int) != 0),
+            (row['enable_alert'] as int) != 0,
+            row['auth_user'] as String,
+            row['password'] as String,
+            row['port'] as int,
+            row['host'] as String),
         arguments: [...ids]);
   }
 
@@ -322,7 +359,7 @@ class _$CamDao extends CamDao {
   Future<List<Cam>> getAllowedCamByUserId(int userId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM cam where id IN (SELECT DISTINCT cam_id FROM rel_area_cam WHERE area_id IN (SELECT DISTINCT area_id FROM rel_area_user WHERE user_id = ?1))',
-        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
         arguments: [userId]);
   }
 
@@ -403,7 +440,7 @@ class _$AreaUserDao extends AreaUserDao {
   Future<List<Cam>> findAllCamUsersByRole(int areaId) async {
     return _queryAdapter.queryList(
         'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
-        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
         arguments: [areaId]);
   }
 
@@ -519,7 +556,7 @@ class _$AreaCamDao extends AreaCamDao {
   Future<List<Cam>> findAllCamsByArea(int areaId) async {
     return _queryAdapter.queryList(
         'select * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
-        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
         arguments: [areaId]);
   }
 
@@ -774,7 +811,7 @@ class _$RoomDao extends RoomDao {
   Future<List<Cam>> getCamsByRoom(int roomId) async {
     return _queryAdapter.queryList(
         'SELECT * FROM cam WHERE id IN (SELECT cam_id FROM rel_room_cam WHERE room_id = ?1)',
-        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['url'] as String, row['cam_type'] as int, (row['enable_alert'] as int) != 0),
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
         arguments: [roomId]);
   }
 
@@ -910,5 +947,69 @@ class _$AlertDao extends AlertDao {
   @override
   Future<int> deleteAlert(Alerts a) {
     return _alertsDeletionAdapter.deleteAndReturnChangedRows(a);
+  }
+}
+
+class _$RecorderDao extends RecorderDao {
+  _$RecorderDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _recorderInsertionAdapter = InsertionAdapter(
+            database,
+            'recorder',
+            (Recorder item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.recorderName,
+                  'ip': item.ip,
+                  'port': item.port,
+                  'u': item.u,
+                  'p': item.p
+                }),
+        _recorderDeletionAdapter = DeletionAdapter(
+            database,
+            'recorder',
+            ['id'],
+            (Recorder item) => <String, Object?>{
+                  'id': item.id,
+                  'name': item.recorderName,
+                  'ip': item.ip,
+                  'port': item.port,
+                  'u': item.u,
+                  'p': item.p
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<Recorder> _recorderInsertionAdapter;
+
+  final DeletionAdapter<Recorder> _recorderDeletionAdapter;
+
+  @override
+  Future<List<Recorder>> getRecorder(int id) async {
+    return _queryAdapter.queryList('SELECT * FROM recorder WHERE id = ?1',
+        mapper: (Map<String, Object?> row) => Recorder(
+            row['id'] as int?,
+            row['name'] as String,
+            row['ip'] as String,
+            row['port'] as int,
+            row['u'] as String,
+            row['p'] as String),
+        arguments: [id]);
+  }
+
+  @override
+  Future<int> addRecorder(Recorder recorder) {
+    return _recorderInsertionAdapter.insertAndReturnId(
+        recorder, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<int> deleteRecorder(Recorder recorder) {
+    return _recorderDeletionAdapter.deleteAndReturnChangedRows(recorder);
   }
 }

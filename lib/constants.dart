@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
 const kDbVersion = 1;
 const kDefaultAdminName = 'admin';
@@ -50,4 +51,12 @@ success(BuildContext context, String infoText) {
           ));
 }
 
-const kMockDataType =<String,int> {"未穿防护服": 2, "未消毒": 1, "擅自离岗": 3, "未戴口罩": 4};
+const kMockDataType = <String, int>{"未穿防护服": 2, "未消毒": 1, "擅自离岗": 3, "未戴口罩": 4};
+
+String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
+  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}${mainStream ? '01' : '02'}";
+}
+
+String getRtspBackTrackUrl(Cam cam, DateTime start, DateTime end) {
+  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}?starttime=${start.toIso8601String()}&endtime=${end.toIso8601String()}";
+}

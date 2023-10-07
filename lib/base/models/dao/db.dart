@@ -27,7 +27,7 @@ part 'db.g.dart';
 
 @Database(
     version: kDbVersion,
-    entities: [Area, Cam, User, AreaUser, AreaCam, Room, RoomCam, Alerts])
+    entities: [Area, Cam, User, AreaUser, AreaCam, Room, RoomCam, Alerts, Recorder])
 abstract class AppDB extends FloorDatabase {
   AreaDao get areaDao;
   CamDao get camDao;
@@ -36,4 +36,8 @@ abstract class AppDB extends FloorDatabase {
   UserDao get userDao;
   RoomDao get roomDao;
   AlertDao get alertDao;
+  RecorderDao get recorderDao;
 }
+
+final kMigrations = <Migration>[
+];
