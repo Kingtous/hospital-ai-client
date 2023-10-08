@@ -69,7 +69,8 @@ class RTSPCamera extends PlayableDevice
 
   RTSPCamera(this.id, {required this.rtspUrl}) {
     assert(rtspUrl.startsWith('rtsp://'));
-    player = Player();
+    player = Player(
+        configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024));
     // no sound needed.
     player.setVolume(0.0);
     player.setPlaylistMode(PlaylistMode.loop);

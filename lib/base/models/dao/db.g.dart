@@ -44,6 +44,7 @@ class _$AppDBBuilder {
     final path = name != null
         ? await sqfliteDatabaseFactory.getDatabasePath(name!)
         : ':memory:';
+    print(path);
     final database = _$AppDB();
     database.database = await database.open(
       path,

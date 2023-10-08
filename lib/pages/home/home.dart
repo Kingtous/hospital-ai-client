@@ -39,7 +39,10 @@ class _HomePageState extends State<HomePage> {
                     PaneItem(
                         icon: const Icon(FluentIcons.screen),
                         body: const VideoHomePage(),
-                        title: const Text('监控大屏')),
+                        title: const Text(
+                          '监控大屏',
+                          style: TextStyle(color: Colors.white),
+                        )),
                     if (userModel.isAdmin)
                     PaneItemSeparator(),
                     if (userModel.isAdmin)

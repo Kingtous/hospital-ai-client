@@ -27,6 +27,10 @@ import sys
 
 # ffmpeg -rtsp_transport tcp -i rtsp://admin:z1234567@172.0.0.2:554/Streaming/Channels/101?starttime=20230916t083812z&endtime=20230910t084816z -vcodec copy -acodec copy -f flv rtmp://localhost:8554/stream
 
+# 模拟海康
+# ffmpeg -re -stream_loop -1 -i 黑苹果AMD笔记本教程.mp4 -rtsp_transport tcp  -f rtsp   rtsp://127.0.0.1:8554/Streaming/Channels/101
+# ffmpeg -re -stream_loop -1 -i 黑苹果AMD笔记本教程.mp4 -rtsp_transport tcp  -f rtsp   rtsp://127.0.0.1:8554/Streaming/Tracks/101
+
 # ?starttime=20131013t093812z&endtime=20131013t104816z
 
 
