@@ -113,56 +113,69 @@ class _VideoHomePageState extends State<VideoHomePage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              SizedBox(
-                                width: 16.0,
-                              ),
                               Expanded(
-                                child:
-                                    NineGridLive(cams: nineGridCams.toList()),
-                              ),
-                              SizedBox(
-                                width: 50,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                flex: 3,
+                                child: Row(
                                   children: [
-                                    Transform.rotate(
-                                      angle: pi / 2,
-                                      child: Button(
-                                          child:
-                                              const Icon(FluentIcons.page_left),
-                                          onPressed: () {
-                                            index.value =
-                                                max(0, index.value - 1);
-                                            // setState(() {});
-                                          }),
+                                    SizedBox(
+                                      width: 16.0,
                                     ),
-                                    const SizedBox(
-                                      height: 16.0,
+                                    Expanded(
+                                      child: NineGridLive(
+                                          cams: nineGridCams.toList()),
                                     ),
-                                    if (pages > 0)
-                                      Obx(
-                                        () => Text(
-                                          '第${index.value + 1}/$pages页',
-                                          style: TextStyle(color: Colors.blue),
-                                        ),
+                                    SizedBox(
+                                      width: 50,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Transform.rotate(
+                                            angle: pi / 2,
+                                            child: Button(
+                                                child: const Icon(
+                                                    FluentIcons.page_left),
+                                                onPressed: () {
+                                                  index.value =
+                                                      max(0, index.value - 1);
+                                                  // setState(() {});
+                                                }),
+                                          ),
+                                          const SizedBox(
+                                            height: 16.0,
+                                          ),
+                                          if (pages > 0)
+                                            Obx(
+                                              () => Text(
+                                                '第${index.value + 1}/$pages页',
+                                                style: TextStyle(
+                                                    color: Colors.blue),
+                                              ),
+                                            ),
+                                          const SizedBox(
+                                            height: 16.0,
+                                          ),
+                                          Transform.rotate(
+                                            angle: pi / 2,
+                                            child: Button(
+                                                child: const Icon(
+                                                    FluentIcons.page_right),
+                                                onPressed: () {
+                                                  index.value = min(pages - 1,
+                                                      index.value + 1);
+                                                  // setState(() {});
+                                                }),
+                                          )
+                                        ],
                                       ),
-                                    const SizedBox(
-                                      height: 16.0,
-                                    ),
-                                    Transform.rotate(
-                                      angle: pi / 2,
-                                      child: Button(
-                                          child: const Icon(
-                                              FluentIcons.page_right),
-                                          onPressed: () {
-                                            index.value =
-                                                min(pages - 1, index.value + 1);
-                                            // setState(() {});
-                                          }),
                                     ),
                                   ],
                                 ),
-                              )
+                              ),
+                              SizedBox(
+                                width: 400,
+                                child: AlertStatTables(),
+                              ),
                             ],
                           ),
                         ),
@@ -171,13 +184,6 @@ class _VideoHomePageState extends State<VideoHomePage> {
                     );
                   },
                 ),
-              ),
-              const SizedBox(
-                width: 16.0,
-              ),
-              const Expanded(
-                flex: 1,
-                child: AlertStatTables(),
               ),
               const SizedBox(
                 width: 16.0,
@@ -212,6 +218,48 @@ class _AlertStatTablesState extends State<AlertStatTables> {
           const SizedBox(
             height: 20,
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRtAlertTable() {
+    return const Frame(
+      title: Text('实时报警'),
+      content: Offstage(),
+    );
+  }
+
+  Widget _buildHistoryAlertTable() {
+    return const Frame(
+      title: Text('历史列表'),
+      content: Offstage(),
+    );
+  }
+}
+
+class AlertStatTables2 extends StatefulWidget {
+  const AlertStatTables2({super.key});
+
+  @override
+  State<AlertStatTables2> createState() => _AlertStatTablesState2();
+}
+
+class _AlertStatTablesState2 extends State<AlertStatTables2> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 400,
+      child: Column(
+        children: [
+          Expanded(child: _buildRtAlertTable()),
+          const SizedBox(
+            height: 20,
+          ),
+          Expanded(child: _buildHistoryAlertTable()),
+          const SizedBox(
+            height: 20,
+          ),
           Expanded(child: _buildCamAlertTable()),
           const SizedBox(
             height: 20,
@@ -222,15 +270,24 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   }
 
   Widget _buildRtAlertTable() {
-    return const Frame(title: Text('实时报警'), content: Offstage(),);
+    return const Frame(
+      title: Text('实时报警'),
+      content: Offstage(),
+    );
   }
 
   Widget _buildHistoryAlertTable() {
-    return const Frame(title: Text('实时报警'), content: Offstage(),);
+    return const Frame(
+      title: Text('历史列表'),
+      content: Offstage(),
+    );
   }
 
   Widget _buildCamAlertTable() {
-    return const Frame(title: Text('实时报警'), content:  Offstage() ,);
+    return const Frame(
+      title: Text('科室报警统计'),
+      content: Offstage(),
+    );
   }
 }
 
@@ -242,7 +299,6 @@ class AlertStatCharts extends StatefulWidget {
 }
 
 class _AlertStatChartsState extends State<AlertStatCharts> {
-
   Future<List<int>>? res;
 
   @override
@@ -254,10 +310,10 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      //异步操作的future对象
-      future: res,
-        builder: (BuildContext context,AsyncSnapshot<List<int>> snapshot){
-          if(snapshot.hasData){
+        //异步操作的future对象
+        future: res,
+        builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
+          if (snapshot.hasData) {
             //通过snapshot.data，你可以访问到res所代表的异步操作返回的List<int>类型的数据。
             List<int> data = snapshot.data!;
             //测试数据
@@ -279,122 +335,154 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                     width: 20,
                   ),
                   Expanded(flex: 2, child: _buildCamDataStatTable(data)),
+                  const SizedBox(
+                    width: 20,
+                  ),
+                  SizedBox(
+                    width: 400, child: _buildCamAlertTable())
                 ],
               ),
             );
-          }else if(snapshot.hasError) {
+          } else if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
-          }else{
+          } else {
             return CircularProgressIndicator();
           }
+        });
+  }
 
-        }
+  Widget _buildCamAlertTable() {
+    return const Frame(
+      title: Text('科室报警统计'),
+      content: Offstage(),
     );
   }
 
   Widget _buildCamAlertTypeTable() {
     final li = kMockDataType.entries.toList();
-    return Frame(title: Text('报警类型分布'), content: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Transform(transform: Matrix4.identity()..rotateZ(0.1)..rotateY(0.1),
-                child: SizedBox(
-                  height: 200,
-                  width: 200,
-                  child: KPieChart(
-                    data: KPieChartData(kMockDataType, '例'),
-                  ),
-                ),
+    return Frame(
+      title: Text('报警类型分布'),
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Transform(
+            transform: Matrix4.identity()
+              ..rotateZ(0.1)
+              ..rotateY(0.1),
+            child: SizedBox(
+              height: 200,
+              width: 200,
+              child: KPieChart(
+                data: KPieChartData(kMockDataType, '例'),
               ),
-              SizedBox(width: 16,),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: li.map((e) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0),
-                    child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      padding: EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Defaults.colors10[li.indexOf(e)])
-                      ),
-                      child: ColoredBox(color: Defaults.colors10[li.indexOf(e)]),
-                    ),
-                    SizedBox(width: 6.0,),
-                    Expanded(
-                      child: Text('${e.key} ${e.value}例', style: TextStyle(
-                        color: Color(0xFF415B73)
-                      ), overflow: TextOverflow.clip,),
-                    )
-                                  ],),
-                  )).toList(),),
-              )
-            ],
-          ),);
+            ),
+          ),
+          SizedBox(
+            width: 16,
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: li
+                  .map((e) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              padding: EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Defaults.colors10[li.indexOf(e)])),
+                              child: ColoredBox(
+                                  color: Defaults.colors10[li.indexOf(e)]),
+                            ),
+                            SizedBox(
+                              width: 6.0,
+                            ),
+                            Expanded(
+                              child: Text(
+                                '${e.key} ${e.value}例',
+                                style: TextStyle(color: Color(0xFF415B73)),
+                                overflow: TextOverflow.clip,
+                              ),
+                            )
+                          ],
+                        ),
+                      ))
+                  .toList(),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
-   _buildCamDataStatTable(res) {
-     List<int> alertsData = res;
-    return Frame(title: Text("报警数据统计"), content: Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Expanded(
-            child: Column(
+  _buildCamDataStatTable(res) {
+    List<int> alertsData = res;
+    return Frame(
+        title: Text("报警数据统计"),
+        content: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+                child: Column(
               children: <Widget>[
                 SizedBox(
                   height: 0,
                 ),
-                 BrnBrokenLine(
+                BrnBrokenLine(
                   showPointDashLine: true,
                   yHintLineOffset: 30,
                   isTipWindowAutoDismiss: false,
                   lines: [
                     BrnPointsLine(
-                        isShowPointText: false,
-                        lineWidth: 3,
-                        pointRadius: 4,
-                        isShowPoint: true,
-                        isCurve: true,
-                        points: _linePointsForDemo1(res),
-                        shaderColors: [
-                          Colors.green.withOpacity(0.3),
-                          Colors.green.withOpacity(0.01)
-                        ],
-                        lineColor: Colors.green,
+                      isShowPointText: false,
+                      lineWidth: 3,
+                      pointRadius: 4,
+                      isShowPoint: true,
+                      isCurve: true,
+                      points: _linePointsForDemo1(res),
+                      shaderColors: [
+                        Colors.green.withOpacity(0.3),
+                        Colors.green.withOpacity(0.01)
+                      ],
+                      lineColor: Colors.green,
                     )
                   ],
-                  size: Size(MediaQuery.of(context).size.width / 3+100,
-                    MediaQuery.of(context).size.height / 5 - 50,),
+                  size: Size(
+                    MediaQuery.of(context).size.width / 3 + 100,
+                    MediaQuery.of(context).size.height / 5 - 50,
+                  ),
                   isShowXHintLine: true,
                   //X 轴刻度数据
                   xDialValues: _getXDialValuesForDemo1(alertsData),
                   //X 轴展示范围最小值
                   xDialMin: 0,
                   //X 轴展示范围最大值
-                  xDialMax: _getXDialValuesForDemo1(alertsData).length.toDouble(),
+                  xDialMax:
+                      _getXDialValuesForDemo1(alertsData).length.toDouble(),
                   //Y 轴刻度数据
                   yDialValues: _getYDialValuesForDemo1(alertsData),
                   //Y 轴展示范围最小值
                   yDialMin: 0,
                   //Y 轴展示范围最大值,断言>0
-                  yDialMax: _getMaxValueForDemo1(alertsData)  <= 10 ? 10:_getMaxValueForDemo1(alertsData),
+                  yDialMax: _getMaxValueForDemo1(alertsData) <= 10
+                      ? 10
+                      : _getMaxValueForDemo1(alertsData),
                   isHintLineSolid: false,
                   isShowYDialText: true,
                   isShowXDialText: true,
                 )
               ],
-            )
-        )
-      ],
-
-    ));
+            ))
+          ],
+        ));
   }
 
   List<BrnPointData> _linePointsForDemo1(List<int> brokenData) {
@@ -402,7 +490,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     return hours.map((hour) {
       int dataIndex = hour; // 获取对应的brokenData索引
       int value = brokenData[hour];
-      if(hour == 12){
+      if (hour == 12) {
         //24点和0点值一样
         value = brokenData[0];
       }
@@ -422,11 +510,11 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
   List<BrnDialItem> _getYDialValuesForDemo1(List<int> brokenData) {
     // double min = _getMinValueForDemo1(brokenData);
-    double max = _getMaxValueForDemo1(brokenData)*1.1;
+    double max = _getMaxValueForDemo1(brokenData) * 1.1;
     int step = ((max - 0) / 5).ceil();
     List<BrnDialItem> _yDialValue = [];
     //如果没有预警或者预警过低会报错或导致折线图超出预期大小
-    if(max <= 10){
+    if (max <= 10) {
       max = 10;
       step = 2;
       for (int index = 0; index <= 5; index++) {
@@ -438,7 +526,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       }
     }
     // double dValue = (max - min) / 10;
-    else{
+    else {
       for (int index = 0; index <= 5; index++) {
         _yDialValue.add(BrnDialItem(
           dialText: '${(0 + index * step).ceil()}',
@@ -467,24 +555,24 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     return maxValue;
   }
 
-
   List<BrnDialItem> _getXDialValuesForDemo1(List<int> brokenData) {
     List<BrnDialItem> _xDialValue = [];
     for (int index = 0; index < brokenData.length; index++) {
       // int hour = brokenData[index] % 24;
       //返回"xx:00"的形式
-      String dialText = '${(index*2).toString().padLeft(2, '0')}:00';
+      String dialText = '${(index * 2).toString().padLeft(2, '0')}:00';
 
       _xDialValue.add(BrnDialItem(
         dialText: dialText,
-        dialTextStyle: TextStyle(fontSize: 12.0, color: Color(0xFF999999),height: 1.0),
+        dialTextStyle:
+            TextStyle(fontSize: 12.0, color: Color(0xFF999999), height: 1.0),
         value: index.toDouble(),
       ));
     }
     return _xDialValue;
   }
 
-   Future<List<int>> getData() async {
+  Future<List<int>> getData() async {
     // res[0] = (await alertsModel.getAlertsFromTo(0, 2)).length;
     List<Alerts> list1 = await alertsModel.getAlertsFromTo(0, 2);
     List<Alerts> list2 = await alertsModel.getAlertsFromTo(2, 4);
@@ -498,12 +586,23 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     List<Alerts> list10 = await alertsModel.getAlertsFromTo(18, 20);
     List<Alerts> list11 = await alertsModel.getAlertsFromTo(20, 22);
     List<Alerts> list12 = await alertsModel.getAlertsFromTo(22, 24);
-    List<int> res = [list1.length,list2.length,list3.length,list4.length,list5.length,list6.length,
-      list7.length,list8.length,list9.length,list10.length,list11.length,list12.length,0];
+    List<int> res = [
+      list1.length,
+      list2.length,
+      list3.length,
+      list4.length,
+      list5.length,
+      list6.length,
+      list7.length,
+      list8.length,
+      list9.length,
+      list10.length,
+      list11.length,
+      list12.length,
+      0
+    ];
     return res;
   }
-
-
 }
 
 class NineGridLive extends StatelessWidget {
