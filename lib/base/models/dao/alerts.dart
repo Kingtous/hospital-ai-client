@@ -18,16 +18,13 @@ import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
 enum AlertType { unknown, whiteShirt }
 
-@Entity(
-  tableName: 'alerts',
-  foreignKeys: [
+@Entity(tableName: 'alerts', foreignKeys: [
   ForeignKey(
       childColumns: ['cam_id'],
       parentColumns: ['id'],
       entity: Cam,
       onDelete: ForeignKeyAction.cascade)
-]
-)
+])
 class Alerts {
   @PrimaryKey(autoGenerate: true)
   int? id;
@@ -44,7 +41,17 @@ class Alerts {
   @ColumnInfo(name: 'cam_id')
   final int camId;
 
-  Alerts(this.id, this.createAt, this.img, this.camId, this.alertType);
+  @ColumnInfo(name: 'cam_name')
+  final String camName;
+
+  @ColumnInfo(name: 'room_id')
+  final int roomId;
+
+  @ColumnInfo(name: 'room_name')
+  final String roomName;
+
+  Alerts(this.id, this.createAt, this.img, this.camId, this.alertType,
+      this.camName, this.roomId, this.roomName);
 }
 
 @dao
@@ -66,5 +73,4 @@ abstract class AlertDao {
 
   @Query('SELECT * FROM alerts WHERE create_at >= :st AND cam_id IN (:cams)')
   Future<List<Alerts>> getAlertsInCamsFrom(List<int> cams, int st);
-
 }

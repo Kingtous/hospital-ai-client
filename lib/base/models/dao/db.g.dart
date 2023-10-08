@@ -44,7 +44,6 @@ class _$AppDBBuilder {
     final path = name != null
         ? await sqfliteDatabaseFactory.getDatabasePath(name!)
         : ':memory:';
-    print(path);
     final database = _$AppDB();
     database.database = await database.open(
       path,
@@ -82,7 +81,7 @@ class _$AppDB extends AppDB {
     Callback? callback,
   ]) async {
     final databaseOptions = sqflite.OpenDatabaseOptions(
-      version: 1,
+      version: 2,
       onConfigure: (database) async {
         await database.execute('PRAGMA foreign_keys = ON');
         await callback?.onConfigure?.call(database);
@@ -112,7 +111,7 @@ class _$AppDB extends AppDB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_room_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB NOT NULL, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+            'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB NOT NULL, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, `cam_name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `room_name` TEXT NOT NULL, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `recorder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `ip` TEXT NOT NULL, `port` INTEGER NOT NULL, `u` TEXT NOT NULL, `p` TEXT NOT NULL)');
 
@@ -858,7 +857,10 @@ class _$AlertDao extends AlertDao {
                   'create_at': item.createAt,
                   'img': item.img,
                   'alert_type': item.alertType,
-                  'cam_id': item.camId
+                  'cam_id': item.camId,
+                  'cam_name': item.camName,
+                  'room_id': item.roomId,
+                  'room_name': item.roomName
                 }),
         _alertsDeletionAdapter = DeletionAdapter(
             database,
@@ -869,7 +871,10 @@ class _$AlertDao extends AlertDao {
                   'create_at': item.createAt,
                   'img': item.img,
                   'alert_type': item.alertType,
-                  'cam_id': item.camId
+                  'cam_id': item.camId,
+                  'cam_name': item.camName,
+                  'room_id': item.roomId,
+                  'room_name': item.roomName
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -894,7 +899,10 @@ class _$AlertDao extends AlertDao {
             row['create_at'] as int,
             row['img'] as Uint8List,
             row['cam_id'] as int,
-            row['alert_type'] as int),
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String),
         arguments: [st, ed]);
   }
 
@@ -906,7 +914,10 @@ class _$AlertDao extends AlertDao {
             row['create_at'] as int,
             row['img'] as Uint8List,
             row['cam_id'] as int,
-            row['alert_type'] as int),
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String),
         arguments: [st]);
   }
 
@@ -935,7 +946,10 @@ class _$AlertDao extends AlertDao {
             row['create_at'] as int,
             row['img'] as Uint8List,
             row['cam_id'] as int,
-            row['alert_type'] as int),
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String),
         arguments: [st, ...cams]);
   }
 

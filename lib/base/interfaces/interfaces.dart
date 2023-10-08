@@ -21,7 +21,11 @@ Future<void> setupDependencies() async {
     windowManager.setTitleBarStyle(TitleBarStyle.hidden);
   }
   final sp = await SharedPreferences.getInstance();
-  final db = await $FloorAppDB.databaseBuilder(kDbName).build();
+  final db = await $FloorAppDB
+      .databaseBuilder(kDbName)
+      .addMigrations(kMigrations)
+      .build();
+
   it.registerSingleton<AppDB>(db);
   it.registerSingleton<SharedPreferences>(sp);
   final u = UserModel();
