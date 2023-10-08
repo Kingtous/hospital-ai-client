@@ -224,69 +224,154 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   }
 
   Widget _buildRtAlertTable() {
-    return const Frame(
+    return Frame(
       title: Text('实时报警'),
-      content: Offstage(),
-    );
-  }
-
-  Widget _buildHistoryAlertTable() {
-    return const Frame(
-      title: Text('历史列表'),
-      content: Offstage(),
-    );
-  }
-}
-
-class AlertStatTables2 extends StatefulWidget {
-  const AlertStatTables2({super.key});
-
-  @override
-  State<AlertStatTables2> createState() => _AlertStatTablesState2();
-}
-
-class _AlertStatTablesState2 extends State<AlertStatTables2> {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 400,
-      child: Column(
-        children: [
-          Expanded(child: _buildRtAlertTable()),
-          const SizedBox(
-            height: 20,
-          ),
-          Expanded(child: _buildHistoryAlertTable()),
-          const SizedBox(
-            height: 20,
-          ),
-          Expanded(child: _buildCamAlertTable()),
-          const SizedBox(
-            height: 20,
-          ),
-        ],
+      content: ListView.builder(
+        itemBuilder: ((context, index) {
+          final item = kMockRealtimeAlert[index];
+          return Container(
+            height: 40,
+            margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+            padding: EdgeInsets.symmetric(horizontal: 6.0),
+            decoration: BoxDecoration(color: Color(0x1F12ADFF)),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 8.0,
+                ),
+                Image.asset(
+                  'assets/images/alert.png',
+                ),
+                SizedBox(
+                  width: 14.0,
+                ),
+                Expanded(
+                    child: Text(
+                  '${item.roomName}-${item.camName}',
+                  style: TextStyle(color: Color(0xFF415B73)),
+                )),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: Text(
+                    '查看',
+                    style: TextStyle(color: Color(0xFFFF222F)),
+                  ),
+                ),
+                SizedBox(
+                  width: 13,
+                )
+              ],
+            ),
+          );
+        }),
+        itemExtent: 40,
+        itemCount: kMockRealtimeAlert.length,
       ),
     );
   }
 
-  Widget _buildRtAlertTable() {
-    return const Frame(
-      title: Text('实时报警'),
-      content: Offstage(),
-    );
-  }
-
   Widget _buildHistoryAlertTable() {
     return const Frame(
       title: Text('历史列表'),
-      content: Offstage(),
+      content: HistoryAlertTable(),
     );
   }
+}
 
-  Widget _buildCamAlertTable() {
-    return const Frame(
-      title: Text('科室报警统计'),
-      content: Offstage(),
+class HistoryAlertTable extends StatefulWidget {
+  const HistoryAlertTable({super.key});
+
+  @override
+  State<HistoryAlertTable> createState() => _HistoryAlertTableState();
+}
+
+class _HistoryAlertTableState extends State<HistoryAlertTable> {
+  static const titleStyle = TextStyle(
+    color: Color(0xFF415B73)
+  );
+  static const bodyStyle = TextStyle(
+    color: Color(0xFF415B73)
+  );
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          height: 40,
+          color: Color(0x1F12ADFF),
+          child: Row(
+            children: [
+              Expanded(
+                  child: Text(
+                '报警事件',
+                textAlign: TextAlign.center,
+                style: titleStyle,
+              )),
+              Expanded(
+                  child: Text(
+                '报警位置',
+                textAlign: TextAlign.center,
+                style: titleStyle,
+              )),
+              Expanded(
+                  child: Text(
+                '报警时间',
+                textAlign: TextAlign.center,
+                style: titleStyle,
+              )),
+            ],
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            itemBuilder: (context, index) {
+              var alert = kMockRealtimeAlert[index];
+              var ca = DateTime.fromMillisecondsSinceEpoch(alert.createAt);
+              return Column(
+                children: [
+                  Container(
+                    height: 39,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            AlertType.values[alert.alertType].toHumanString(),
+                            textAlign: TextAlign.center,
+                            style: bodyStyle,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${alert.roomName}',
+                            textAlign: TextAlign.center,
+                            style: bodyStyle,
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            '${ca.year}-${ca.month}-${ca.day}',
+                            textAlign: TextAlign.center,
+                            style: bodyStyle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 16.0),
+                    height: 1,
+                    color: Color(0xFF129BFF),
+                  )
+                ],
+              );
+            },
+            itemExtent: 40,
+            itemCount: kMockRealtimeAlert.length,
+          ),
+        )
+      ],
     );
   }
 }
@@ -338,8 +423,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                   const SizedBox(
                     width: 20,
                   ),
-                  SizedBox(
-                    width: 400, child: _buildCamAlertTable())
+                  SizedBox(width: 400, child: _buildCamAlertTable())
                 ],
               ),
             );

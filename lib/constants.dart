@@ -1,4 +1,7 @@
+import 'dart:typed_data';
+
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
 const kDbVersion = 2;
@@ -60,3 +63,13 @@ String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
 String getRtspBackTrackUrl(Cam cam, DateTime start, DateTime end) {
   return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}?starttime=${start.toIso8601String()}&endtime=${end.toIso8601String()}";
 }
+
+final kMockRealtimeAlert = <Alerts>[
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区')
+];

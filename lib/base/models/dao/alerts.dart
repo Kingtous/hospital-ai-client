@@ -18,6 +18,19 @@ import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
 enum AlertType { unknown, whiteShirt }
 
+extension ToString on AlertType {
+  String toHumanString() {
+    switch (this) {
+      case AlertType.unknown:
+        return '未知';
+      case AlertType.whiteShirt:
+        return '未穿白大褂';
+      default:
+        return '';
+    }
+  }
+}
+
 @Entity(tableName: 'alerts', foreignKeys: [
   ForeignKey(
       childColumns: ['cam_id'],

@@ -83,8 +83,8 @@ class _FrameState extends State<Frame> {
               ),
             ],
           ),
-          SizedBox(
-            height: 4.0,
+          const SizedBox(
+            height: 8.0,
           ),
           Expanded(
               child: widget.content)
