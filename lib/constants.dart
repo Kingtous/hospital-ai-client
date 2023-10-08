@@ -1,7 +1,7 @@
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
-const kDbVersion = 1;
+const kDbVersion = 2;
 const kDefaultAdminName = 'admin';
 const kDefaultAdminPassword = 'admin';
 const kDbName = 'cam.db';

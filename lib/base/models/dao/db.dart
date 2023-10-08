@@ -36,6 +36,7 @@ abstract class AppDB extends FloorDatabase {
   UserDao get userDao;
   RoomDao get roomDao;
   AlertDao get alertDao;
+  @Deprecated('暂时不用')
   RecorderDao get recorderDao;
 }
 

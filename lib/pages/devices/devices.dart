@@ -338,7 +338,7 @@ class _CameraTableState extends State<CameraTable> {
                     SelectableText(CamType.values[e.camType].toHumanString()),
                     Row(
                       children: [
-                        Expanded(child: SelectableText("通道${e.channelId}")),
+                        Expanded(child: SelectableText("${e.host}:${e.port} 通道${e.channelId}")),
                         // FlyoutTarget(
                         //   controller: FlyoutController(),
                         //   child: Button(

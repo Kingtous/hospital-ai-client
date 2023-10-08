@@ -213,20 +213,27 @@ class RTSPCamera extends PlayableDevice
   }
 
   static Future<void> addNewDevice(BuildContext context, Room room) async {
-    var rtspUrl = "";
     var id = "";
     var msg = "";
-    var channelId = -1;
+    var channelId = 1;
     var userName = "";
     var password = "";
     var port = 554;
-    var host = "172.0.0.1";
+    var host = "172.0.0.2";
     await showDialog(
         context: context,
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
             return ContentDialog(
-              title: const Text('新增RTSP设备'),
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('新增摄像头设备', style: TextStyle(
+                    fontSize: 20.0,
+                  ),),
+                ],
+              ),
+              constraints: BoxConstraints.expand(width: 600, height: 600),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -238,7 +245,7 @@ class RTSPCamera extends PlayableDevice
                           title: const Text('新增设备说明'),
                           content: Text(msg.isNotEmpty
                               ? msg
-                              : '设备名保证唯一，视频流地址应以rtsp://开头'),
+                              : '设备名保证唯一'),
                           severity: msg.isNotEmpty
                               ? InfoBarSeverity.warning
                               : InfoBarSeverity.info,
@@ -247,61 +254,101 @@ class RTSPCamera extends PlayableDevice
                     ],
                   ),
                   const SizedBox(
-                    height: 4.0,
+                    height: 8.0,
                   ),
                   TextBox(
                     prefix: const Padding(
                       padding: EdgeInsets.all(8.0),
-                      child: Text('设备名称'),
+                      child: Text('NVR IP'),
+                    ),
+                    autofillHints: ['172.0.0.2'],
+                    onChanged: (s) {
+                      host = s;
+                    },
+                  ),
+                  SizedBox(height: 8,),
+                  TextBox(
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('NVR 端口'),
+                    ),
+                    autofillHints: ['554'],
+                    onChanged: (s) {
+                      int? tmpPort = int.tryParse(s);
+                      port = tmpPort ?? 554;
+                    },
+                  ),
+                  SizedBox(height: 8,),
+                  TextBox(
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('NVR 用户名'),
+                    ),
+                    autofillHints: const ['admin'],
+                    onChanged: (s) {
+                      userName = s;
+                    },
+                  ),
+                  SizedBox(height: 8,),
+                  TextBox(
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('NVR 密码'),
+                    ),
+                    onChanged: (p) {
+                      password = p;
+                    },
+                  ),
+                  SizedBox(height: 8,),
+                  TextBox(
+                    prefix: const Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text('摄像头名称'),
                     ),
                     maxLength: 50,
                     onChanged: (s) {
                       id = s;
                     },
                   ),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('设备串流地址'),
-                    ),
-                    autofillHints: ['rtsp://'],
-                    onChanged: (s) {
-                      rtspUrl = s;
-                    },
+                  SizedBox(height: 8,),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ComboBox(
+                            value: channelId,
+                            onChanged: (newChannelId) {
+                              setState(() {
+                                if (newChannelId == null) {
+                                  return;
+                                }
+                                channelId = newChannelId;
+                              });
+                            },
+                            items: [
+                              ...List.generate(512, (idx) {
+                                return ComboBoxItem(
+                                  child: Text('摄像头通道号 ${idx + 1}'),
+                                  value: idx + 1,
+                                );
+                              }),
+                            ]),
+                      ),
+                    ],
                   ),
-                  ComboBox(items: [
-                    ...List.generate(512, (idx) {
-                      return ComboBoxItem(
-                        child: Text('通道$idx'),
-                        value: idx,
-                      );
-                    }),
-                  ])
+                  SizedBox(height: 8,),
                 ],
               ),
               actions: [
                 FilledButton(
                     child: const Text('确定'),
                     onPressed: () async {
-                      final rtspUri = Uri.tryParse(rtspUrl);
-                      if (rtspUri == null) {
-                        msg = "不是一个有效的URL地址";
+                      if (userName.isEmpty || password.isEmpty) {
+                        msg = "用户名或密码不能为空";
                         setState(() {});
                         return;
                       }
-                      print(rtspUri.scheme);
-                      if (rtspUri.scheme != "rtsp") {
-                        setState(() {});
-                        msg = "设备地址格式有误，请与rtsp://开头";
-                        return;
-                      }
-                      if (rtspUri.host.isEmpty) {
-                        msg = "地址内域名/IP地址填写错误";
-                        setState(() {});
-                        return;
-                      }
-                      if (rtspUri.path.isEmpty) {
-                        msg = "地址内没有path路径";
+                      if (host.isEmpty) {
+                        msg = "地址内域名/IP地址不能为空";
                         setState(() {});
                         return;
                       }
