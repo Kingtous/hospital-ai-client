@@ -270,7 +270,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
           timer.cancel();
         },
         onChangeEnd: (s) {
-          print("changed: $s");
+          // print("changed: $s");
           pastSecondsFromStart.value = s.floor();
           // 判断是否超过了今天
           final n = DateTime.now();
@@ -288,8 +288,8 @@ class _FullScreenLiveState extends State<FullScreenLive> {
           } else {
             if (isLive.value) {
               isLive.value = false;
-              _loadVideoOrPlayback();
             }
+            _loadVideoOrPlayback();
           }
           timer = Timer.periodic(const Duration(seconds: 1), _onTimeTick);
         });
@@ -302,7 +302,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
   }
 
   void _loadVideoOrPlayback() async {
-    print('loading video ${cam.value}');
+    // print('loading video ${cam.value}');
     var url = "";
     if (isLive.value) {
       url = getRtSpStreamUrl(cam.value, mainStream: false);
@@ -317,8 +317,9 @@ class _FullScreenLiveState extends State<FullScreenLive> {
       url = getRtspBackTrackUrl(cam.value, st, ed);
     }
     // print("playing: $url");
+    player.setVolume(0);
     await player.open(Media(url), play: true);
-    print(player.state.playing);
+    // print(player.state.playing);
   }
 }
 
