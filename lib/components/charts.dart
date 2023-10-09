@@ -18,15 +18,14 @@ class KPieChart extends StatelessWidget {
     return Chart<MapEntry<String, int>>(
       data: data.count.entries.toList(),
       variables: {
-    'data': Variable(accessor: (m) => m.value),
-    'key': Variable(accessor: (m) => m.key),
+        'data': Variable(accessor: (m) => m.value),
+        'key': Variable(accessor: (m) => m.key),
       },
       transforms: [Proportion(variable: 'data', as: 'percent')],
       marks: [
-    IntervalMark(
-        position: Varset('percent') / Varset('key'),
-        label: LabelEncode(
-            encoder: (tuple) => Label('')),
+        IntervalMark(
+            position: Varset('percent') / Varset('key'),
+            label: LabelEncode(encoder: (tuple) => Label('')),
             color: ColorEncode(variable: 'key', values: Defaults.colors10),
             modifiers: [StackModifier()])
       ],

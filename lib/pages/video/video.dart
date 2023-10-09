@@ -89,101 +89,119 @@ class _VideoHomePageState extends State<VideoHomePage> {
             children: [
               Expanded(
                 flex: 4,
-                child: Obx(
-                  () {
-                    final keys =
-                        videoModel.playerMap.keys.toList(growable: false)
-                          ..sort((c1, c2) {
-                            return c1.name.compareTo(c2.name);
-                          });
-                    final pages = (keys.length / 9).ceil();
-                    // index.value = min(index.value, pages - 1);
-                    final pageKeys = keys
-                        .skip(index.value * 9)
-                        .take(9)
-                        .toList(growable: false);
-                    final nineGridCams = List.generate(
-                        9,
-                        (index) =>
-                            index < pageKeys.length ? pageKeys[index] : null);
-                    return Column(
-                      children: [
-                        Expanded(
-                          flex: 2,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                child: FutureBuilder(
+                    future: videoModel.getAllowedCams(),
+                    builder: (context, data) {
+                      if (!data.hasData) {
+                        return Center(
+                          child: Text('加载中 ${data.hasError ? data.error : ''}'),
+                        );
+                      }
+                      final allowedCams = data.data!;
+                      return Obx(
+                        () {
+                          var keys =
+                              videoModel.playerMap.keys.toList(growable: false)
+                                ..sort((c1, c2) {
+                                  return c1.name.compareTo(c2.name);
+                                });
+                          keys = keys
+                              .where((element) => allowedCams.contains(element))
+                              .toList();
+
+                          final pages = (keys.length / 9).ceil();
+                          // index.value = min(index.value, pages - 1);
+                          final pageKeys = keys
+                              .skip(index.value * 9)
+                              .take(9)
+                              .toList(growable: false);
+                          final nineGridCams = List.generate(
+                              9,
+                              (index) => index < pageKeys.length
+                                  ? pageKeys[index]
+                                  : null);
+                          return Column(
                             children: [
                               Expanded(
-                                flex: 3,
+                                flex: 2,
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    SizedBox(
-                                      width: 16.0,
-                                    ),
                                     Expanded(
-                                      child: NineGridLive(
-                                          cams: nineGridCams.toList()),
-                                    ),
-                                    SizedBox(
-                                      width: 50,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
+                                      flex: 3,
+                                      child: Row(
                                         children: [
-                                          Transform.rotate(
-                                            angle: pi / 2,
-                                            child: Button(
-                                                child: const Icon(
-                                                    FluentIcons.page_left),
-                                                onPressed: () {
-                                                  index.value =
-                                                      max(0, index.value - 1);
-                                                  // setState(() {});
-                                                }),
+                                          SizedBox(
+                                            width: 16.0,
                                           ),
-                                          const SizedBox(
-                                            height: 16.0,
+                                          Expanded(
+                                            child: NineGridLive(
+                                                cams: nineGridCams.toList()),
                                           ),
-                                          if (pages > 0)
-                                            Obx(
-                                              () => Text(
-                                                '第${index.value + 1}/$pages页',
-                                                style: TextStyle(
-                                                    color: Colors.blue),
-                                              ),
+                                          SizedBox(
+                                            width: 50,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Transform.rotate(
+                                                  angle: pi / 2,
+                                                  child: Button(
+                                                      child: const Icon(
+                                                          FluentIcons
+                                                              .page_left),
+                                                      onPressed: () {
+                                                        index.value = max(
+                                                            0, index.value - 1);
+                                                        // setState(() {});
+                                                      }),
+                                                ),
+                                                const SizedBox(
+                                                  height: 16.0,
+                                                ),
+                                                if (pages > 0)
+                                                  Obx(
+                                                    () => Text(
+                                                      '第${index.value + 1}/$pages页',
+                                                      style: TextStyle(
+                                                          color: Colors.blue),
+                                                    ),
+                                                  ),
+                                                const SizedBox(
+                                                  height: 16.0,
+                                                ),
+                                                Transform.rotate(
+                                                  angle: pi / 2,
+                                                  child: Button(
+                                                      child: const Icon(
+                                                          FluentIcons
+                                                              .page_right),
+                                                      onPressed: () {
+                                                        index.value = min(
+                                                            pages - 1,
+                                                            index.value + 1);
+                                                        // setState(() {});
+                                                      }),
+                                                )
+                                              ],
                                             ),
-                                          const SizedBox(
-                                            height: 16.0,
                                           ),
-                                          Transform.rotate(
-                                            angle: pi / 2,
-                                            child: Button(
-                                                child: const Icon(
-                                                    FluentIcons.page_right),
-                                                onPressed: () {
-                                                  index.value = min(pages - 1,
-                                                      index.value + 1);
-                                                  // setState(() {});
-                                                }),
-                                          )
                                         ],
                                       ),
+                                    ),
+                                    SizedBox(
+                                      width: 400,
+                                      child: AlertStatTables(),
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                width: 400,
-                                child: AlertStatTables(),
-                              ),
+                              Expanded(flex: 1, child: const AlertStatCharts())
                             ],
-                          ),
-                        ),
-                        Expanded(flex: 1, child: const AlertStatCharts())
-                      ],
-                    );
-                  },
-                ),
+                          );
+                        },
+                      );
+                    }),
               ),
               const SizedBox(
                 width: 16.0,
@@ -286,13 +304,8 @@ class HistoryAlertTable extends StatefulWidget {
 }
 
 class _HistoryAlertTableState extends State<HistoryAlertTable> {
-  static const titleStyle = TextStyle(
-    color: Color(0xFF415B73)
-  );
-  static const bodyStyle = TextStyle(
-    color: Color(0xFF415B73)
-  );
-
+  static const titleStyle = TextStyle(color: Color(0xFF415B73));
+  static const bodyStyle = TextStyle(color: Color(0xFF415B73));
 
   @override
   Widget build(BuildContext context) {
@@ -450,20 +463,18 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Transform(
-            transform: Matrix4.identity()
-              ..rotateZ(0.1)
-              ..rotateY(0.1),
-            child: SizedBox(
-              height: 200,
-              width: 200,
-              child: KPieChart(
-                data: KPieChartData(kMockDataType, '例'),
-              ),
+          SizedBox(
+            height: 150,
+            width: 150,
+            child: KPieChart(
+              data: KPieChartData(
+                  kMockDataType.map(
+                      (key, value) => MapEntry(key.toHumanString(), value)),
+                  '例'),
             ),
           ),
           SizedBox(
-            width: 16,
+            width: 8,
           ),
           Expanded(
             child: Column(
@@ -490,7 +501,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                             ),
                             Expanded(
                               child: Text(
-                                '${e.key} ${e.value}例',
+                                '${e.key.toHumanString()} ${e.value}例',
                                 style: TextStyle(color: Color(0xFF415B73)),
                                 overflow: TextOverflow.clip,
                               ),
@@ -520,48 +531,50 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                 SizedBox(
                   height: 0,
                 ),
-                BrnBrokenLine(
-                  showPointDashLine: true,
-                  yHintLineOffset: 30,
-                  isTipWindowAutoDismiss: false,
-                  lines: [
-                    BrnPointsLine(
-                      isShowPointText: false,
-                      lineWidth: 3,
-                      pointRadius: 4,
-                      isShowPoint: true,
-                      isCurve: true,
-                      points: _linePointsForDemo1(res),
-                      shaderColors: [
-                        Colors.green.withOpacity(0.3),
-                        Colors.green.withOpacity(0.01)
-                      ],
-                      lineColor: Colors.green,
-                    )
-                  ],
-                  size: Size(
-                    MediaQuery.of(context).size.width / 3 + 100,
-                    MediaQuery.of(context).size.height / 5 - 50,
+                Expanded(
+                  child: BrnBrokenLine(
+                    showPointDashLine: true,
+                    yHintLineOffset: 30,
+                    isTipWindowAutoDismiss: false,
+                    lines: [
+                      BrnPointsLine(
+                        isShowPointText: false,
+                        lineWidth: 3,
+                        pointRadius: 4,
+                        isShowPoint: true,
+                        isCurve: true,
+                        points: _linePointsForDemo1(res),
+                        shaderColors: [
+                          Colors.green.withOpacity(0.3),
+                          Colors.green.withOpacity(0.01)
+                        ],
+                        lineColor: Colors.green,
+                      )
+                    ],
+                    size: Size(
+                      MediaQuery.of(context).size.width / 3 + 100,
+                      MediaQuery.of(context).size.height / 5 - 50,
+                    ),
+                    isShowXHintLine: true,
+                    //X 轴刻度数据
+                    xDialValues: _getXDialValuesForDemo1(alertsData),
+                    //X 轴展示范围最小值
+                    xDialMin: 0,
+                    //X 轴展示范围最大值
+                    xDialMax:
+                        _getXDialValuesForDemo1(alertsData).length.toDouble(),
+                    //Y 轴刻度数据
+                    yDialValues: _getYDialValuesForDemo1(alertsData),
+                    //Y 轴展示范围最小值
+                    yDialMin: 0,
+                    //Y 轴展示范围最大值,断言>0
+                    yDialMax: _getMaxValueForDemo1(alertsData) <= 10
+                        ? 10
+                        : _getMaxValueForDemo1(alertsData),
+                    isHintLineSolid: false,
+                    isShowYDialText: true,
+                    isShowXDialText: true,
                   ),
-                  isShowXHintLine: true,
-                  //X 轴刻度数据
-                  xDialValues: _getXDialValuesForDemo1(alertsData),
-                  //X 轴展示范围最小值
-                  xDialMin: 0,
-                  //X 轴展示范围最大值
-                  xDialMax:
-                      _getXDialValuesForDemo1(alertsData).length.toDouble(),
-                  //Y 轴刻度数据
-                  yDialValues: _getYDialValuesForDemo1(alertsData),
-                  //Y 轴展示范围最小值
-                  yDialMin: 0,
-                  //Y 轴展示范围最大值,断言>0
-                  yDialMax: _getMaxValueForDemo1(alertsData) <= 10
-                      ? 10
-                      : _getMaxValueForDemo1(alertsData),
-                  isHintLineSolid: false,
-                  isShowYDialText: true,
-                  isShowXDialText: true,
                 )
               ],
             ))

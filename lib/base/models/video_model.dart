@@ -53,7 +53,8 @@ class VideoModel {
     final id = await appDB.camDao.addCam(cam, room);
     cam.id = id;
     if (cam.camType == CamType.rtsp.index) {
-      final url = "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}02";
+      final url =
+          "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}02";
       final rtspCam = RTSPCamera(cam.name, rtspUrl: url);
       await rtspCam.init();
       _playerMap[cam] = rtspCam;
@@ -61,6 +62,41 @@ class VideoModel {
     } else {
       throw UnimplementedError('Unimplemented');
     }
+  }
+
+  Future<List<Cam>> getAllowedCams() async {
+    if (userModel.isAdmin) {
+      return appDB.camDao.getAll();
+    } else {
+      final roles =
+          await appDB.areaUserDao.findAllAreasByUser(userModel.user!.id!);
+      final camsAllowed = roles.isNotEmpty
+          ? await appDB.areaUserDao
+              .findAllCamUsersByRoles(roles.map((e) => e.id!).toList())
+          : <Cam>[];
+      return camsAllowed;
+    }
+  }
+
+  Future<Map<Room, List<Cam>>> getCamTree() async {
+    Map<Room, List<Cam>> camTree = Map<Room, List<Cam>>();
+    final rooms = await appDB.roomDao.getRooms();
+    final roles =
+        await appDB.areaUserDao.findAllAreasByUser(userModel.user!.id!);
+    final camsAllowed = roles.isNotEmpty
+        ? await appDB.areaUserDao
+            .findAllCamUsersByRoles(roles.map((e) => e.id!).toList())
+        : [];
+    for (final room in rooms) {
+      var cams = await appDB.roomDao.getCamsByRoom(room.id!);
+      if (!userModel.isAdmin) {
+        cams = cams.where((element) => camsAllowed.contains(element)).toList();
+      }
+      if (cams.isNotEmpty || userModel.isAdmin) {
+        camTree[room] = cams;
+      }
+    }
+    return camTree;
   }
 
   PlayableSource? get(Cam cam) {

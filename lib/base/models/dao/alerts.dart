@@ -16,7 +16,7 @@ import 'dart:typed_data';
 import 'package:floor/floor.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 
-enum AlertType { unknown, whiteShirt }
+enum AlertType { unknown, whiteShirt, other }
 
 extension ToString on AlertType {
   String toHumanString() {
@@ -25,6 +25,8 @@ extension ToString on AlertType {
         return '未知';
       case AlertType.whiteShirt:
         return '未穿白大褂';
+      case AlertType.other:
+        return '其他';
       default:
         return '';
     }

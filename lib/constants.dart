@@ -16,6 +16,8 @@ const kRadius = 8.0;
 const kHighlightColor = Color(0xFFE0EDFF);
 const kBlueColor = Color(0xFF409EFF);
 const kTableGreyColor = Color(0xFFF5F7FA);
+const kTextColor = Color(0xFF415B73);
+const kTextStyle = TextStyle(color: kTextColor);
 
 /// UI
 Widget get bgImage => SizedBox(
@@ -54,22 +56,32 @@ success(BuildContext context, String infoText) {
           ));
 }
 
-const kMockDataType = <String, int>{"未穿防护服": 2, "未消毒": 1, "擅自离岗": 3, "未戴口罩": 4};
+const kMockDataType = <AlertType, int>{
+  AlertType.whiteShirt: 2,
+  AlertType.other: 1
+};
 
 String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
   return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}${mainStream ? '01' : '02'}";
 }
 
 String getRtspBackTrackUrl(Cam cam, DateTime start, DateTime end) {
-  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}?starttime=${start.toIso8601String()}&endtime=${end.toIso8601String()}";
+  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}02?starttime=${start.toUtc().toIso8601String()}&endtime=${end.toUtc().toIso8601String()}";
 }
 
 final kMockRealtimeAlert = <Alerts>[
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
-  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1, AlertType.whiteShirt.index, '测试摄像头', 1, '教学区')
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区'),
+  Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
+      AlertType.whiteShirt.index, '测试摄像头', 1, '教学区')
 ];

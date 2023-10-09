@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
@@ -32,10 +33,15 @@ class _FullScreenLiveState extends State<FullScreenLive> {
   RxInt pastSecondsFromStart = 0.obs;
   late Timer timer;
   late final Player player;
+  late final Rx<Cam> cam;
 
   @override
   void initState() {
     super.initState();
+    cam = widget.cam.obs;
+    cam.listen((c) {
+      _loadVideoOrPlayback();
+    });
     timer = Timer.periodic(Duration(seconds: 1), _onTimeTick);
     final now = DateTime.now();
     currentPlayingTim.value = DateTime(now.year, now.month, now.day, 0, 0, 0);
@@ -77,17 +83,91 @@ class _FullScreenLiveState extends State<FullScreenLive> {
                 children: [
                   Container(
                     color: kBgColor,
-                    padding: EdgeInsets.all(4.0),
-                    width: 400,
+                    // padding: EdgeInsets.all(4.0),
+                    width: 350,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Button(
-                          onPressed: () {
-                            Navigator.pop(context);
+                        Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                            Color(0x1F12ADFF),
+                            Color(0x0012ADFF)
+                          ])),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 8.0,
+                              ),
+                              Image.asset('assets/images/list_icon.png'),
+                              Text(
+                                '时间查询',
+                                style: TextStyle(color: Color(0xFF415B73)),
+                              )
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8.0,
+                        ),
+                        BrnCalendarView(
+                          selectMode: SelectMode.single,
+                          dateChange: (dt) {
+                            currentPlayingTim.value = dt;
+                            pastSecondsFromStart.value = 0;
+                            isLive.value = false;
+                            _loadVideoOrPlayback();
                           },
-                          child: Text('返回'),
-                        )
+                          minDate: DateTime(2000),
+                          maxDate: DateTime.now(),
+                          rangeDateChange: (_) => DateTimeRange(
+                              start: DateTime(2023), end: DateTime.now()),
+                        ),
+                        Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                            Color(0x1F12ADFF),
+                            Color(0x0012ADFF)
+                          ])),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 8.0,
+                              ),
+                              Image.asset('assets/images/video_icon.png'),
+                              Text(
+                                '摄像头列表',
+                                style: TextStyle(color: Color(0xFF415B73)),
+                              )
+                            ],
+                          ),
+                        ),
+                        SizedBox(
+                          height: 8.0,
+                        ),
+                        Expanded(child: CamTreeView(selectedCam: cam)),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: FilledButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text('退出直播回放页'),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -101,6 +181,10 @@ class _FullScreenLiveState extends State<FullScreenLive> {
                                 )
                               : Video(
                                   controller: controller,
+                                  controls: (state) => Obx(() => VideoControl2(
+                                      state: state,
+                                      cam: cam.value,
+                                      type: LiveType.fullscreen)),
                                 ),
                         ),
                         Container(
@@ -108,23 +192,31 @@ class _FullScreenLiveState extends State<FullScreenLive> {
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Row(
                             children: [
-                              Obx(
-                                () => Offstage(
-                                  offstage: !isLive.value,
-                                  child: SizedBox(
-                                    width: 50,
-                                    child: Container(
-                                      color: Colors.red,
-                                      alignment: Alignment.center,
-                                      padding: EdgeInsets.all(8.0),
-                                      child: Text(
-                                        "LIVE",
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                      ),
+                              SizedBox(
+                                width: 50,
+                                child: Obx(
+                                  () => Container(
+                                    color: isLive.value
+                                        ? Colors.red
+                                        : Colors.grey.withOpacity(0.5),
+                                    alignment: Alignment.center,
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Text(
+                                      isLive.value ? "直播" : '回放',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
                                     ),
                                   ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 16.0,
+                              ),
+                              Obx(
+                                () => Text(
+                                  '${cam.value.name}',
+                                  style: TextStyle(color: Colors.white),
                                 ),
                               ),
                               SizedBox(
@@ -168,6 +260,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
         value: pastSecondsFromStart.value.toDouble(),
         min: 0.0,
         max: seconds.toDouble(),
+        style: SliderThemeData(labelBackgroundColor: Colors.grey),
         label:
             '${pastSecondsFromStart.value ~/ 3600}:${(pastSecondsFromStart.value % 3600) ~/ 60}:${pastSecondsFromStart.value % 60}',
         onChanged: (s) {
@@ -209,9 +302,10 @@ class _FullScreenLiveState extends State<FullScreenLive> {
   }
 
   void _loadVideoOrPlayback() async {
+    print('loading video ${cam.value}');
     var url = "";
     if (isLive.value) {
-      url = getRtSpStreamUrl(widget.cam, mainStream: false);
+      url = getRtSpStreamUrl(cam.value, mainStream: false);
     } else {
       final st = DateTime.fromMillisecondsSinceEpoch(
           currentPlayingTim.value.millisecondsSinceEpoch +
@@ -220,10 +314,71 @@ class _FullScreenLiveState extends State<FullScreenLive> {
       final ed = DateTime.fromMillisecondsSinceEpoch(
           (currentPlayingTim.value.millisecondsSinceEpoch + seconds * 1000) -
               kUtcTimeMsOffset);
-      url = getRtspBackTrackUrl(widget.cam, st, ed);
+      url = getRtspBackTrackUrl(cam.value, st, ed);
     }
     // print("playing: $url");
     await player.open(Media(url), play: true);
     print(player.state.playing);
+  }
+}
+
+class CamTreeView extends StatelessWidget {
+  final Rx<Cam> selectedCam;
+  const CamTreeView({super.key, required this.selectedCam});
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: videoModel.getCamTree(),
+        builder: ((context, snapshot) {
+          if (snapshot.hasData) {
+            final m = snapshot.data!;
+            return Obx(
+              () => TreeView(
+                  selectionMode: TreeViewSelectionMode.single,
+                  items: m.entries
+                      .map((e) => TreeViewItem(
+                          content: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${e.key.roomName}',
+                                style: kTextStyle,
+                              ),
+                              Container(
+                                width: 8,
+                                height: 8,
+                                margin: EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                    color: kBlueColor,
+                                    borderRadius: BorderRadius.circular(8)),
+                              ),
+                            ],
+                          ),
+                          children: e.value
+                              .map((e) => TreeViewItem(
+                                  selected: selectedCam.value == e,
+                                  onInvoked: (item, reason) async {
+                                    selectedCam.value = e;
+                                  },
+                                  content: Row(
+                                    children: [
+                                      Image.asset('assets/images/cam_icon.png'),
+                                      SizedBox(
+                                        width: 2,
+                                      ),
+                                      Text(
+                                        "${e.name}",
+                                        style: kTextStyle,
+                                      ),
+                                    ],
+                                  )))
+                              .toList()))
+                      .toList()),
+            );
+          } else {
+            return Offstage();
+          }
+        }));
   }
 }

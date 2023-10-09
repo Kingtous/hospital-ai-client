@@ -115,6 +115,10 @@ abstract class AreaUserDao {
   Future<List<Cam>> findAllCamUsersByRole(int areaId);
 
   @Query(
+      'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id IN (:areaIds))')
+  Future<List<Cam>> findAllCamUsersByRoles(List<int> areaIds);
+
+  @Query(
       'SELECT * from users where id IN (SELECT user_id FROM rel_area_user where area_id=:areaId)')
   Future<List<User>> findAllAreaUsersByArea(int areaId);
 

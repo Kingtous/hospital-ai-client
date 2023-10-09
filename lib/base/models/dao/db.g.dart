@@ -44,7 +44,6 @@ class _$AppDBBuilder {
     final path = name != null
         ? await sqfliteDatabaseFactory.getDatabasePath(name!)
         : ':memory:';
-    print(path);
     final database = _$AppDB();
     database.database = await database.open(
       path,
@@ -443,6 +442,20 @@ class _$AreaUserDao extends AreaUserDao {
         'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id=?1)',
         mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
         arguments: [areaId]);
+  }
+
+  @override
+  Future<List<Cam>> findAllCamUsersByRoles(List<int> areaIds) async {
+    const offset = 1;
+    final _sqliteVariablesForAreaIds =
+        Iterable<String>.generate(areaIds.length, (i) => '?${i + offset}')
+            .join(',');
+    return _queryAdapter.queryList(
+        'SELECT * from cam where id IN (SELECT cam_id FROM rel_area_cam where area_id IN (' +
+            _sqliteVariablesForAreaIds +
+            '))',
+        mapper: (Map<String, Object?> row) => Cam(row['id'] as int?, row['name'] as String, row['room_id'] as int, row['channel_id'] as int, row['cam_type'] as int, (row['enable_alert'] as int) != 0, row['auth_user'] as String, row['password'] as String, row['port'] as int, row['host'] as String),
+        arguments: [...areaIds]);
   }
 
   @override
