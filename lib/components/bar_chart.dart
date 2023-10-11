@@ -52,27 +52,27 @@ class BarChart extends StatefulWidget {
   /// create BrnProgressBarChart
   BarChart(
       {Key? key,
-        this.minWidth = 0,
-        this.padding = const EdgeInsets.all(20),
-        this.barChartStyle = LocalBarChartStyle.vertical,
-        required this.xAxis,
-        required this.yAxis,
-        required this.barBundleList,
-        this.barGroupSpace = 30,
-        this.singleBarWidth = 25,
-        this.barMaxValue = 0,
-        this.selectedHintTextColor = Colors.white,
-        this.selectedHintTextBackgroundColor = Colors.black,
-        this.onBarItemClickInterceptor,
-        this.barChartSelectCallback,
-        this.height = 300})
+      this.minWidth = 0,
+      this.padding = const EdgeInsets.all(20),
+      this.barChartStyle = LocalBarChartStyle.vertical,
+      required this.xAxis,
+      required this.yAxis,
+      required this.barBundleList,
+      this.barGroupSpace = 30,
+      this.singleBarWidth = 25,
+      this.barMaxValue = 0,
+      this.selectedHintTextColor = Colors.white,
+      this.selectedHintTextBackgroundColor = Colors.black,
+      this.onBarItemClickInterceptor,
+      this.barChartSelectCallback,
+      this.height = 300})
       : super(key: key) {
     if (LocalBarChartStyle.horizontal == barChartStyle) {
       assert(barBundleList[0].barList.length == yAxis.axisItemList.length,
-      '水平柱状图个数与Y轴坐标数目要相等');
+          '水平柱状图个数与Y轴坐标数目要相等');
     } else if (LocalBarChartStyle.vertical == barChartStyle) {
       assert(barBundleList[0].barList.length == xAxis.axisItemList.length,
-      '竖直柱状图个数与X轴坐标数目要相等');
+          '竖直柱状图个数与X轴坐标数目要相等');
     }
   }
 
@@ -126,7 +126,8 @@ class BrnProgressBarChartState extends State<BarChart> {
       int bundleCount = widget.barBundleList.length;
       for (int bundleIndex = 0; bundleIndex < bundleCount; bundleIndex++) {
         LocalBrnProgressBarBundle bundle = widget.barBundleList[bundleIndex];
-        LocalBrnProgressBarBundle oldBundle = oldWidget.barBundleList[bundleIndex];
+        LocalBrnProgressBarBundle oldBundle =
+            oldWidget.barBundleList[bundleIndex];
         if (bundle.barList.length == oldBundle.barList.length) {
           int barCount = bundle.barList.length;
           for (int barIndex = 0; barIndex < barCount; barIndex++) {
@@ -153,14 +154,13 @@ class BrnProgressBarChartState extends State<BarChart> {
 
   @override
   Widget build(BuildContext context) {
-    print("bulidddddddddddddddddddddddddddddddddddddddddd");
     Size chartSize = this._chartSize();
     if (chartSize == Size.zero) {
       return const SizedBox.shrink();
     }
     if (LocalBarChartStyle.vertical == widget.barChartStyle) {
       double yAxisWidth =
-      LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
+          LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
       return Padding(
         padding: widget.padding,
         child: Stack(
@@ -183,28 +183,30 @@ class BrnProgressBarChartState extends State<BarChart> {
               padding: EdgeInsets.only(left: yAxisWidth),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: CustomPaint(
-                  size: chartSize,
-                  painter: LocalBrnProgressBarChartPainter(
-                      drawY: false,
-                      xAxis: widget.xAxis,
-                      yAxis: widget.yAxis,
-                      barChartStyle: widget.barChartStyle,
-                      singleBarWidth: widget.singleBarWidth,
-                      barMaxValue: widget.barMaxValue,
-                      barGroupSpace: widget.barGroupSpace,
-                      barBundleList: widget.barBundleList,
-                      onBarItemClickInterceptor:
-                      widget.onBarItemClickInterceptor,
-                      selectedBarItem: _selectedBarItem,
-                      selectedHintTextColor: widget.selectedHintTextColor,
-                      selectedHintTextBackgroundColor:
-                      widget.selectedHintTextBackgroundColor,
-                      brnProgressBarChartSelectCallback:
-                          (LocalBrnProgressBarItem? item) {
-                          if(item != _selectedBarItem){
+                child: StatefulBuilder(builder: (context, setState) {
+                  return CustomPaint(
+                    size: chartSize,
+                    painter: LocalBrnProgressBarChartPainter(
+                        drawY: false,
+                        xAxis: widget.xAxis,
+                        yAxis: widget.yAxis,
+                        barChartStyle: widget.barChartStyle,
+                        singleBarWidth: widget.singleBarWidth,
+                        barMaxValue: widget.barMaxValue,
+                        barGroupSpace: widget.barGroupSpace,
+                        barBundleList: widget.barBundleList,
+                        onBarItemClickInterceptor:
+                            widget.onBarItemClickInterceptor,
+                        selectedBarItem: _selectedBarItem,
+                        selectedHintTextColor: widget.selectedHintTextColor,
+                        selectedHintTextBackgroundColor:
+                            widget.selectedHintTextBackgroundColor,
+                        brnProgressBarChartSelectCallback:
+                            (LocalBrnProgressBarItem? item) {
+                          if (item != _selectedBarItem) {
                             ///此处的回调函数
-                            print("2222222222222222222222222222222222222222222");
+                            // print(
+                                // "cb: $item but current selected is $_selectedBarItem");
                             if (null != widget.barChartSelectCallback) {
                               widget.barChartSelectCallback!(item);
                             }
@@ -212,8 +214,9 @@ class BrnProgressBarChartState extends State<BarChart> {
                               _selectedBarItem = item;
                             });
                           }
-                      }),
-                ),
+                        }),
+                  );
+                }),
               ),
             )
           ],
@@ -221,7 +224,7 @@ class BrnProgressBarChartState extends State<BarChart> {
       );
     } else if (LocalBarChartStyle.horizontal == widget.barChartStyle) {
       double yAxisWidth =
-      LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
+          LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
       return Padding(
         padding: widget.padding,
         child: Stack(
@@ -259,12 +262,13 @@ class BrnProgressBarChartState extends State<BarChart> {
                       barGroupSpace: widget.barGroupSpace,
                       barBundleList: widget.barBundleList,
                       onBarItemClickInterceptor:
-                      widget.onBarItemClickInterceptor,
+                          widget.onBarItemClickInterceptor,
                       selectedBarItem: _selectedBarItem,
                       selectedHintTextColor: widget.selectedHintTextColor,
                       selectedHintTextBackgroundColor:
-                      widget.selectedHintTextBackgroundColor,
-                      brnProgressBarChartSelectCallback: (LocalBrnProgressBarItem? item) {
+                          widget.selectedHintTextBackgroundColor,
+                      brnProgressBarChartSelectCallback:
+                          (LocalBrnProgressBarItem? item) {
                         widget.barChartSelectCallback?.call(item);
                         setState(() {
                           _selectedBarItem = item;
