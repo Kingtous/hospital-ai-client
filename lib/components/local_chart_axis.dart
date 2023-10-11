@@ -958,7 +958,7 @@ class LocalBrnProgressBarChartPainter extends CustomPainter {
   @override
   bool? hitTest(Offset position) {
     if (brnProgressBarChartSelectCallback != null) {
-      print('hitTest:' + position.toString());
+      // print('hitTest:' + position.toString());
       bool hasSelected = false;
       barItemEnumerator((int barBundleIndex,
           LocalBrnProgressBarBundle barBundle,
