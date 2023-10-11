@@ -131,7 +131,7 @@ class RTSPCamera extends PlayableDevice
   Future<void> startPlay() async {
     if (player.state.playing) {
       debugPrint('player $id is already playing, ignore [startPlay] requests');
-      debugPrintStack();
+      // debugPrintStack();
       return;
     }
     debugPrint(
@@ -236,7 +236,7 @@ class RTSPCamera extends PlayableDevice
               //     ),),
               //   ],
               // ),
-              constraints: BoxConstraints.expand(width: 600, height: 600),
+              constraints: BoxConstraints.loose(Size(500, 500)),
               content: Frame(
                 title: const Text(
                   '新增摄像头设备',
@@ -244,152 +244,163 @@ class RTSPCamera extends PlayableDevice
                     fontSize: 20.0,
                   ),
                 ),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InfoBar(
-                            title: const Text('新增设备说明'),
-                            content: Text(msg.isNotEmpty ? msg : '设备名保证唯一'),
-                            severity: msg.isNotEmpty
-                                ? InfoBarSeverity.warning
-                                : InfoBarSeverity.info,
+                content: Container(
+                  margin: EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InfoBar(
+                              title: const Text('新增设备说明'),
+                              content: Text(msg.isNotEmpty ? msg : '设备名保证唯一'),
+                              severity: msg.isNotEmpty
+                                  ? InfoBarSeverity.warning
+                                  : InfoBarSeverity.info,
+                            ),
                           ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 8.0,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR IP'),
                         ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8.0,
-                    ),
-                    TextBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('NVR IP'),
+                        autofillHints: ['172.0.0.2'],
+                        onChanged: (s) {
+                          host = s;
+                        },
                       ),
-                      autofillHints: ['172.0.0.2'],
-                      onChanged: (s) {
-                        host = s;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('NVR 端口'),
+                      SizedBox(
+                        height: 8,
                       ),
-                      autofillHints: ['554'],
-                      onChanged: (s) {
-                        int? tmpPort = int.tryParse(s);
-                        port = tmpPort ?? 554;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('NVR 用户名'),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 端口'),
+                        ),
+                        autofillHints: ['554'],
+                        onChanged: (s) {
+                          int? tmpPort = int.tryParse(s);
+                          port = tmpPort ?? 554;
+                        },
                       ),
-                      autofillHints: const ['admin'],
-                      onChanged: (s) {
-                        userName = s;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('NVR 密码'),
+                      SizedBox(
+                        height: 8,
                       ),
-                      onChanged: (p) {
-                        password = p;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    TextBox(
-                      prefix: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('摄像头名称'),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 用户名'),
+                        ),
+                        autofillHints: const ['admin'],
+                        onChanged: (s) {
+                          userName = s;
+                        },
                       ),
-                      maxLength: 50,
-                      onChanged: (s) {
-                        id = s;
-                      },
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 密码'),
+                        ),
+                        onChanged: (p) {
+                          password = p;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('摄像头名称'),
+                        ),
+                        maxLength: 50,
+                        onChanged: (s) {
+                          id = s;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ComboBox(
+                                value: channelId,
+                                onChanged: (newChannelId) {
+                                  setState(() {
+                                    if (newChannelId == null) {
+                                      return;
+                                    }
+                                    channelId = newChannelId;
+                                  });
+                                },
+                                items: [
+                                  ...List.generate(512, (idx) {
+                                    return ComboBoxItem(
+                                      child: Text('摄像头通道号 ${idx + 1}'),
+                                      value: idx + 1,
+                                    );
+                                  }),
+                                ]),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                         Expanded(
-                          child: ComboBox(
-                              value: channelId,
-                              onChanged: (newChannelId) {
-                                setState(() {
-                                  if (newChannelId == null) {
-                                    return;
-                                  }
-                                  channelId = newChannelId;
-                                });
-                              },
-                              items: [
-                                ...List.generate(512, (idx) {
-                                  return ComboBoxItem(
-                                    child: Text('摄像头通道号 ${idx + 1}'),
-                                    value: idx + 1,
-                                  );
-                                }),
-                              ]),
+                          child: FilledButton(
+                                            child: const Text('确定'),
+                                            onPressed: () async {
+                          if (userName.isEmpty || password.isEmpty) {
+                            msg = "用户名或密码不能为空";
+                            setState(() {});
+                            return;
+                          }
+                          if (host.isEmpty) {
+                            msg = "地址内域名/IP地址不能为空";
+                            setState(() {});
+                            return;
+                          }
+                          bool res = await videoModel.addCamToRoom(
+                              Cam(null, id, room.id!, channelId, CamType.rtsp.index,
+                                  false, userName, password, port, host),
+                              room);
+                          if (res) {
+                            success(context, '添加成功');
+                          } else {
+                            warning(context, '添加失败');
+                          }
+                          Navigator.of(context).pop();
+                                            }),
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                  ],
+                        SizedBox(width: 8.0,),
+                  Expanded(
+                    child: Button(
+                        child: const Text('取消'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        }),
+                  )
+                      ],)
+                    ],
+                          
+                  ),
                 ),
               ),
-              actions: [
-                FilledButton(
-                    child: const Text('确定'),
-                    onPressed: () async {
-                      if (userName.isEmpty || password.isEmpty) {
-                        msg = "用户名或密码不能为空";
-                        setState(() {});
-                        return;
-                      }
-                      if (host.isEmpty) {
-                        msg = "地址内域名/IP地址不能为空";
-                        setState(() {});
-                        return;
-                      }
-                      bool res = await videoModel.addCamToRoom(
-                          Cam(null, id, room.id!, channelId, CamType.rtsp.index,
-                              false, userName, password, port, host),
-                          room);
-                      if (res) {
-                        success(context, '添加成功');
-                      } else {
-                        warning(context, '添加失败');
-                      }
-                      Navigator.of(context).pop();
-                    }),
-                FilledButton(
-                    child: const Text('取消'),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    })
-              ],
             );
           });
         });

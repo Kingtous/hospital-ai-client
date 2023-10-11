@@ -946,25 +946,18 @@ class _$AlertDao extends AlertDao {
   Future<List<Alerts>> getAlertsInCamsFrom(
     List<int> cams,
     int st,
+    int ed,
   ) async {
-    const offset = 2;
+    const offset = 3;
     final _sqliteVariablesForCams =
         Iterable<String>.generate(cams.length, (i) => '?${i + offset}')
             .join(',');
     return _queryAdapter.queryList(
-        'SELECT * FROM alerts WHERE create_at >= ?1 AND cam_id IN (' +
+        'SELECT * FROM alerts WHERE (create_at BETWEEN ?1 AND ?2) AND (cam_id IN (' +
             _sqliteVariablesForCams +
-            ')',
-        mapper: (Map<String, Object?> row) => Alerts(
-            row['id'] as int?,
-            row['create_at'] as int,
-            row['img'] as Uint8List,
-            row['cam_id'] as int,
-            row['alert_type'] as int,
-            row['cam_name'] as String,
-            row['room_id'] as int,
-            row['room_name'] as String),
-        arguments: [st, ...cams]);
+            '))',
+        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
+        arguments: [st, ed, ...cams]);
   }
 
   @override
