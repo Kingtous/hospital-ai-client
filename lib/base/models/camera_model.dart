@@ -4,6 +4,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
+import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
@@ -226,118 +227,137 @@ class RTSPCamera extends PlayableDevice
         builder: (context) {
           return StatefulBuilder(builder: (context, setState) {
             return ContentDialog(
-              title: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('新增摄像头设备', style: TextStyle(
-                    fontSize: 20.0,
-                  ),),
-                ],
-              ),
+              style: kContentDialogStyle,
+              // title: Row(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: [
+              //     const Text('新增摄像头设备', style: TextStyle(
+              //       fontSize: 20.0,
+              //     ),),
+              //   ],
+              // ),
               constraints: BoxConstraints.expand(width: 600, height: 600),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InfoBar(
-                          title: const Text('新增设备说明'),
-                          content: Text(msg.isNotEmpty
-                              ? msg
-                              : '设备名保证唯一'),
-                          severity: msg.isNotEmpty
-                              ? InfoBarSeverity.warning
-                              : InfoBarSeverity.info,
+              content: Frame(
+                title: const Text(
+                  '新增摄像头设备',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InfoBar(
+                            title: const Text('新增设备说明'),
+                            content: Text(msg.isNotEmpty ? msg : '设备名保证唯一'),
+                            severity: msg.isNotEmpty
+                                ? InfoBarSeverity.warning
+                                : InfoBarSeverity.info,
+                          ),
                         ),
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 8.0,
+                    ),
+                    TextBox(
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('NVR IP'),
                       ),
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 8.0,
-                  ),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('NVR IP'),
+                      autofillHints: ['172.0.0.2'],
+                      onChanged: (s) {
+                        host = s;
+                      },
                     ),
-                    autofillHints: ['172.0.0.2'],
-                    onChanged: (s) {
-                      host = s;
-                    },
-                  ),
-                  SizedBox(height: 8,),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('NVR 端口'),
+                    SizedBox(
+                      height: 8,
                     ),
-                    autofillHints: ['554'],
-                    onChanged: (s) {
-                      int? tmpPort = int.tryParse(s);
-                      port = tmpPort ?? 554;
-                    },
-                  ),
-                  SizedBox(height: 8,),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('NVR 用户名'),
-                    ),
-                    autofillHints: const ['admin'],
-                    onChanged: (s) {
-                      userName = s;
-                    },
-                  ),
-                  SizedBox(height: 8,),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('NVR 密码'),
-                    ),
-                    onChanged: (p) {
-                      password = p;
-                    },
-                  ),
-                  SizedBox(height: 8,),
-                  TextBox(
-                    prefix: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Text('摄像头名称'),
-                    ),
-                    maxLength: 50,
-                    onChanged: (s) {
-                      id = s;
-                    },
-                  ),
-                  SizedBox(height: 8,),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ComboBox(
-                            value: channelId,
-                            onChanged: (newChannelId) {
-                              setState(() {
-                                if (newChannelId == null) {
-                                  return;
-                                }
-                                channelId = newChannelId;
-                              });
-                            },
-                            items: [
-                              ...List.generate(512, (idx) {
-                                return ComboBoxItem(
-                                  child: Text('摄像头通道号 ${idx + 1}'),
-                                  value: idx + 1,
-                                );
-                              }),
-                            ]),
+                    TextBox(
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('NVR 端口'),
                       ),
-                    ],
-                  ),
-                  SizedBox(height: 8,),
-                ],
+                      autofillHints: ['554'],
+                      onChanged: (s) {
+                        int? tmpPort = int.tryParse(s);
+                        port = tmpPort ?? 554;
+                      },
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    TextBox(
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('NVR 用户名'),
+                      ),
+                      autofillHints: const ['admin'],
+                      onChanged: (s) {
+                        userName = s;
+                      },
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    TextBox(
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('NVR 密码'),
+                      ),
+                      onChanged: (p) {
+                        password = p;
+                      },
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    TextBox(
+                      prefix: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('摄像头名称'),
+                      ),
+                      maxLength: 50,
+                      onChanged: (s) {
+                        id = s;
+                      },
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ComboBox(
+                              value: channelId,
+                              onChanged: (newChannelId) {
+                                setState(() {
+                                  if (newChannelId == null) {
+                                    return;
+                                  }
+                                  channelId = newChannelId;
+                                });
+                              },
+                              items: [
+                                ...List.generate(512, (idx) {
+                                  return ComboBoxItem(
+                                    child: Text('摄像头通道号 ${idx + 1}'),
+                                    value: idx + 1,
+                                  );
+                                }),
+                              ]),
+                        ),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                  ],
+                ),
               ),
               actions: [
                 FilledButton(

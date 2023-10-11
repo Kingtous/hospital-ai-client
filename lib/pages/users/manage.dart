@@ -20,6 +20,7 @@ import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/user.dart';
+import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/constants.dart';
 
 class UserManagePage extends StatefulWidget {
@@ -116,8 +117,8 @@ class _UserTableState extends State<UserTable> {
                     SizedBox(
                         width: 320,
                         child: TextBox(
-                          prefix:
-                              const Icon(FluentIcons.search).marginOnly(left: 8.0),
+                          prefix: const Icon(FluentIcons.search)
+                              .marginOnly(left: 8.0),
                           placeholder: '请输入员工姓名、登录账号进行搜索',
                         ))
                   ],
@@ -225,8 +226,8 @@ class _UserTableState extends State<UserTable> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            ...kTableColumnNames.map((e) => Expanded(
-                                child: Text(e).paddingOnly(left: 4.0)))
+                            ...kTableColumnNames.map((e) =>
+                                Expanded(child: Text(e).paddingOnly(left: 4.0)))
                           ],
                         ),
                       ),
@@ -351,7 +352,8 @@ class AddUserDialog extends StatelessWidget {
       constraints: BoxConstraints.tight(const Size(540, 420)),
       content: _buildDialog(context),
       actions: [
-        FilledButton(child: const Text('保存'), onPressed: () => _onStore(context)),
+        FilledButton(
+            child: const Text('保存'), onPressed: () => _onStore(context)),
         Button(
           child: const Text('取消'),
           onPressed: () {
@@ -472,24 +474,24 @@ class AddUserDialog extends StatelessWidget {
                     ),
                     Expanded(
                         child: Wrap(
-                        spacing: 20,
-                        runSpacing: 4,
-                        children: allRoles
-                            .map((role) => Obx(
-                              () => Checkbox(
-                                  checked: roles.contains(role),
-                                  content: Text(role.areaName),
-                                  onChanged: (r) {
-                                    r = r ?? false;
-                                    if (r) {
-                                      roles.add(role);
-                                    } else {
-                                      roles.remove(role);
-                                    }
-                                  }),
-                            ))
-                            .toList(),
-                      ))
+                      spacing: 20,
+                      runSpacing: 4,
+                      children: allRoles
+                          .map((role) => Obx(
+                                () => Checkbox(
+                                    checked: roles.contains(role),
+                                    content: Text(role.areaName),
+                                    onChanged: (r) {
+                                      r = r ?? false;
+                                      if (r) {
+                                        roles.add(role);
+                                      } else {
+                                        roles.remove(role);
+                                      }
+                                    }),
+                              ))
+                          .toList(),
+                    ))
                   ],
                 );
               })
@@ -508,92 +510,133 @@ class UserChangePasswordDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 500,
-      child: ContentDialog(
-        title: const Text('修改密码'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(
-              height: 8.0,
-            ),
-            userModel.user?.userName == kDefaultAdminName
-                ? const Offstage()
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('原密码'),
-                      SizedBox(
-                          width: 200,
-                          child: TextBox(
-                            onChanged: (v) {
-                              originPassword.value = v;
-                            },
-                          ))
-                    ],
-                  ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    return ContentDialog(
+        // width: 500,
+        // height: 500,
+        // color: Colors.white,
+        style: kContentDialogStyle,
+        constraints: BoxConstraints.loose(Size(500, 400)),
+        content: Container(
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(12.0)),
+          child: Frame(
+            title: const Text('修改密码'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                const Text('新密码'),
                 SizedBox(
-                    width: 200,
-                    child: TextBox(
-                      onChanged: (s) {
-                        password.value = s;
-                      },
-                    ))
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('确认密码'),
+                  height: 16.0,
+                ),
+                userModel.user?.userName == kDefaultAdminName
+                    ? const Offstage()
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(width: 80, child: const Text('原始密码')),
+                          const SizedBox(
+                            width: 8.0,
+                          ),
+                          SizedBox(
+                              width: 200,
+                              child: TextBox(
+                                onChanged: (v) {
+                                  originPassword.value = v;
+                                },
+                              ))
+                        ],
+                      ),
                 SizedBox(
-                    width: 200,
-                    child: TextBox(
-                      onChanged: (s) {
-                        repeatPassword.value = s;
-                      },
-                    ))
-              ],
-            ),
-          ],
-        ),
-        actions: [
-          FilledButton(
-              child: const Text('提交'),
-              onPressed: () async {
-                if (repeatPassword.value != password.value) {
-                  warning(context, '两次输入密码不一致');
-                  return;
-                }
-                if (password.value.isEmpty) {
-                  warning(context, '密码不能为空');
-                  return;
-                }
-                if (userModel.isAdmin) {
-                  unawaited(userModel.updatePassword(user, password.value));
-                } else {
-                  final res = await userModel.updatePasswordAsUser(
-                      originPassword.value, user, password.value);
-                  if (!res) {
-                    warning(context, '原密码验证失败');
-                    return;
-                  }
-                }
+                  height: 16.0,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 80, child: const Text('新密码')),
+                    const SizedBox(
+                      width: 8.0,
+                    ),
+                    SizedBox(
+                        width: 200,
+                        child: TextBox(
+                          onChanged: (s) {
+                            password.value = s;
+                          },
+                        ))
+                  ],
+                ),
+                SizedBox(
+                  height: 16.0,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 80, child: const Text('确认密码')),
+                    const SizedBox(
+                      width: 8.0,
+                    ),
+                    SizedBox(
+                        width: 200,
+                        child: TextBox(
+                          onChanged: (s) {
+                            repeatPassword.value = s;
+                          },
+                        ))
+                  ],
+                ),
+                SizedBox(
+                  height: 16.0,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 140,
+                      height: 34,
+                      child: FilledButton(
+                          child: Center(child: const Text('提交')),
+                          onPressed: () async {
+                            if (repeatPassword.value != password.value) {
+                              warning(context, '两次输入密码不一致');
+                              return;
+                            }
+                            if (password.value.isEmpty) {
+                              warning(context, '密码不能为空');
+                              return;
+                            }
+                            if (userModel.isAdmin) {
+                              unawaited(userModel.updatePassword(
+                                  user, password.value));
+                            } else {
+                              final res = await userModel.updatePasswordAsUser(
+                                  originPassword.value, user, password.value);
+                              if (!res) {
+                                warning(context, '原密码验证失败');
+                                return;
+                              }
+                            }
 
-                Navigator.pop(context);
-              }),
-          Button(
-              child: const Text('取消'),
-              onPressed: () {
-                Navigator.pop(context);
-              })
-        ],
-      ),
-    );
+                            Navigator.pop(context);
+                          }),
+                    ),
+                    SizedBox(
+                      width: 30,
+                    ),
+                    SizedBox(
+                      width: 140,
+                      height: 34,
+                      child: Button(
+                          child: Center(child: const Text('取消')),
+                          onPressed: () {
+                            Navigator.pop(context);
+                          }),
+                    )
+                  ],
+                )
+              ],
+            ),
+          ),
+        ));
   }
 }
 

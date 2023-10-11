@@ -18,6 +18,9 @@ const kBlueColor = Color(0xFF409EFF);
 const kTableGreyColor = Color(0xFFF5F7FA);
 const kTextColor = Color(0xFF415B73);
 const kTextStyle = TextStyle(color: kTextColor);
+const kContentDialogStyle = ContentDialogThemeData(
+    bodyPadding: EdgeInsets.zero,
+    decoration: BoxDecoration(color: Colors.transparent));
 
 /// UI
 Widget get bgImage => SizedBox(
