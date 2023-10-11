@@ -63,6 +63,7 @@ const kMockDataType = <AlertType, int>{
   AlertType.whiteShirt: 2,
   AlertType.other: 1
 };
+const kMockAlertsData = {"画面一","画面二","画面三","画面四","画面五"};
 
 String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
   return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}${mainStream ? '01' : '02'}";

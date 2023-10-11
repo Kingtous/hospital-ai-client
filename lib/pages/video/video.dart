@@ -11,8 +11,10 @@ import 'package:hospital_ai_client/components/charts.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:hospital_ai_client/components/bar_chart.dart';
 
 import '../../base/models/dao/alerts.dart';
+import '../../components/local_chart_axis.dart';
 
 class VideoHomePage extends StatefulWidget {
   const VideoHomePage({super.key});
@@ -420,6 +422,10 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
             // List<int> dataTest = [0,0,0,0,0,0,0,0,0,0,0,0,0];
             // List<int> dataTest = [1,1,2,3,1,2,3,1,1,1,1,1,1];
             // List<int> dataTest = [5,6,5,9,5,5,5,5,5,5,1,6,1];
+            // List<int> dataTest = [30,29,10,47,27];
+            // List<int> dataTest = [0,0,0,0,0];
+            // List<int> dataTest = [1,1,2,3,1];
+            List<int> dataTest = [5,6,5,9,5];
             return Container(
               padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
               height: 271,
@@ -436,7 +442,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                   const SizedBox(
                     width: 20,
                   ),
-                  SizedBox(width: 400, child: _buildCamAlertTable())
+                  SizedBox(width: 400, child: _buildCamAlertTable(dataTest))
                 ],
               ),
             );
@@ -448,10 +454,157 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         });
   }
 
-  Widget _buildCamAlertTable() {
-    return const Frame(
+  Widget _buildCamAlertTable(List<int> res) {
+    ///左侧提示语句
+    final li = kMockAlertsData.toList();
+    ///y轴最大值，设置最小值是10，如果小于10，则等于10
+    double yMax = _getMaxValueForDemo1(res)*1.1;
+    yMax = yMax < 10?10:yMax;
+
+    ///y轴刻度
+    List<LocalAxisItem> items = _getYAxisItem(res);
+    ///将传进来的数据进行转换
+    List<LocalBrnProgressBarItem> barItems = [];
+    for(int i=0;i<res.length;i++){
+      barItems.add(LocalBrnProgressBarItem(text: res[i].toString(),value: res[i].toDouble()));
+    }
+
+    return Frame(
       title: Text('科室报警统计'),
-      content: Offstage(),
+      content: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: li
+                  .map((e) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 12,
+                      height: 12,
+                      padding: EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Defaults.colors10[li.indexOf(e)])),
+                      child: ColoredBox(
+                          color: Defaults.colors10[li.indexOf(e)]),
+                    ),
+                    SizedBox(
+                      width: 6.0,
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${e}',
+                        style: TextStyle(color: Color(0xFF415B73),fontSize: 12),
+                        overflow: TextOverflow.clip,
+                      ),
+                    )
+                  ],
+                ),
+              ))
+                  .toList(),
+            ),
+          ),
+          //定制化组件
+          BarChart(
+            barChartStyle: LocalBarChartStyle.vertical,
+            xAxis: LocalChartAxisX(axisItemList: [
+              LocalAxisItem(showText: '画面一'),
+              LocalAxisItem(showText: '画面二'),
+              LocalAxisItem(showText: '画面三'),
+              LocalAxisItem(showText: '画面四'),
+              LocalAxisItem(showText: '画面五'),
+            ]),
+            barBundleList: [
+              LocalBrnProgressBarBundle(
+                barList: barItems
+              ),
+            ],
+            yAxis: LocalChartAxisY(
+              ///Y轴坐标刻度
+                axisItemList: items
+            ),
+            singleBarWidth: 8,
+            barGroupSpace: 32,
+            barMaxValue: yMax,
+            onBarItemClickInterceptor: (barBundleIndex, barBundle, barGroupIndex, barItem) {
+              return true;
+            },
+          ),
+          //官网组件
+          // BrnProgressBarChart(
+          //   barChartStyle: BarChartStyle.vertical,
+          //   xAxis: ChartAxis(axisItemList: [
+          //     AxisItem(showText: '示例1'),
+          //     AxisItem(showText: '示例2'),
+          //     AxisItem(showText: '示例3'),
+          //     AxisItem(showText: '示例4'),
+          //     AxisItem(showText: '示例5'),
+          //     AxisItem(showText: '示例6'),
+          //     AxisItem(showText: '示例7'),
+          //     AxisItem(showText: '示例8'),
+          //     AxisItem(showText: '示例9'),
+          //     AxisItem(showText: '示例10'),
+          //   ]),
+          //   barBundleList: [
+          //     BrnProgressBarBundle(barList: [
+          //       BrnProgressBarItem(
+          //           text: '示例11', value: 5, hintValue: 15, showBarValueText: "1122334"),
+          //       BrnProgressBarItem(text: '示例12', value: 20, selectedHintText: '示例12:20'),
+          //       BrnProgressBarItem(
+          //           text: '示例13',
+          //           value: 30,
+          //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
+          //       BrnProgressBarItem(text: '示例14', value: 25),
+          //       BrnProgressBarItem(text: '示例15', value: 21),
+          //       BrnProgressBarItem(text: '示例16', value: 28),
+          //       BrnProgressBarItem(text: '示例17', value: 15),
+          //       BrnProgressBarItem(text: '示例18', value: 11),
+          //       BrnProgressBarItem(text: '示例19', value: 30),
+          //       BrnProgressBarItem(text: '示例110', value: 24),
+          //     ], colors: [
+          //       Color(0xff1545FD),
+          //       Color(0xff0984F9)
+          //     ]),
+          //     BrnProgressBarBundle(barList: [
+          //       BrnProgressBarItem(text: '示例21', value: 20, hintValue: 15),
+          //       BrnProgressBarItem(text: '示例22', value: 15, selectedHintText: '示例12:20'),
+          //       BrnProgressBarItem(
+          //           text: '示例23',
+          //           value: 30,
+          //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
+          //       BrnProgressBarItem(text: '示例24', value: 20),
+          //       BrnProgressBarItem(text: '示例25', value: 28),
+          //       BrnProgressBarItem(text: '示例26', value: 25),
+          //       BrnProgressBarItem(text: '示例27', value: 17),
+          //       BrnProgressBarItem(text: '示例28', value: 14),
+          //       BrnProgressBarItem(text: '示例29', value: 36),
+          //       BrnProgressBarItem(text: '示例210', value: 29),
+          //     ], colors: [
+          //       Color(0xff01D57D),
+          //       Color(0xff01D57D)
+          //     ]),
+          //   ],
+          //   yAxis: ChartAxis(axisItemList: [
+          //     AxisItem(showText: '10'),
+          //     AxisItem(showText: '20'),
+          //     AxisItem(showText: '30')
+          //   ]),
+          //   singleBarWidth: 30,
+          //   barGroupSpace: 30,
+          //   barMaxValue: 60,
+          //   onBarItemClickInterceptor: (barBundleIndex, barBundle, barGroupIndex, barItem) {
+          //     return true;
+          //   },
+          // )
+        ],
+      ),
     );
   }
 
@@ -603,6 +756,32 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         ),
       );
     }).toList();
+  }
+  
+  List<LocalAxisItem> _getYAxisItem(List<int> axisData){
+    double max = _getMaxValueForDemo1(axisData) * 1.1;
+    int step = ((max - 0) / 5).ceil();
+    List<LocalAxisItem> yAxisData = [];
+
+    if (max <= 10) {
+      max = 10;
+      step = 2;
+      for (int index = 0; index <= 5; index++) {
+        yAxisData.add(LocalAxisItem(
+          showText: (0 + index * step).ceilToDouble().toInt().toString(),
+        ));
+      }
+    }else{
+      for (int index = 0; index <= 5; index++) {
+        yAxisData.add(LocalAxisItem(
+          showText: (0 + index * step).ceilToDouble().toInt().toString(),
+        ));
+      }
+    }
+    ///把0去掉
+    yAxisData.removeAt(0);
+    return yAxisData;
+    
   }
 
   List<BrnDialItem> _getYDialValuesForDemo1(List<int> brokenData) {
