@@ -32,7 +32,28 @@ import sys
 # ffmpeg -re -stream_loop -1 -i 黑苹果AMD笔记本教程.mp4 -rtsp_transport tcp  -f rtsp   rtsp://127.0.0.1:8554/Streaming/Tracks/102
 
 # ?starttime=20131013t093812z&endtime=20131013t104816z
+import os
+import multiprocessing
 
+def push_stream_by_video(video_path: str, channel_id: str):
+    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Channels/{channel_id}02')
+
+
+def push_playback_by_video(video_path: str, channel_id: str):
+    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Tracks/{channel_id}02')
+
+def push_video(video_path: str, channel_id: str):
+    p1 = multiprocessing.Process(target=push_stream_by_video, args=[video_path, channel_id])
+    p2 = multiprocessing.Process(target=push_playback_by_video, args=[video_path, channel_id])
+    p1.start()
+    p2.start()
+    return (p1, p2)
 
 if __name__ == "__main__":
-    pass
+    ps = []
+    for p in push_video('./videos/1/D128_20230926190002.mp4', '1'):
+        ps.append(p)
+    for p in push_video('./videos/1/D104_20230926142900.mp4', '2'):
+        ps.append(p)
+    for p in ps:
+        p.join()
