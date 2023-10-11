@@ -343,24 +343,38 @@ class AddUserDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ContentDialog(
-      title: const Row(
+      style: kContentDialogStyle,
+      // title: ,
+      constraints: BoxConstraints.tight(const Size(540, 420)),
+      content: Frame(
+        title: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text('新增账号'),
         ],
       ),
-      constraints: BoxConstraints.tight(const Size(540, 420)),
-      content: _buildDialog(context),
-      actions: [
-        FilledButton(
-            child: const Text('保存'), onPressed: () => _onStore(context)),
-        Button(
-          child: const Text('取消'),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+        content: Column(
+          children: [
+            Expanded(child: _buildDialog(context)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+              Expanded(
+                child: FilledButton(
+                          child: const Text('保存'), onPressed: () => _onStore(context)),
+              ),
+              SizedBox(width: 16.0,),
+        Expanded(
+          child: Button(
+            child: const Text('取消'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
         )
-      ],
+            ],)
+          ],
+        )),
     );
   }
 
@@ -649,71 +663,80 @@ class UserRoleDialog extends StatelessWidget {
     return SizedBox(
       width: 500,
       child: ContentDialog(
-        title: const Text('角色配置'),
-        content: FutureBuilder(
-            future: Future.wait(
-                [roleModel.getAllRoles(), roleModel.getRolesByUser(user)]),
-            builder: (context, data) {
-              if (!data.hasData) {
-                return const ProgressBar();
-              } else {
-                var [allRoles, currentRoles] = data.data!;
-                final currentRolesObx = currentRoles.obs;
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ...allRoles
-                        .map((e) => Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: Row(
-                                children: [
-                                  Obx(
-                                    () => Checkbox(
-                                      checked: currentRolesObx.contains(e),
-                                      onChanged: (v) {
-                                        v = v ?? false;
-                                        if (v) {
-                                          currentRolesObx.add(e);
-                                        } else {
-                                          currentRolesObx.remove(e);
-                                        }
-                                      },
-                                      content: Text(e.areaName),
-                                    ),
-                                  )
-                                ],
-                              ),
-                            ))
-                        .toList(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        FilledButton(
-                            child: const Text('提交'),
-                            onPressed: () async {
-                              final res = await roleModel.setRoles(
-                                  user, currentRolesObx);
-                              if (res) {
-                                success(context, '修改角色成功');
-                                Navigator.pop(context);
-                              } else {
-                                warning(context, '失败');
-                              }
-                            }),
-                        const SizedBox(
-                          width: 4.0,
-                        ),
-                        Button(
-                            child: const Text('取消'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            })
-                      ],
-                    )
-                  ],
-                );
-              }
-            }),
+        style: kContentDialogStyle,
+        constraints: BoxConstraints.tight(Size(400, 500)),
+        // title: ,
+        content: Frame(
+          title: const Text('角色配置'),
+          content: FutureBuilder(
+              future: Future.wait(
+                  [roleModel.getAllRoles(), roleModel.getRolesByUser(user)]),
+              builder: (context, data) {
+                if (!data.hasData) {
+                  return const ProgressBar();
+                } else {
+                  var [allRoles, currentRoles] = data.data!;
+                  final currentRolesObx = currentRoles.obs;
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Expanded(child: ListView(children: [...allRoles
+                          .map((e) => Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Row(
+                                  children: [
+                                    Obx(
+                                      () => Checkbox(
+                                        checked: currentRolesObx.contains(e),
+                                        onChanged: (v) {
+                                          v = v ?? false;
+                                          if (v) {
+                                            currentRolesObx.add(e);
+                                          } else {
+                                            currentRolesObx.remove(e);
+                                          }
+                                        },
+                                        content: Text(e.areaName),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ))
+                          .toList(),],),),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: FilledButton(
+                                child: const Text('提交'),
+                                onPressed: () async {
+                                  final res = await roleModel.setRoles(
+                                      user, currentRolesObx);
+                                  if (res) {
+                                    success(context, '修改角色成功');
+                                    Navigator.pop(context);
+                                  } else {
+                                    warning(context, '失败');
+                                  }
+                                }),
+                          ),
+                          const SizedBox(
+                            width: 16.0,
+                          ),
+                          Expanded(
+                            child: Button(
+                                child: const Text('取消'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                }),
+                          )
+                        ],
+                      )
+                    ],
+                  );
+                }
+              }),
+        ),
       ),
     );
   }
