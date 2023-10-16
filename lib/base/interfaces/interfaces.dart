@@ -41,6 +41,7 @@ Future<void> setupDependencies() async {
   it.registerSingleton<RoleModel>(r);
   it.registerSingleton<RoomModel>(RoomModel());
   // init
+  kNativeAlertApi.alert_init();
   await videoModel.init();
 }
 
