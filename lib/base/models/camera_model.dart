@@ -53,6 +53,7 @@ class RTSPCamera extends PlayableDevice
   late String rtspUrl;
   @override
   late String id;
+  bool inited = false;
   @override
   @JsonKey(includeFromJson: false)
   late final Player player;
@@ -77,17 +78,19 @@ class RTSPCamera extends PlayableDevice
     player.setPlaylistMode(PlaylistMode.loop);
     onError = player.stream.error.listen(_onStatus);
     onPlaying = player.stream.playing.listen((playing) {});
-  }
-
-  @override
-  Future<void> init() async {
-    print('初始化縮略圖 for $rtspUrl');
     thumbNailController = VideoController(player,
         configuration: const VideoControllerConfiguration(
           width: kThumbNailLiveWidth,
           height: kThumbNailLiveHeight,
         ));
+  }
+
+  @override
+  Future<void> init() async {
+    if (inited) return;
+    debugPrint('初始化縮略圖 for $rtspUrl');
     await player.open(Playlist([Media(rtspUrl)]), play: true);
+    inited = true;
   }
 
   void _onStatus(String evt) {
@@ -361,43 +364,54 @@ class RTSPCamera extends PlayableDevice
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                        Expanded(
-                          child: FilledButton(
-                                            child: const Text('确定'),
-                                            onPressed: () async {
-                          if (userName.isEmpty || password.isEmpty) {
-                            msg = "用户名或密码不能为空";
-                            setState(() {});
-                            return;
-                          }
-                          if (host.isEmpty) {
-                            msg = "地址内域名/IP地址不能为空";
-                            setState(() {});
-                            return;
-                          }
-                          bool res = await videoModel.addCamToRoom(
-                              Cam(null, id, room.id!, channelId, CamType.rtsp.index,
-                                  false, userName, password, port, host),
-                              room);
-                          if (res) {
-                            success(context, '添加成功');
-                          } else {
-                            warning(context, '添加失败');
-                          }
-                          Navigator.of(context).pop();
-                                            }),
-                        ),
-                        SizedBox(width: 8.0,),
-                  Expanded(
-                    child: Button(
-                        child: const Text('取消'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        }),
-                  )
-                      ],)
+                          Expanded(
+                            child: FilledButton(
+                                child: const Text('确定'),
+                                onPressed: () async {
+                                  if (userName.isEmpty || password.isEmpty) {
+                                    msg = "用户名或密码不能为空";
+                                    setState(() {});
+                                    return;
+                                  }
+                                  if (host.isEmpty) {
+                                    msg = "地址内域名/IP地址不能为空";
+                                    setState(() {});
+                                    return;
+                                  }
+                                  bool res = await videoModel.addCamToRoom(
+                                      Cam(
+                                          null,
+                                          id,
+                                          room.id!,
+                                          channelId,
+                                          CamType.rtsp.index,
+                                          false,
+                                          userName,
+                                          password,
+                                          port,
+                                          host),
+                                      room);
+                                  if (res) {
+                                    success(context, '添加成功');
+                                  } else {
+                                    warning(context, '添加失败');
+                                  }
+                                  Navigator.of(context).pop();
+                                }),
+                          ),
+                          SizedBox(
+                            width: 8.0,
+                          ),
+                          Expanded(
+                            child: Button(
+                                child: const Text('取消'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                }),
+                          )
+                        ],
+                      )
                     ],
-                          
                   ),
                 ),
               ),

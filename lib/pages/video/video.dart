@@ -1029,7 +1029,7 @@ class VideoLiveMain extends StatelessWidget {
                   child: VideoLive(
                     cam: e,
                     width: kThumbNailLiveWidth.toDouble(),
-                    height: kTextTabBarHeight.toDouble(),
+                    height: kThumbNailLiveHeight.toDouble(),
                     type: LiveType.thumbnail,
                   ),
                 ),

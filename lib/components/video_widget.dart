@@ -43,8 +43,13 @@ class _VideoLiveState extends State<VideoLive> {
                   height: widget.height?.toInt(),
                   width: widget.width?.toInt()));
       Future.delayed(Duration.zero, () async {
+        if (player is RTSPCamera) {
+          if (!player.inited) {
+            await player.init();
+          }
+        }
         await player.reload();
-        player.startPlay();
+        await player.startPlay();
       });
     }
   }
@@ -72,31 +77,31 @@ class _VideoLiveState extends State<VideoLive> {
       child: Container(
         decoration: const BoxDecoration(
           color: kBlueColor,
-          ),
+        ),
         padding: const EdgeInsets.all(1.0),
-          child: !isExist
-              ? Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                  ),
-                  child: const Center(
-                    child: Text('画面丢失'),
-                  ))
-              : SizedBox(
+        child: !isExist
+            ? Container(
+                decoration: const BoxDecoration(
+                  color: Colors.black,
+                ),
+                child: const Center(
+                  child: Text('画面丢失'),
+                ))
+            : SizedBox(
+                width: widget.width,
+                height: widget.height,
+                child: Video(
+                  controller: controller,
                   width: widget.width,
                   height: widget.height,
-                  child: Video(
-                    controller: controller,
-                    width: widget.width,
-                    height: widget.height,
-                    // 不用开启
-                    wakelock: false,
-                    pauseUponEnteringBackgroundMode: true,
-                    resumeUponEnteringForegroundMode: true,
-                    controls: (state) => VideoControl(
-                        state: state, cam: widget.cam, type: widget.type),
-                  ),
+                  // 不用开启
+                  wakelock: false,
+                  pauseUponEnteringBackgroundMode: true,
+                  resumeUponEnteringForegroundMode: true,
+                  controls: (state) => VideoControl(
+                      state: state, cam: widget.cam, type: widget.type),
                 ),
+              ),
       ),
     );
   }
