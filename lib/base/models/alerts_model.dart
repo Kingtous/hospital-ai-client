@@ -29,6 +29,10 @@ class AlertsModel {
 
   Future<Alerts?> trigger(
       Iterable<MapEntry<Cam, PlayableDevice>> devices) async {
+    if (kNativeAlertApi.is_alert_ready() <= 0) {
+      // 没有准备好
+      return null;
+    }
     for (final dev in devices) {
       if (dev.value is RTSPCamera) {
         final rtsp = dev.value as RTSPCamera;
@@ -36,16 +40,10 @@ class AlertsModel {
         if (!rtsp.inited) {
           await rtsp.init();
         } else {
-          var t = DateTime.now();
-          final screenshot = await rtsp.screenshot();
-          if (screenshot != null && screenshot.address != 0) {
-            debugPrint(
-                "AI: post_alert_img from ${rtsp.id} ${screenshot.address}");
-            kNativeAlertApi.post_alert_img(screenshot);
-            malloc.free(screenshot);
-          }
-          print(
-              "${rtsp.id} cost: ${DateTime.now().millisecondsSinceEpoch - t.millisecondsSinceEpoch}ms");
+          // var t = DateTime.now();
+          await rtsp.postImgToAlert();
+          // print(
+          //     "${rtsp.id} cost: ${DateTime.now().millisecondsSinceEpoch - t.millisecondsSinceEpoch}ms");
         }
       } else {
         throw UnimplementedError('$dev 的报警还没实现');

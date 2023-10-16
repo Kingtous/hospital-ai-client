@@ -326,56 +326,62 @@ class _CameraTableState extends State<CameraTable> {
     return Row(
       children: [
         Expanded(
-          child: Column(
-            children: [
-              genRow(
-                  kCameraProperties.map((e) => Text(e)).toList(growable: false),
-                  true,
-                  0),
-              ...list.map((e) => genRow([
-                    SelectableText('${e.id}'),
-                    SelectableText(e.name),
-                    SelectableText(CamType.values[e.camType].toHumanString()),
-                    Row(
-                      children: [
-                        Expanded(child: SelectableText("${e.host}:${e.port} 通道${e.channelId}")),
-                        // FlyoutTarget(
-                        //   controller: FlyoutController(),
-                        //   child: Button(
-                        //     child: Icon(FluentIcons.edit),
-                        //     onPressed: () {},
-                        //   ),
-                        // ),
-                        // SizedBox(
-                        //   width: 16.0,
-                        // )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        ToggleSwitch(
-                            checked: e.enableAlert,
-                            onChanged: (enable) {
-                              videoModel
-                                  .updateCam(e..enableAlert = enable)
-                                  .then((value) {
-                                setState(() {});
-                              });
-                            }),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        FilledButton(
-                          onPressed: () => _toggleDelete(e),
-                          style: ButtonStyle(
-                              backgroundColor: ButtonState.all(Colors.red)),
-                          child: const Text('删除'),
-                        )
-                      ],
-                    ),
-                  ], false, list.indexOf(e) + 1))
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                genRow(
+                    kCameraProperties
+                        .map((e) => Text(e))
+                        .toList(growable: false),
+                    true,
+                    0),
+                ...list.map((e) => genRow([
+                      SelectableText('${e.id}'),
+                      SelectableText(e.name),
+                      SelectableText(CamType.values[e.camType].toHumanString()),
+                      Row(
+                        children: [
+                          Expanded(
+                              child: SelectableText(
+                                  "${e.host}:${e.port} 通道${e.channelId}")),
+                          // FlyoutTarget(
+                          //   controller: FlyoutController(),
+                          //   child: Button(
+                          //     child: Icon(FluentIcons.edit),
+                          //     onPressed: () {},
+                          //   ),
+                          // ),
+                          // SizedBox(
+                          //   width: 16.0,
+                          // )
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          ToggleSwitch(
+                              checked: e.enableAlert,
+                              onChanged: (enable) {
+                                videoModel
+                                    .updateCam(e..enableAlert = enable)
+                                    .then((value) {
+                                  setState(() {});
+                                });
+                              }),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          FilledButton(
+                            onPressed: () => _toggleDelete(e),
+                            style: ButtonStyle(
+                                backgroundColor: ButtonState.all(Colors.red)),
+                            child: const Text('删除'),
+                          )
+                        ],
+                      ),
+                    ], false, list.indexOf(e) + 1))
+              ],
+            ),
           ),
         ),
       ],

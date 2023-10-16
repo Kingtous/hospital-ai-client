@@ -35,7 +35,7 @@ abstract interface class PlayableSource {
 
   Future<void> dispose();
 
-  Future<Pointer<PredictBean>?> screenshot();
+  Future<void> postImgToAlert();
 }
 
 abstract class PlayableDevice extends PlayableSource {
@@ -436,96 +436,98 @@ class RTSPCamera extends PlayableDevice
   }
 
   @override
-  Future<Pointer<PredictBean>?> screenshot() {
+  Future<void> postImgToAlert() {
     final pp = (player.platform as NativePlayer);
-    return _screenshot(_ScreenshotData(
-        pp.ctx.address, MediaKitNative.NativeLibrary.path, null, id));
+    return compute(
+        (msg) => _screenshot(msg),
+        _ScreenshotData(
+            pp.ctx.address, MediaKitNative.NativeLibrary.path, null, id));
   }
+}
 
-  Future<Pointer<PredictBean>> _screenshot(_ScreenshotData data) async {
-    Pointer<PredictBean> bean =
-        calloc.allocate<PredictBean>(sizeOf<PredictBean>());
-    // ---------
-    final mpv = generated.MPV(DynamicLibrary.open(data.lib));
-    final ctx = Pointer<generated.mpv_handle>.fromAddress(data.ctx);
-    // https://mpv.io/manual/stable/#command-interface-screenshot-raw
-    final args = [
-      'screenshot-raw',
-      'video',
-    ];
-    final result = calloc<generated.mpv_node>();
-    final pointers = args.map<Pointer<Utf8>>((e) {
-      return e.toNativeUtf8();
-    }).toList();
-    final Pointer<Pointer<Utf8>> arr = calloc.allocate(args.join().length);
-    for (int i = 0; i < args.length; i++) {
-      arr[i] = pointers[i];
-    }
-    mpv.mpv_command_ret(
-      ctx,
-      arr.cast(),
-      result.cast(),
-    );
+Future<void> _screenshot(_ScreenshotData data) async {
+  Pointer<PredictBean> bean =
+      calloc.allocate<PredictBean>(sizeOf<PredictBean>());
+  // ---------
+  final mpv = generated.MPV(DynamicLibrary.open(data.lib));
+  final ctx = Pointer<generated.mpv_handle>.fromAddress(data.ctx);
+  // https://mpv.io/manual/stable/#command-interface-screenshot-raw
+  final args = [
+    'screenshot-raw',
+    'video',
+  ];
+  final result = calloc<generated.mpv_node>();
+  final pointers = args.map<Pointer<Utf8>>((e) {
+    return e.toNativeUtf8();
+  }).toList();
+  final Pointer<Pointer<Utf8>> arr = calloc.allocate(args.join().length);
+  for (int i = 0; i < args.length; i++) {
+    arr[i] = pointers[i];
+  }
+  mpv.mpv_command_ret(
+    ctx,
+    arr.cast(),
+    result.cast(),
+  );
 
-    Uint8List? image;
+  if (result.ref.format == generated.mpv_format.MPV_FORMAT_NODE_MAP) {
+    int? w, h, stride;
+    Pointer<Void>? bytes;
+    int? sz;
 
-    if (result.ref.format == generated.mpv_format.MPV_FORMAT_NODE_MAP) {
-      int? w, h, stride;
-      Pointer<Uint8>? bytes;
-      int? sz;
-
-      final map = result.ref.u.list;
-      for (int i = 0; i < map.ref.num; i++) {
-        final key = map.ref.keys[i].cast<Utf8>().toDartString();
-        final value = map.ref.values[i];
-        switch (value.format) {
-          case generated.mpv_format.MPV_FORMAT_INT64:
-            switch (key) {
-              case 'w':
-                w = value.u.int64;
-                break;
-              case 'h':
-                h = value.u.int64;
-                break;
-              case 'stride':
-                stride = value.u.int64;
-                break;
-            }
-            break;
-          case generated.mpv_format.MPV_FORMAT_BYTE_ARRAY:
-            switch (key) {
-              case 'data':
-                sz = value.u.ba.ref.size;
-                bytes = malloc.allocate<Uint8>(sz);
-                bytes.asTypedList(sz).setAll(
-                    0, value.u.ba.ref.data.cast<Uint8>().asTypedList(sz));
-                break;
-            }
-            break;
-        }
-      }
-      if (w != null &&
-          h != null &&
-          stride != null &&
-          bytes != null &&
-          sz != null) {
-        bean.ref.cam_id = data.camId.toNativeUtf8().cast();
-        bean.ref.height = h;
-        bean.ref.width = w;
-        bean.ref.len = sz;
-        bean.ref.stride = stride;
-        bean.ref.bgra_data = bytes.cast();
+    final map = result.ref.u.list;
+    for (int i = 0; i < map.ref.num; i++) {
+      final key = map.ref.keys[i].cast<Utf8>().toDartString();
+      final value = map.ref.values[i];
+      switch (value.format) {
+        case generated.mpv_format.MPV_FORMAT_INT64:
+          switch (key) {
+            case 'w':
+              w = value.u.int64;
+              break;
+            case 'h':
+              h = value.u.int64;
+              break;
+            case 'stride':
+              stride = value.u.int64;
+              break;
+          }
+          break;
+        case generated.mpv_format.MPV_FORMAT_BYTE_ARRAY:
+          switch (key) {
+            case 'data':
+              sz = value.u.ba.ref.size;
+              bytes = value.u.ba.ref.data;
+              // bytes
+              //     .asTypedList(sz)
+              //     .setAll(0, value.u.ba.ref.data.cast<Uint8>().asTypedList(sz));
+              break;
+          }
+          break;
       }
     }
-
-    pointers.forEach(calloc.free);
-    mpv.mpv_free_node_contents(result.cast());
-
-    calloc.free(arr);
-    calloc.free(result.cast());
-
-    return bean;
+    if (w != null &&
+        h != null &&
+        stride != null &&
+        bytes != null &&
+        sz != null) {
+      bean.ref.cam_id = data.camId.toNativeUtf8().cast();
+      bean.ref.height = h;
+      bean.ref.width = w;
+      bean.ref.len = sz;
+      bean.ref.stride = stride;
+      bean.ref.bgra_data = bytes.cast();
+      kNativeAlertApi.post_alert_img(bean);
+      bean.ref.bgra_data = Pointer.fromAddress(0);
+      calloc.free(bean);
+    }
   }
+
+  pointers.forEach(calloc.free);
+  mpv.mpv_free_node_contents(result.cast());
+
+  calloc.free(arr);
+  calloc.free(result.cast());
 }
 
 class _ScreenshotData {
