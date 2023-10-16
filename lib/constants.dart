@@ -1,8 +1,10 @@
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/generated_bindings.dart';
 
 const kDbVersion = 2;
 const kDefaultAdminName = 'admin';
@@ -21,6 +23,7 @@ const kTextStyle = TextStyle(color: kTextColor);
 const kContentDialogStyle = ContentDialogThemeData(
     bodyPadding: EdgeInsets.zero,
     decoration: BoxDecoration(color: Colors.transparent));
+final kNativeAlertApi = NativeLibrary(DynamicLibrary.process());
 
 /// UI
 Widget get bgImage => SizedBox(

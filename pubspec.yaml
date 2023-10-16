@@ -63,6 +63,7 @@ dependencies:
   graphic: ^2.2.0
   dart_amqp: ^0.2.5
   ffigen: ^9.0.1
+  ffi: ^2.1.0
 
 dev_dependencies:
   flutter_test:
@@ -141,7 +142,7 @@ flutter_launcher_icons:
 
 
 ffigen:
-  output: 'generated_bindings.dart'
+  output: 'lib/generated_bindings.dart'
   headers:
     entry-points:
       - 'windows/runner/alert_controller.h'
