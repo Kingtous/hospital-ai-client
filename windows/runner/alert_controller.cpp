@@ -13,9 +13,8 @@ DllExport int is_alert_ready() { return 1; }
 
 /// 由Flutter调用此函数完成图片的上传，注意，不要在此函数实现内同步进行推理，而是异步，实现内部维护一个有大小限制的FIFO队列。
 /// 返回0表示成功。
-/// 注意：bgra_data交给C++这边内存管理
+/// 注意：bgra_data生命周期只在本函数有效
 DllExport int post_alert_img(void* bgra_data, size_t len, unsigned int cam_id) {
-  free(bgra_data);
   return 1;
 }
 

@@ -41,12 +41,10 @@ class AlertsModel {
           if (screenshot != null) {
             debugPrint(
                 "AI: post_alert_img from ${rtsp.id} ${screenshot.length}");
-            final arr = calloc.allocate<Uint8>(screenshot.length);
-            arr.asTypedList(screenshot.length).setAll(0, screenshot);
-            
+            final arr = calloc.allocate<Uint8>(screenshot.length + 1);
+            kNativeAlertApi.post_alert_img(
+                arr.cast(), screenshot.length, dev.key.id!);
             calloc.free(arr);
-            // kNativeAlertApi.post_alert_img(
-            //     arr.cast(), screenshot.length, dev.key.id!);
           }
           print(
               "${rtsp.id} cost: ${DateTime.now().millisecondsSinceEpoch - t.millisecondsSinceEpoch}ms");
