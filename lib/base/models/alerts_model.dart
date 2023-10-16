@@ -38,13 +38,11 @@ class AlertsModel {
         } else {
           var t = DateTime.now();
           final screenshot = await rtsp.screenshot();
-          if (screenshot != null) {
+          if (screenshot != null && screenshot.address != 0) {
             debugPrint(
-                "AI: post_alert_img from ${rtsp.id} ${screenshot.length}");
-            final arr = calloc.allocate<Uint8>(screenshot.length + 1);
-            kNativeAlertApi.post_alert_img(
-                arr.cast(), screenshot.length, dev.key.id!);
-            calloc.free(arr);
+                "AI: post_alert_img from ${rtsp.id} ${screenshot.address}");
+            kNativeAlertApi.post_alert_img(screenshot);
+            malloc.free(screenshot);
           }
           print(
               "${rtsp.id} cost: ${DateTime.now().millisecondsSinceEpoch - t.millisecondsSinceEpoch}ms");
@@ -52,6 +50,13 @@ class AlertsModel {
       } else {
         throw UnimplementedError('$dev 的报警还没实现');
       }
+    }
+    // check alerts
+    var p = kNativeAlertApi.get_latest_alert_msg();
+    while (p.address != 0) {
+      p.ref.img.cast<Uint8>().asTypedList(p.ref.img_size);
+      p = kNativeAlertApi.get_latest_alert_msg();
+      // todo
     }
   }
 }

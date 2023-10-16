@@ -40,23 +40,18 @@ class NativeLibrary {
   /// 由Flutter调用此函数完成图片的上传，注意，不要在此函数实现内同步进行推理，而是异步，实现内部维护一个有大小限制的FIFO队列。
   /// 返回0表示成功。
   int post_alert_img(
-    ffi.Pointer<ffi.Void> bgra_data,
-    int len,
-    int cam_id,
+    ffi.Pointer<PredictBean> bean,
   ) {
     return _post_alert_img(
-      bgra_data,
-      len,
-      cam_id,
+      bean,
     );
   }
 
-  late final _post_alert_imgPtr = _lookup<
-      ffi.NativeFunction<
-          ffi.Int Function(ffi.Pointer<ffi.Void>, ffi.Size,
-              ffi.UnsignedInt)>>('post_alert_img');
-  late final _post_alert_img = _post_alert_imgPtr
-      .asFunction<int Function(ffi.Pointer<ffi.Void>, int, int)>();
+  late final _post_alert_imgPtr =
+      _lookup<ffi.NativeFunction<ffi.Int Function(ffi.Pointer<PredictBean>)>>(
+          'post_alert_img');
+  late final _post_alert_img =
+      _post_alert_imgPtr.asFunction<int Function(ffi.Pointer<PredictBean>)>();
 
   /// 由Flutter主动调用，用于获取最新的alert数据。
   /// 注意：如果没有最新message，那么返回nullptr即可。否则，返回一个生命周期独立（不用free，交给flutter做内存管理）的Alert。
@@ -83,4 +78,22 @@ final class Alert extends ffi.Struct {
 
   @ffi.Size()
   external int img_size;
+}
+
+final class PredictBean extends ffi.Struct {
+  external ffi.Pointer<ffi.Void> bgra_data;
+
+  @ffi.Size()
+  external int len;
+
+  external ffi.Pointer<ffi.Char> cam_id;
+
+  @ffi.Int()
+  external int width;
+
+  @ffi.Int()
+  external int height;
+
+  @ffi.Int()
+  external int stride;
 }

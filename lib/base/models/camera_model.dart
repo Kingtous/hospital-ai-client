@@ -1,15 +1,22 @@
 import 'dart:async';
+import 'dart:ffi' hide Size;
 import 'dart:typed_data';
 
+import 'package:ffi/ffi.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:hospital_ai_client/generated_bindings.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
+import 'package:media_kit/src/player/native/core/native_library.dart'
+    as MediaKitNative;
 part 'camera_model.g.dart';
 
 abstract interface class PlayableSource {
@@ -28,7 +35,7 @@ abstract interface class PlayableSource {
 
   Future<void> dispose();
 
-  Future<Uint8List?> screenshot();
+  Future<Pointer<PredictBean>?> screenshot();
 }
 
 abstract class PlayableDevice extends PlayableSource {
@@ -429,7 +436,108 @@ class RTSPCamera extends PlayableDevice
   }
 
   @override
-  Future<Uint8List?> screenshot() {
-    return player.screenshot(format: null);
+  Future<Pointer<PredictBean>?> screenshot() {
+    final pp = (player.platform as NativePlayer);
+    return _screenshot(_ScreenshotData(
+        pp.ctx.address, MediaKitNative.NativeLibrary.path, null, id));
   }
+
+  Future<Pointer<PredictBean>> _screenshot(_ScreenshotData data) async {
+    Pointer<PredictBean> bean =
+        calloc.allocate<PredictBean>(sizeOf<PredictBean>());
+    // ---------
+    final mpv = generated.MPV(DynamicLibrary.open(data.lib));
+    final ctx = Pointer<generated.mpv_handle>.fromAddress(data.ctx);
+    // https://mpv.io/manual/stable/#command-interface-screenshot-raw
+    final args = [
+      'screenshot-raw',
+      'video',
+    ];
+    final result = calloc<generated.mpv_node>();
+    final pointers = args.map<Pointer<Utf8>>((e) {
+      return e.toNativeUtf8();
+    }).toList();
+    final Pointer<Pointer<Utf8>> arr = calloc.allocate(args.join().length);
+    for (int i = 0; i < args.length; i++) {
+      arr[i] = pointers[i];
+    }
+    mpv.mpv_command_ret(
+      ctx,
+      arr.cast(),
+      result.cast(),
+    );
+
+    Uint8List? image;
+
+    if (result.ref.format == generated.mpv_format.MPV_FORMAT_NODE_MAP) {
+      int? w, h, stride;
+      Pointer<Uint8>? bytes;
+      int? sz;
+
+      final map = result.ref.u.list;
+      for (int i = 0; i < map.ref.num; i++) {
+        final key = map.ref.keys[i].cast<Utf8>().toDartString();
+        final value = map.ref.values[i];
+        switch (value.format) {
+          case generated.mpv_format.MPV_FORMAT_INT64:
+            switch (key) {
+              case 'w':
+                w = value.u.int64;
+                break;
+              case 'h':
+                h = value.u.int64;
+                break;
+              case 'stride':
+                stride = value.u.int64;
+                break;
+            }
+            break;
+          case generated.mpv_format.MPV_FORMAT_BYTE_ARRAY:
+            switch (key) {
+              case 'data':
+                sz = value.u.ba.ref.size;
+                bytes = malloc.allocate<Uint8>(sz);
+                bytes.asTypedList(sz).setAll(
+                    0, value.u.ba.ref.data.cast<Uint8>().asTypedList(sz));
+                break;
+            }
+            break;
+        }
+      }
+      if (w != null &&
+          h != null &&
+          stride != null &&
+          bytes != null &&
+          sz != null) {
+        bean.ref.cam_id = data.camId.toNativeUtf8().cast();
+        bean.ref.height = h;
+        bean.ref.width = w;
+        bean.ref.len = sz;
+        bean.ref.stride = stride;
+        bean.ref.bgra_data = bytes.cast();
+      }
+    }
+
+    pointers.forEach(calloc.free);
+    mpv.mpv_free_node_contents(result.cast());
+
+    calloc.free(arr);
+    calloc.free(result.cast());
+
+    return bean;
+  }
+}
+
+class _ScreenshotData {
+  final int ctx;
+  final String lib;
+  final String? format;
+  final String camId;
+
+  _ScreenshotData(
+    this.ctx,
+    this.lib,
+    this.format,
+    this.camId,
+  );
 }
