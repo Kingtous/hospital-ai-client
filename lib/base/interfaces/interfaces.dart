@@ -32,7 +32,9 @@ Future<void> setupDependencies() async {
   await u.init();
   it.registerSingleton<UserModel>(u);
   it.registerSingleton<AppModel>(AppModel());
-  it.registerSingleton<VideoModel>(VideoModel());
+  it.registerSingleton<VideoModel>(VideoModel(), dispose: (m) {
+    m.dispose();
+  });
   it.registerSingleton<AlertsModel>(AlertsModel());
   final r = RoleModel();
   await r.init();

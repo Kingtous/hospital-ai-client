@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
@@ -12,6 +13,7 @@ const kRTSPVideoModelJsonKey = 'rtsp_video_model';
 class VideoModel {
   late final RxMap<Cam, PlayableDevice> _playerMap;
   RxMap<Cam, PlayableDevice> get playerMap => _playerMap;
+  Timer? timer;
 
   VideoModel() {
     _playerMap = RxMap();
@@ -22,12 +24,17 @@ class VideoModel {
     final cams = await appDB.camDao.getAll();
     for (final cam in cams) {
       if (cam.camType == CamType.rtsp.index) {
-        final rtspCam = RTSPCamera.fromDB(cam)?..init();
+        final rtspCam = RTSPCamera.fromDB(cam);
         if (rtspCam != null) {
           _playerMap[cam] = rtspCam;
+          if (cam.enableAlert) {
+            debugPrint("init ${cam.name}");
+            rtspCam.init();
+          }
         }
       }
     }
+    timer = new Timer.periodic(Duration(milliseconds: 300), _onAlertTick);
   }
 
   Future<List<Cam>> getAllCams() async {
@@ -140,8 +147,13 @@ class VideoModel {
     return appDB.roomDao.deleteRoom(e);
   }
 
-  Future<void> updateCam(Cam cam) {
-    return appDB.camDao.updateCam(cam);
+  Future<void> updateCam(Cam cam) async {
+    await appDB.camDao.updateCam(cam);
+    if (_playerMap.containsKey(cam)) {
+      final src = _playerMap[cam]!;
+      _playerMap.remove(cam);
+      _playerMap[cam] = src;
+    }
   }
 
   Future<void> deleteCam(Cam cam) {
@@ -150,5 +162,17 @@ class VideoModel {
     }
     _playerMap.remove(cam);
     return appDB.camDao.deleteCam(cam);
+  }
+
+  void dispose() {
+    timer?.cancel();
+    for (final entry in _playerMap.entries) {
+      entry.value.dispose();
+    }
+  }
+
+  void _onAlertTick(Timer timer) {
+    alertsModel.trigger(
+        _playerMap.entries.where((entry) => entry.key.enableAlert));
   }
 }
