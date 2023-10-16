@@ -4,12 +4,12 @@
 typedef struct Alert {
   int alert_type;   // 报警类型
   int cam_id;       // 摄像头ID
-  void* img;        // 图片二进制
+  const void* img;  // 图片bgra二进制
   size_t img_size;  // 图片长度
 } Alert;
 
 typedef struct PredictBean {
-  void* bgra_data;
+  const void* bgra_data;
   size_t len;
   const char* cam_id;
   int width;
