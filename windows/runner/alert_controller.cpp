@@ -13,7 +13,7 @@ DllExport int is_alert_ready() { return 1; }
 
 /// 由Flutter调用此函数完成图片的上传，注意，不要在此函数实现内同步进行推理，而是异步，实现内部维护一个有大小限制的FIFO队列。
 /// 返回0表示成功。
-/// 注意：bgra_data生命周期只在本函数有效
+/// 注意：bgra_data生命周期由cpp管理
 DllExport int post_alert_img(PredictBean* bean) { return 1; }
 
 /// 由Flutter主动调用，用于获取最新的alert数据。
