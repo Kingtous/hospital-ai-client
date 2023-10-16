@@ -61,6 +61,8 @@ dependencies:
   excel: ^2.1.0
   bruno: ^3.4.3
   graphic: ^2.2.0
+  dart_amqp: ^0.2.5
+  ffigen: ^9.0.1
 
 dev_dependencies:
   flutter_test:
@@ -136,3 +138,10 @@ flutter_launcher_icons:
   macos:
     generate: true
     image_path: "assets/images/frame_tile_prefix_icon.png"
+
+
+ffigen:
+  output: 'generated_bindings.dart'
+  headers:
+    entry-points:
+      - 'windows/runner/alert_controller.h'

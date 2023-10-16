@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
@@ -26,6 +27,8 @@ abstract interface class PlayableSource {
   Future<void> stop();
 
   Future<void> dispose();
+
+  Future<Uint8List?> screenshot();
 }
 
 abstract class PlayableDevice extends PlayableSource {
@@ -423,5 +426,10 @@ class RTSPCamera extends PlayableDevice
   static RTSPCamera? fromDB(Cam cam) {
     return RTSPCamera(cam.name,
         rtspUrl: getRtSpStreamUrl(cam, mainStream: false));
+  }
+
+  @override
+  Future<Uint8List?> screenshot() {
+    return player.screenshot(format: null);
   }
 }

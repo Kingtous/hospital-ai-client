@@ -34,7 +34,7 @@ class VideoModel {
         }
       }
     }
-    timer = new Timer.periodic(Duration(milliseconds: 300), _onAlertTick);
+    timer = Timer(const Duration(milliseconds: 200), _onAlertTick);
   }
 
   Future<List<Cam>> getAllCams() async {
@@ -171,8 +171,10 @@ class VideoModel {
     }
   }
 
-  void _onAlertTick(Timer timer) {
-    alertsModel.trigger(
-        _playerMap.entries.where((entry) => entry.key.enableAlert));
+  void _onAlertTick() async {
+    debugPrint("onAlertTick, check alerts");
+    await alertsModel
+        .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
+    timer = Timer(const Duration(milliseconds: 300), _onAlertTick);
   }
 }
