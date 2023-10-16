@@ -24,6 +24,14 @@ class Room {
   String roomName;
 
   Room(this.id, this.roomName);
+
+  @override
+  int get hashCode => id.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other.hashCode == hashCode && (other is Room && other.id == id);
+  }
 }
 
 @Entity(tableName: 'rel_room_cam', foreignKeys: [

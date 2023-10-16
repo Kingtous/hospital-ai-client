@@ -616,9 +616,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            height: 150,
-            width: 150,
+          Expanded(
             child: KPieChart(
               data: KPieChartData(
                   kMockDataType.map(
@@ -631,7 +629,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
           ),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: li
                   .map((e) => Padding(

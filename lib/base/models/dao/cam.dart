@@ -84,7 +84,7 @@ class Cam {
       this.camType, this.enableAlert, this.authUser, this.password, this.port, this.host);
 
   @override
-  int get hashCode => id ?? -1;
+  int get hashCode => id.hashCode;
 
   @override
   bool operator ==(Object other) => other is Cam && other.id == id;
