@@ -388,7 +388,13 @@ class RTSPCamera extends PlayableDevice
                                     setState(() {});
                                     return;
                                   }
-                                  bool res = await videoModel.addCamToRoom(
+                                  bool res = await videoModel.checkCamName(id, room);
+                                  if(!res){
+                                    msg = "摄像头名称已存在，请重新输入";
+                                    setState(() {});
+                                    return;
+                                  }
+                                  res = await videoModel.addCamToRoom(
                                       Cam(
                                           null,
                                           id,

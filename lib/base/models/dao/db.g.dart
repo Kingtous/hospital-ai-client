@@ -856,6 +856,14 @@ class _$RoomDao extends RoomDao {
   Future<void> deleteRoomCam(RoomCam r) async {
     await _roomCamDeletionAdapter.delete(r);
   }
+
+  @override
+  Future<List<String>> getCamNamesByRoom(int roomId) {
+    return _queryAdapter.queryList(
+        'SELECT name FROM cam WHERE room_id = :roomId',
+        mapper: (Map<String, Object?> row) => row['name'] as String,
+        arguments: [roomId]);
+  }
 }
 
 class _$AlertDao extends AlertDao {

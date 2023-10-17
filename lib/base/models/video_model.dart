@@ -71,6 +71,11 @@ class VideoModel {
     }
   }
 
+  Future<bool> checkCamName(String name,Room room) async {
+    List<String> names = await appDB.roomDao.getCamNamesByRoom(room.id!);
+    return !names.contains(name);
+  }
+
   Future<List<Cam>> getAllowedCams() async {
     if (userModel.isAdmin) {
       return appDB.camDao.getAll();
