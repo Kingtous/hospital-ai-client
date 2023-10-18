@@ -12,6 +12,8 @@ import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
+import 'package:path_provider/path_provider.dart' as p;
+import 'package:url_launcher/url_launcher.dart';
 
 // 录像机是0区，我们是东八
 const int kUtcTimeMsOffset = 1000 * 60 * 60 * 8;
@@ -31,6 +33,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
   Rx<DateTime> currentPlayingTim = Rx(DateTime.now());
   int seconds = 60 * 60 * 24;
   RxInt pastSecondsFromStart = 0.obs;
+  RxBool isRecording = false.obs;
   late Timer timer;
   late final Player player;
   late final Rx<Cam> cam;
@@ -182,9 +185,12 @@ class _FullScreenLiveState extends State<FullScreenLive> {
                               : Video(
                                   controller: controller,
                                   controls: (state) => Obx(() => VideoControl2(
-                                      state: state,
-                                      cam: cam.value,
-                                      type: LiveType.fullscreen)),
+                                        state: state,
+                                        cam: cam.value,
+                                        type: LiveType.fullscreen,
+                                        onRecordToggled: _onRecordToggled,
+                                        isRecording: isRecording,
+                                      )),
                                 ),
                         ),
                         Container(
@@ -320,6 +326,32 @@ class _FullScreenLiveState extends State<FullScreenLive> {
     player.setVolume(0);
     await player.open(Media(url), play: true);
     // print(player.state.playing);
+  }
+
+  void _onRecordToggled() async {
+    final videoFolder = (await p.getApplicationDocumentsDirectory());
+    if (isRecording.value) {
+      await recorder.stopRecording();
+      launchUrl(Uri.file(videoFolder.path));
+    } else {
+      if (!await videoFolder.exists()) {
+        await videoFolder.create(recursive: true);
+      }
+      if (isLive.value) {
+        final vPath =
+            "${videoFolder.path}/${cam.value.name}${DateTime.now().toIso8601String()}.mp4";
+        await recorder.recordRealtime(cam.value, vPath);
+        isRecording.value = true;
+      } else {
+        final from = DateTime.fromMillisecondsSinceEpoch(
+            currentPlayingTim.value.millisecondsSinceEpoch +
+                pastSecondsFromStart.value * 1000);
+        final vPath =
+            "${videoFolder.path}/${cam.value.name}${from.toIso8601String()}.mp4";
+        await recorder.recordFrom(cam.value, from, vPath);
+        isRecording.value = true;
+      }
+    }
   }
 }
 

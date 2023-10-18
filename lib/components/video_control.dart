@@ -69,15 +69,19 @@ class VideoControl extends StatelessWidget {
 class VideoControl2 extends StatelessWidget {
   final VideoState state;
   final Cam cam;
-  const VideoControl2(
+  final VoidCallback onRecordToggled;
+  final RxBool isRecording;
+  final isHovered = false.obs;
+  VideoControl2(
       {super.key,
       required this.state,
       required this.cam,
-      required LiveType type});
+      required LiveType type,
+      required this.onRecordToggled,
+      required this.isRecording});
 
   @override
   Widget build(BuildContext context) {
-    var isHovered = false.obs;
     return StatefulBuilder(builder: (context, setState) {
       return MouseRegion(
         onExit: (_) => isHovered.value = false,
@@ -102,6 +106,14 @@ class VideoControl2 extends StatelessWidget {
                       const SizedBox(
                         width: 4.0,
                       ),
+                      Button(
+                          child: Obx(() => Icon(
+                                isRecording.value
+                                    ? FluentIcons.stop
+                                    : FluentIcons.record2,
+                                color: Colors.red,
+                              )),
+                          onPressed: onRecordToggled),
                     ],
                   ),
                 ),
