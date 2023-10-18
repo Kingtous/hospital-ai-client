@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hospital_ai_client/base/models/alerts_model.dart';
 import 'package:hospital_ai_client/base/models/app_model.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/record_model.dart';
 import 'package:hospital_ai_client/base/models/role_model.dart';
 import 'package:hospital_ai_client/base/models/dao/db.dart';
 import 'package:hospital_ai_client/base/models/room_model.dart';
@@ -40,6 +42,8 @@ Future<void> setupDependencies() async {
   await r.init();
   it.registerSingleton<RoleModel>(r);
   it.registerSingleton<RoomModel>(RoomModel());
+  it.registerSingleton<CamRecorder>(FFmpegCamRecorder());
+  it.registerSingleton<BaseFilePicker>(FilePickerImpl());
   // init
   kNativeAlertApi.alert_init();
   await videoModel.init();
@@ -53,6 +57,8 @@ UserModel get userModel => it.get();
 RoleModel get roleModel => it.get();
 RoomModel get roomModel => it.get();
 AlertsModel get alertsModel => it.get();
+CamRecorder get recorder => it.get();
+BaseFilePicker get filePicker => it.get();
 
 const kThumbNailLiveHeight = 207;
 const kThumbNailLiveWidth = 368;
