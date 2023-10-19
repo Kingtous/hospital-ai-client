@@ -17,7 +17,7 @@ DllExport int is_alert_ready() { return 1; }
 /// 返回0表示成功。
 /// 注意：bgra_data生命周期由Flutter管理，异步的话请做拷贝
 DllExport int post_alert_img(PredictBean* bean) {
-  printf("post_alert_img in %s", bean->cam_id);
+  // printf("post_alert_img in %s", bean->cam_id);
   return 1;
 }
 

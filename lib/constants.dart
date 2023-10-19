@@ -1,10 +1,12 @@
 import 'dart:ffi';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/generated_bindings.dart';
+import 'package:path_provider/path_provider.dart';
 
 const kDbVersion = 2;
 const kDefaultAdminName = 'admin';
@@ -66,7 +68,7 @@ const kMockDataType = <AlertType, int>{
   AlertType.whiteShirt: 2,
   AlertType.other: 1
 };
-const kMockAlertsData = {"画面一","画面二","画面三","画面四","画面五"};
+const kMockAlertsData = {"画面一", "画面二", "画面三", "画面四", "画面五"};
 
 String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
   return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}${mainStream ? '01' : '02'}";
@@ -92,3 +94,9 @@ final kMockRealtimeAlert = <Alerts>[
   Alerts(1, DateTime.now().millisecondsSinceEpoch, Uint8List(0), 1,
       AlertType.whiteShirt.index, '测试摄像头', 1, '教学区')
 ];
+
+Future<Directory> getRecorderHistoryFolder() async {
+  return Directory.fromRawPath(Uint8List.fromList(
+      ("${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER")
+          .codeUnits));
+}

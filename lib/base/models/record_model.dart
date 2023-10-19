@@ -17,6 +17,7 @@ import 'dart:typed_data';
 
 import 'package:dart_amqp/dart_amqp.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/constants.dart';
 
@@ -66,7 +67,22 @@ class FFmpegCamRecorder extends CamRecorder {
     if (_currentProcess == null) {
       return;
     }
-    _currentProcess!.kill(ProcessSignal.sigint);
+    final p = _currentProcess;
+    try {
+      p?.stdin.add("q".codeUnits);
+      await p?.stdin.flush();
+      await p?.stdin.close();
+      Future.delayed(Duration(seconds: 1), () {
+        final hasTerm = p?.kill();
+        print("recording stopped, pid: ${p?.pid}, ${hasTerm}");
+      });
+    } catch (e) {
+      print(e);
+      debugPrintStack();
+    } finally {
+      p?.kill();
+    }
+
     _currentProcess = null;
   }
 
@@ -83,6 +99,7 @@ class FFmpegCamRecorder extends CamRecorder {
   }
 
   Future<void> recordUrl(String url, String filePath) async {
+    print("保存$url 到 $filePath");
     await stopRecording();
     _currentProcess = await Process.start(
         binPath,
@@ -90,13 +107,18 @@ class FFmpegCamRecorder extends CamRecorder {
           "-rtsp_transport",
           "tcp",
           "-i",
-          url,
+          url.replaceAll("&", "^&"),
           "-c",
           "copy",
           "-f",
           "mp4",
-          "\"$filePath\""
+          filePath
         ],
-        mode: ProcessStartMode.inheritStdio);
+        runInShell: true,
+        mode: ProcessStartMode.normal);
+    if (_currentProcess != null) {
+      stdout.addStream(_currentProcess!.stdout);
+      stderr.addStream(_currentProcess!.stderr);
+    }
   }
 }

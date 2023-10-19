@@ -177,7 +177,7 @@ class VideoModel {
   }
 
   void _onAlertTick() async {
-    debugPrint("onAlertTick, check alerts in ${DateTime.now()}");
+    // debugPrint("onAlertTick, check alerts in ${DateTime.now()}");
     await alertsModel
         .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
     timer = Timer(const Duration(milliseconds: 200), _onAlertTick);
