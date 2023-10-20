@@ -54,8 +54,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   window_manager: ^0.3.6
-  floor:
-    path: ../floor/floor
+  floor: any
   crypto: ^3.0.3
   data_table_2: ^2.5.8
   excel: ^2.1.0
@@ -72,8 +71,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  floor_generator:
-    path: ../floor/floor_generator
+  floor_generator: any
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
