@@ -654,7 +654,7 @@ packages:
     source: hosted
     version: "1.0.1"
   media_kit_libs_windows_video:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: media_kit_libs_windows_video
       sha256: "923f068344d7d200184e0aaa2597f3de6c05982a3b1f18035d842ab53f2a1350"
