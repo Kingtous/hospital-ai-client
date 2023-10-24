@@ -17,6 +17,9 @@ import 'dart:io';
 import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
+import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
+import 'package:hospital_ai_client/base/models/dao/cam.dart';
+import 'package:hospital_ai_client/base/models/record_model.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
@@ -31,15 +34,19 @@ class RecordHistoryPage extends StatefulWidget {
 
 class _RecordHistoryPageState extends State<RecordHistoryPage> {
   late Future<Directory> recorderHistoryDir;
-  late Rx<FileSystemEntity?> selectedFile;
+  late RxList<Cam> selectedCams = RxList<Cam>();
+  late Rx<MediaRecordFs?> selectedMediaFile = Rx(null);
   late Player player;
   late VideoController controller;
+  // Rx
+  late Rx<DateTime?> selectedDate = Rx(null);
 
   @override
   void initState() {
     super.initState();
     recorderHistoryDir = getRecorderHistoryFolder();
-    selectedFile = Rx(null);
+    recordModel.refresh();
+    selectedMediaFile = Rx(null);
     player = Player(
         configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024));
     controller = VideoController(player);
@@ -70,135 +77,123 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
     print(player.stream.playlist);
   }
 
+  Iterable<MediaRecordFs> getFilteredList() {}
+
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: recorderHistoryDir,
-        builder: (context, data) {
-          if (!data.hasData) {
-            return const Center(
-              child: BrnLoadingDialog(content: "正在加载"),
-            );
-          }
-          final dir = data.data!;
-          if (!dir.existsSync()) {
-            dir.createSync(recursive: true);
-          }
-          final entities = dir
-              .listSync(followLinks: true)
-              .where((element) => element.path.endsWith(".mp4"))
-              .toList();
-          return Container(
-            decoration: BoxDecoration(color: kBgColor),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 1,
-                  child: Container(
-                    margin: EdgeInsets.all(16.0),
-                    padding: EdgeInsets.all(16.0),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white),
-                    child: Column(
+    return Container(
+      decoration: BoxDecoration(color: kBgColor),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Container(
+              margin: EdgeInsets.all(16.0),
+              padding: EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12), color: Colors.white),
+              child: Column(
+                children: [
+                  const Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
                       children: [
-                        const Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              Text(
-                                '录制列表',
-                                textAlign: TextAlign.start,
-                                style: TextStyle(
-                                    color: kTextColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          '录制列表',
+                          textAlign: TextAlign.start,
+                          style: TextStyle(
+                              color: kTextColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
                         ),
-                        Expanded(
-                          child: ListView.builder(
-                            itemBuilder: (context, index) {
-                              final entry = entities[index];
-                              return Container(
-                                padding: const EdgeInsets.all(2.0),
-                                margin: const EdgeInsets.all(2.0),
-                                child: Obx(
-                                  () => Button(
-                                    style: entry == selectedFile.value
-                                        ? ButtonStyle(
-                                            backgroundColor: ButtonState.all(
-                                                kHighlightColor),
-                                            border: ButtonState.all(
-                                                BorderSide.none))
-                                        : ButtonStyle(
-                                            border: ButtonState.all(
-                                                BorderSide.none)),
-                                    child: Tooltip(
-                                      message: entry.path,
-                                      child: Row(
-                                        children: [
-                                          Icon(FluentIcons.video),
-                                          SizedBox(
-                                            width: 4.0,
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: Obx(
+                      () {
+                        final list = getFilteredList().toList();
+                        return ListView.builder(
+                          itemBuilder: (context, index) {
+                            final item = list[index];
+                            return Container(
+                              padding: const EdgeInsets.all(2.0),
+                              margin: const EdgeInsets.all(2.0),
+                              child: Obx(
+                                () => Button(
+                                  style: item == selectedMediaFile.value
+                                      ? ButtonStyle(
+                                          backgroundColor:
+                                              ButtonState.all(kHighlightColor),
+                                          border:
+                                              ButtonState.all(BorderSide.none))
+                                      : ButtonStyle(
+                                          border:
+                                              ButtonState.all(BorderSide.none)),
+                                  child: Tooltip(
+                                    message: item.path,
+                                    child: Row(
+                                      children: [
+                                        Icon(FluentIcons.video),
+                                        SizedBox(
+                                          width: 4.0,
+                                        ),
+                                        Expanded(
+                                            child: Text(
+                                          p.basename(
+                                            item.path,
                                           ),
-                                          Expanded(
-                                              child: Text(
-                                            p.basename(
-                                              entry.path,
-                                            ),
-                                            overflow: TextOverflow.ellipsis,
-                                            maxLines: 1,
-                                            style: kTextStyle,
-                                            textAlign: TextAlign.start,
-                                          )),
-                                          GestureDetector(
-                                            onTap: () => onDeleteRecord(entry),
-                                            child: Icon(
-                                              FluentIcons.delete,
-                                              color: Colors.red,
-                                            ),
-                                          )
-                                        ],
-                                      ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          style: kTextStyle,
+                                          textAlign: TextAlign.start,
+                                        )),
+                                        GestureDetector(
+                                          onTap: () => onDeleteRecord(item),
+                                          child: Icon(
+                                            FluentIcons.delete,
+                                            color: Colors.red,
+                                          ),
+                                        )
+                                      ],
                                     ),
-                                    onPressed: () {
-                                      if (selectedFile.value == entry) {
-                                        return;
-                                      }
-                                      selectedFile.value = entry;
-                                      loadVideo();
-                                    },
                                   ),
+                                  onPressed: () {
+                                    if (selectedFile.value == item) {
+                                      return;
+                                    }
+                                    selectedFile.value = item;
+                                    loadVideo();
+                                  },
                                 ),
-                              );
-                            },
-                            itemCount: entities.length,
-                          ),
-                        ),
-                      ],
+                              ),
+                            );
+                          },
+                          itemCount: list.length,
+                        );
+                      },
                     ),
                   ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(12.0)),
-                    margin: EdgeInsets.all(16.0),
-                    child: Column(
-                      children: [
-                        Expanded(child: Video(controller: controller))
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          );
-        });
+          ),
+          Expanded(
+            flex: 3,
+            child: Container(
+              decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(12.0)),
+              margin: EdgeInsets.all(16.0),
+              child: Column(
+                children: [Expanded(child: Video(controller: controller))],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    ;
   }
 
   onDeleteRecord(FileSystemEntity entry) async {

@@ -44,9 +44,11 @@ Future<void> setupDependencies() async {
   it.registerSingleton<RoomModel>(RoomModel());
   it.registerSingleton<CamRecorder>(FFmpegCamRecorder());
   it.registerSingleton<BaseFilePicker>(FilePickerImpl());
+  it.registerSingleton<RecordModel>(RecordModel());
   // init
   kNativeAlertApi.alert_init();
   await videoModel.init();
+  compute((message) => recordModel.refresh(), null);
 }
 
 VideoModel get videoModel => it.get();
@@ -59,6 +61,7 @@ RoomModel get roomModel => it.get();
 AlertsModel get alertsModel => it.get();
 CamRecorder get recorder => it.get();
 BaseFilePicker get filePicker => it.get();
+RecordModel get recordModel => it.get();
 
 const kThumbNailLiveHeight = 207;
 const kThumbNailLiveWidth = 368;

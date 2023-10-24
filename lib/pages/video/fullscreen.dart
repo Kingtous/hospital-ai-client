@@ -335,14 +335,14 @@ class _FullScreenLiveState extends State<FullScreenLive> {
 
   void _onRecordToggled() async {
     final wc = WeakReference(context);
-    final videoFolder = (await p.getApplicationDocumentsDirectory());
-    final homeHolder = "${videoFolder.path}/AI-RECORDER";
-    final dir = Directory.fromRawPath(Uint8List.fromList(homeHolder.codeUnits));
-    if (!await dir.exists()) {
-      await dir.create(recursive: true);
+    final videoFolder = await getRecorderHistoryFolder();
+    if (!await videoFolder.exists()) {
+      await videoFolder.create(recursive: true);
     }
     if (isRecording.value) {
-      if (wc.target != null) BrnToast.show("视频已保存至${dir.path}", wc.target!);
+      if (wc.target != null) {
+        BrnToast.show("视频已保存至${videoFolder.path}", wc.target!);
+      }
       await recorder.stopRecording();
       // launchUrl(dir.uri);
       isRecording.value = false;
@@ -352,7 +352,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
       }
       if (isLive.value) {
         final vPath =
-            "$homeHolder/${cam.value.name}-${DateTime.now().toIso8601String().replaceAll(":", "_")}.mp4";
+            "$videoFolder/${cam.value.name}-${DateTime.now().toIso8601String().replaceAll(":", "_")}.mp4";
         await recorder.recordRealtime(cam.value, vPath);
         isRecording.value = true;
       } else {
@@ -360,7 +360,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
             currentPlayingTim.value.millisecondsSinceEpoch +
                 pastSecondsFromStart.value * 1000);
         final vPath =
-            "$homeHolder/${cam.value.name}-${from.toIso8601String().replaceAll(":", "_")}.mp4";
+            "$videoFolder/${cam.value.name}-${from.toIso8601String().replaceAll(":", "_")}.mp4";
         await recorder.recordFrom(cam.value, from, vPath);
         isRecording.value = true;
       }

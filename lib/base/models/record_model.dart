@@ -18,8 +18,11 @@ import 'dart:typed_data';
 import 'package:dart_amqp/dart_amqp.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 abstract class BaseFilePicker {
   Future<String?> saveFile();
@@ -120,5 +123,54 @@ class FFmpegCamRecorder extends CamRecorder {
       stdout.addStream(_currentProcess!.stdout);
       stderr.addStream(_currentProcess!.stderr);
     }
+  }
+}
+
+class MediaRecordFs {
+  late final Cam cam;
+  late final DateTime dt;
+  late final FileSystemEntity f;
+}
+
+class RecordModel {
+  late final Future<void> inited;
+  late List<MediaRecordFs> recs;
+
+  RecordModel() {
+    recs = [];
+  }
+
+  Future<List<MediaRecordFs>> refresh() async {
+    final dir = await getRecorderHistoryFolder();
+    final s = await dir.list(recursive: true).toList();
+    Map<int, DateTime> m = Map();
+    Map<int, FileSystemEntity> fm = Map();
+    recs.clear();
+    for (final video in s) {
+      final videoName = basenameWithoutExtension(video.path);
+      final meta = videoName.split('-');
+      if (meta.length != 2) {
+        continue;
+      }
+      final id = int.tryParse(meta[0]);
+      final dt = DateTime.tryParse(meta[1]);
+      if (id == null || dt == null) {
+        continue;
+      }
+      m[id] = dt;
+      fm[id] = video;
+    }
+    final ids = m.entries.map((e) => e.key).toList();
+    final cams = await appDB.camDao.getCamByIds(ids);
+    for (final entry in m.entries) {
+      final c = cams.where((cam) => cam.id == entry.key).firstOrNull;
+      if (c != null) {
+        recs.add(MediaRecordFs()
+          ..cam = c
+          ..dt = entry.value
+          ..f = fm[entry.key]!);
+      }
+    }
+    return recs;
   }
 }
