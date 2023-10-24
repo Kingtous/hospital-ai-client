@@ -40,6 +40,6 @@ jobs:
         with:
           tag: v${{ env.VERSION }}
           artifacts: "./*.exe"
-          bodyFile: "body.md"
+          bodyFile: "CHANGELOGS.md"
           allowUpdates: true
           token: ${{ secrets.GITHUB_TOKEN }}
