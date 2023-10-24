@@ -81,6 +81,9 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
             );
           }
           final dir = data.data!;
+          if (!dir.existsSync()) {
+            dir.createSync(recursive: true);
+          }
           final entities = dir
               .listSync(followLinks: true)
               .where((element) => element.path.endsWith(".mp4"))

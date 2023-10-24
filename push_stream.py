@@ -36,11 +36,11 @@ import os
 import multiprocessing
 
 def push_stream_by_video(video_path: str, channel_id: str):
-    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Channels/{channel_id}02')
+    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -c copy -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Channels/{channel_id}02')
 
 
 def push_playback_by_video(video_path: str, channel_id: str):
-    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Tracks/{channel_id}02')
+    os.system(f'ffmpeg -re -stream_loop -1 -i {video_path} -c copy -an -f rtsp -rtsp_transport tcp  rtsp://localhost:8554/Streaming/Tracks/{channel_id}02')
 
 def push_video(video_path: str, channel_id: str):
     p1 = multiprocessing.Process(target=push_stream_by_video, args=[video_path, channel_id])
@@ -54,6 +54,22 @@ if __name__ == "__main__":
     for p in push_video('./videos/1/D128_20230926190002.mp4', '1'):
         ps.append(p)
     for p in push_video('./videos/1/D104_20230926142900.mp4', '2'):
+        ps.append(p)
+    for p in push_video('./videos/1/D47_20230926144009.mp4', '3'):
+        ps.append(p)
+    for p in push_video('./videos/1/D58_20230926144123.mp4', '4'):
+        ps.append(p)
+    for p in push_video('./videos/1/D123_20230926151703.mp4', '5'):
+        ps.append(p)
+    for p in push_video('./videos/1/D58_20230926144123.mp4', '6'):
+        ps.append(p)
+    for p in push_video('./videos/1/D127_20230926104305.mp4', '7'):
+        ps.append(p)
+    for p in push_video('./videos/1/D48_20230926153006.mp4', '8'):
+        ps.append(p)
+    for p in push_video('./videos/2/D61_20230926143703.mp4', '9'):
+        ps.append(p)
+    for p in push_video('./videos/2/D100_20230928125003.mp4', '10'):
         ps.append(p)
     for p in ps:
         p.join()
