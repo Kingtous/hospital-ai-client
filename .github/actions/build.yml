@@ -11,6 +11,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Checkout submodules
+        shell: bash
+        run: |
+          pushd ..
+          git clone https://github.com/Kingtous/media-kit.git --depth=1
+          popd
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.10.3'
