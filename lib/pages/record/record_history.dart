@@ -60,24 +60,44 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
 
   void loadVideo() async {
     final wc = WeakReference(context);
-    final entry = selectedFile.value;
+    final entry = selectedMediaFile.value;
     if (entry == null) {
       return;
     }
-    if (!await entry.exists()) {
+    if (!await entry.f.exists()) {
       if (wc.target != null) {
         BrnToast.show("该文件不存在", wc.target!);
       }
       return;
     }
     await player.stop();
-    await player.open(Media(entry.uri.toString()), play: true);
+    await player.open(Media(entry.f.uri.toString()), play: true);
     // await player.play();
-    print("playing ${entry.uri.toString()}");
+    print("playing ${entry.f.uri.toString()}");
     print(player.stream.playlist);
   }
 
-  Iterable<MediaRecordFs> getFilteredList() {}
+  Iterable<MediaRecordFs> getFilteredList() {
+    if (selectedDate.value == null && selectedCams.isEmpty) {
+      return recordModel.recs;
+    }
+    return recordModel.recs.where((element) { 
+      if (selectedCams.contains(element.cam)) {
+        final sdt = selectedDate.value;
+        if (sdt != null) {
+          if (element.dt.year == sdt.year && element.dt.month == sdt.month && element.dt.day == sdt.day) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      } else {
+        return false;
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +151,7 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
                                           border:
                                               ButtonState.all(BorderSide.none)),
                                   child: Tooltip(
-                                    message: item.path,
+                                    message: item.f.path,
                                     child: Row(
                                       children: [
                                         Icon(FluentIcons.video),
@@ -140,9 +160,7 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
                                         ),
                                         Expanded(
                                             child: Text(
-                                          p.basename(
-                                            item.path,
-                                          ),
+                                        "${item.cam.name} ${item.dt.year}年${item.dt.month}月${item.dt.day}日${item.dt.hour}:${item.dt.minute}:${item.dt.second}",
                                           overflow: TextOverflow.ellipsis,
                                           maxLines: 1,
                                           style: kTextStyle,
@@ -159,10 +177,10 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
                                     ),
                                   ),
                                   onPressed: () {
-                                    if (selectedFile.value == item) {
+                                    if (selectedMediaFile.value == item) {
                                       return;
                                     }
-                                    selectedFile.value = item;
+                                    selectedMediaFile.value = item;
                                     loadVideo();
                                   },
                                 ),
@@ -196,13 +214,13 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
     ;
   }
 
-  onDeleteRecord(FileSystemEntity entry) async {
-    if (entry.existsSync()) {
-      entry.deleteSync();
+  onDeleteRecord(MediaRecordFs entry) async {
+    if (entry.f.existsSync()) {
+      entry.f.deleteSync();
       BrnToast.show("已删除", context);
     }
-    if (selectedFile.value == entry) {
-      selectedFile.value = null;
+    if (selectedMediaFile.value == entry) {
+      selectedMediaFile.value = null;
     }
     setState(() {});
   }

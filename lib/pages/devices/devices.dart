@@ -324,6 +324,7 @@ class _CameraTableState extends State<CameraTable> {
 
   Widget _buildTable(List<Cam> list) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           child: SingleChildScrollView(

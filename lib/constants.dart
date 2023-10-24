@@ -96,7 +96,6 @@ final kMockRealtimeAlert = <Alerts>[
 ];
 
 Future<Directory> getRecorderHistoryFolder() async {
-  return Directory.fromRawPath(Uint8List.fromList(
-      ("${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER")
-          .codeUnits));
+  return Directory.fromUri(
+  Uri.file("${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER"));
 }

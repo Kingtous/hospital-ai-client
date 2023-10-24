@@ -17,6 +17,8 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:path_provider/path_provider.dart' as p;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
+import 'dart:convert';
+
 
 // 录像机是0区，我们是东八
 const int kUtcTimeMsOffset = 1000 * 60 * 60 * 8;
@@ -342,6 +344,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
     if (isRecording.value) {
       if (wc.target != null) {
         BrnToast.show("视频已保存至${videoFolder.path}", wc.target!);
+        recordModel.refresh();
       }
       await recorder.stopRecording();
       // launchUrl(dir.uri);
@@ -352,7 +355,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
       }
       if (isLive.value) {
         final vPath =
-            "$videoFolder/${cam.value.name}-${DateTime.now().toIso8601String().replaceAll(":", "_")}.mp4";
+            "${videoFolder.path}/${cam.value.id!}-${base64.encode(DateTime.now().toIso8601String().codeUnits)}.mp4";
         await recorder.recordRealtime(cam.value, vPath);
         isRecording.value = true;
       } else {
@@ -360,7 +363,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
             currentPlayingTim.value.millisecondsSinceEpoch +
                 pastSecondsFromStart.value * 1000);
         final vPath =
-            "$videoFolder/${cam.value.name}-${from.toIso8601String().replaceAll(":", "_")}.mp4";
+            "${videoFolder.path}/${cam.value.id!}-${base64.encode(from.toIso8601String().codeUnits)}.mp4";
         await recorder.recordFrom(cam.value, from, vPath);
         isRecording.value = true;
       }

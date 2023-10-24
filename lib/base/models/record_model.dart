@@ -12,17 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:dart_amqp/dart_amqp.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 abstract class BaseFilePicker {
   Future<String?> saveFile();
@@ -141,24 +140,37 @@ class RecordModel {
   }
 
   Future<List<MediaRecordFs>> refresh() async {
+    print("刷新录制列表");
     final dir = await getRecorderHistoryFolder();
     final s = await dir.list(recursive: true).toList();
     Map<int, DateTime> m = Map();
     Map<int, FileSystemEntity> fm = Map();
     recs.clear();
     for (final video in s) {
-      final videoName = basenameWithoutExtension(video.path);
-      final meta = videoName.split('-');
-      if (meta.length != 2) {
-        continue;
+      try {
+        final videoName = basenameWithoutExtension(video.path);
+        final meta = videoName.split('-');
+        if (meta.length < 2) {
+          print("⚠ ${meta}无效");
+          video.delete();
+          continue;
+        }
+        final id = int.tryParse(meta[0]);
+        final dtDecoded = String.fromCharCodes(base64.decode(meta.sublist(1).join('-')));
+        final dt =
+            DateTime.tryParse(dtDecoded);
+        print("$id $dtDecoded");
+        if (id == null || dt == null) {
+          print("⚠ ${meta}无效, $id, $dtDecoded");
+          video.delete();
+          continue;
+        }
+        m[id] = dt;
+        fm[id] = video;
+      } catch (e) {
+        print("$e");
+        video.delete();
       }
-      final id = int.tryParse(meta[0]);
-      final dt = DateTime.tryParse(meta[1]);
-      if (id == null || dt == null) {
-        continue;
-      }
-      m[id] = dt;
-      fm[id] = video;
     }
     final ids = m.entries.map((e) => e.key).toList();
     final cams = await appDB.camDao.getCamByIds(ids);
