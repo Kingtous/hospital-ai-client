@@ -2,6 +2,7 @@ name: Build Hospital client pc
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   package-windows:
@@ -36,3 +37,5 @@ jobs:
         with:
           artifacts: "./*.exe"
           bodyFile: "body.md"
+          allowUpdates: true
+          token: ${{ secrets.GITHUB_TOKEN }}
