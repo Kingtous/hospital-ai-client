@@ -475,14 +475,18 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(
+            width: 30,
+          ),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: li
                   .map((e) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4.0),
                 child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
@@ -499,12 +503,12 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                       width: 6.0,
                     ),
                     Expanded(
-                      child: Text(
-                        '${e}',
-                        style: TextStyle(color: Color(0xFF415B73),fontSize: 12),
-                        overflow: TextOverflow.clip,
-                      ),
-                    )
+                        child: Text(
+                          '${e}',
+                          style: TextStyle(color: Color(0xFF415B73),fontSize: 12),
+                          overflow: TextOverflow.clip,
+                        ),
+                      )
                   ],
                 ),
               ))
