@@ -53,7 +53,7 @@ class BarChart extends StatefulWidget {
   BarChart(
       {Key? key,
       this.minWidth = 0,
-      this.padding = const EdgeInsets.all(20),
+      this.padding = const EdgeInsets.all(8),
       this.barChartStyle = LocalBarChartStyle.vertical,
       required this.xAxis,
       required this.yAxis,
@@ -109,7 +109,7 @@ class BrnProgressBarChartState extends State<BarChart> {
         width += LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
       }
       return Size(
-          widget.minWidth > width ? widget.minWidth : width, widget.height);
+          widget.minWidth > width ? widget.minWidth-15 : width-15, widget.height);
     } else {
       return Size.zero;
     }

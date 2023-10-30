@@ -462,6 +462,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(width: 25,),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
