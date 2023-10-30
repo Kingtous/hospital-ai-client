@@ -103,6 +103,7 @@ Future<Directory> getRecorderHistoryFolder() async {
 }
 
 List<int> getRtLines(List<Alerts> alerts) {
+  // print("getRtLines");
   List<int> lines = List.generate(12, (index) => 0);
   final now = DateTime.now();
   for (final alert in alerts) {
@@ -110,9 +111,12 @@ List<int> getRtLines(List<Alerts> alerts) {
     if (now.day != dt.day) {
       continue;
     }
+    // if (dt.hour == 13) {
+    //   print(dt.hour);
+    // }
     final hour = dt.hour ~/ 2;
     lines[hour]++;
   }
-  print(lines);
+  // print(hours);
   return lines;
 }

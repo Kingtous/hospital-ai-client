@@ -27,9 +27,9 @@ class AlertsModel {
   Future<void> refreshAlerts(Timer timer) async {
     final now = DateTime.now();
     final before = DateTime.fromMillisecondsSinceEpoch(
-        now.millisecondsSinceEpoch - 1000 * 60 * 24 * kKeepDays);
+        now.millisecondsSinceEpoch - 1000 * 60 * 60 * 24 * kKeepDays);
     final today = DateTime.fromMillisecondsSinceEpoch(
-        now.millisecondsSinceEpoch - 1000 * 60 * 24);
+        now.millisecondsSinceEpoch - 1000 * 60 * 60 * 24);
 
     // 删除老的alerts
     await appDB.alertDao.deleteAlertsBefore(before.millisecondsSinceEpoch);
