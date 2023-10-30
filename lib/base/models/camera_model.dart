@@ -78,8 +78,9 @@ class RTSPCamera extends PlayableDevice
   @override
   @JsonKey(includeFromJson: false)
   late VideoController thumbNailController;
+  int dbId;
 
-  RTSPCamera(this.id, {required this.rtspUrl}) {
+  RTSPCamera(this.id, {required this.rtspUrl, required this.dbId}) {
     assert(rtspUrl.startsWith('rtsp://'));
     player = Player(
         configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024));
@@ -231,7 +232,7 @@ class RTSPCamera extends PlayableDevice
     var id = "";
     var msg = "";
     var channelId = 1;
-    var userName = "";
+    var userName = "admin";
     var password = "";
     var port = 554;
     var host = "172.0.0.2";
@@ -297,6 +298,7 @@ class RTSPCamera extends PlayableDevice
                           padding: EdgeInsets.all(8.0),
                           child: Text('NVR 端口'),
                         ),
+                        controller: TextEditingController(text: '554'),
                         autofillHints: ['554'],
                         onChanged: (s) {
                           int? tmpPort = int.tryParse(s);
@@ -312,6 +314,7 @@ class RTSPCamera extends PlayableDevice
                           child: Text('NVR 用户名'),
                         ),
                         autofillHints: const ['admin'],
+                        controller: TextEditingController(text: 'admin'),
                         onChanged: (s) {
                           userName = s;
                         },
@@ -388,8 +391,9 @@ class RTSPCamera extends PlayableDevice
                                     setState(() {});
                                     return;
                                   }
-                                  bool res = await videoModel.checkCamName(id, room);
-                                  if(!res){
+                                  bool res =
+                                      await videoModel.checkCamName(id, room);
+                                  if (!res) {
                                     msg = "摄像头名称已存在，请重新输入";
                                     setState(() {});
                                     return;
@@ -438,7 +442,7 @@ class RTSPCamera extends PlayableDevice
 
   static RTSPCamera? fromDB(Cam cam) {
     return RTSPCamera(cam.name,
-        rtspUrl: getRtSpStreamUrl(cam, mainStream: false));
+        rtspUrl: getRtSpStreamUrl(cam, mainStream: false), dbId: cam.id!);
   }
 
   @override
@@ -447,7 +451,7 @@ class RTSPCamera extends PlayableDevice
     return compute(
         (msg) => _screenshot(msg),
         _ScreenshotData(
-            pp.ctx.address, MediaKitNative.NativeLibrary.path, null, id));
+            pp.ctx.address, MediaKitNative.NativeLibrary.path, null, dbId));
   }
 }
 
@@ -517,14 +521,13 @@ Future<void> _screenshot(_ScreenshotData data) async {
         stride != null &&
         bytes != null &&
         sz != null) {
-      bean.ref.cam_id = data.camId.toNativeUtf8().cast();
+      bean.ref.cam_id = data.camId;
       bean.ref.height = h;
       bean.ref.width = w;
       bean.ref.len = sz;
       bean.ref.stride = stride;
       bean.ref.bgra_data = bytes.cast();
       kNativeAlertApi.post_alert_img(bean);
-      bean.ref.bgra_data = Pointer.fromAddress(0);
       calloc.free(bean);
     }
   }
@@ -540,7 +543,7 @@ class _ScreenshotData {
   final int ctx;
   final String lib;
   final String? format;
-  final String camId;
+  final int camId;
 
   _ScreenshotData(
     this.ctx,

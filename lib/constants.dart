@@ -14,6 +14,8 @@ const kDefaultAdminPassword = 'admin';
 const kDbName = 'cam.db';
 const kHeaderHeight = 35.0;
 const kDefaultName = '监控平台';
+const kKeepDays = 15;
+const kAlertIntervalMs = 500;
 
 const kBgColor = Color(0xFFEFF4FA);
 const kRadius = 8.0;
@@ -96,6 +98,21 @@ final kMockRealtimeAlert = <Alerts>[
 ];
 
 Future<Directory> getRecorderHistoryFolder() async {
-  return Directory.fromUri(
-  Uri.file("${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER"));
+  return Directory.fromUri(Uri.file(
+      "${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER"));
+}
+
+List<int> getRtLines(List<Alerts> alerts) {
+  List<int> lines = List.generate(12, (index) => 0);
+  final now = DateTime.now();
+  for (final alert in alerts) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(alert.createAt);
+    if (now.day != dt.day) {
+      continue;
+    }
+    final hour = dt.hour ~/ 2;
+    lines[hour]++;
+  }
+  print(lines);
+  return lines;
 }

@@ -246,46 +246,53 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   Widget _buildRtAlertTable() {
     return Frame(
       title: Text('实时报警'),
-      content: ListView.builder(
-        itemBuilder: ((context, index) {
-          final item = kMockRealtimeAlert[index];
-          return Container(
-            height: 40,
-            margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-            padding: EdgeInsets.symmetric(horizontal: 6.0),
-            decoration: BoxDecoration(color: Color(0x1F12ADFF)),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 8.0,
-                ),
-                Image.asset(
-                  'assets/images/alert.png',
-                ),
-                SizedBox(
-                  width: 14.0,
-                ),
-                Expanded(
-                    child: Text(
-                  '${item.roomName}-${item.camName}',
-                  style: TextStyle(color: Color(0xFF415B73)),
-                )),
-                MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: Text(
-                    '查看',
-                    style: TextStyle(color: Color(0xFFFF222F)),
+      content: Obx(
+        () => ListView.builder(
+          itemBuilder: ((context, index) {
+            final item = alertsModel.rtAlertsRx[index];
+            final dt = DateTime.fromMillisecondsSinceEpoch(item.createAt);
+            return Container(
+              height: 40,
+              margin: EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: EdgeInsets.symmetric(horizontal: 6.0),
+              decoration: BoxDecoration(color: Color(0x1F12ADFF)),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 8.0,
                   ),
-                ),
-                SizedBox(
-                  width: 13,
-                )
-              ],
-            ),
-          );
-        }),
-        itemExtent: 40,
-        itemCount: kMockRealtimeAlert.length,
+                  Image.asset(
+                    'assets/images/alert.png',
+                  ),
+                  SizedBox(
+                    width: 14.0,
+                  ),
+                  Text(
+                    "${dt.toLocal().toString()}",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  Expanded(
+                      child: Text(
+                    '${item.roomName}-${item.camName}',
+                    style: TextStyle(color: Color(0xFF415B73)),
+                  )),
+                  MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Text(
+                      '查看',
+                      style: TextStyle(color: Color(0xFFFF222F)),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 13,
+                  )
+                ],
+              ),
+            );
+          }),
+          itemExtent: 40,
+          itemCount: alertsModel.rtAlertsRx.length,
+        ),
       ),
     );
   }
@@ -340,50 +347,52 @@ class _HistoryAlertTableState extends State<HistoryAlertTable> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            itemBuilder: (context, index) {
-              var alert = kMockRealtimeAlert[index];
-              var ca = DateTime.fromMillisecondsSinceEpoch(alert.createAt);
-              return Column(
-                children: [
-                  Container(
-                    height: 39,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            AlertType.values[alert.alertType].toHumanString(),
-                            textAlign: TextAlign.center,
-                            style: bodyStyle,
+          child: Obx(
+            () => ListView.builder(
+              itemBuilder: (context, index) {
+                var alert = alertsModel.historyAlertsRx[index];
+                var ca = DateTime.fromMillisecondsSinceEpoch(alert.createAt);
+                return Column(
+                  children: [
+                    Container(
+                      height: 39,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              AlertType.values[alert.alertType].toHumanString(),
+                              textAlign: TextAlign.center,
+                              style: bodyStyle,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${alert.roomName}',
-                            textAlign: TextAlign.center,
-                            style: bodyStyle,
+                          Expanded(
+                            child: Text(
+                              '${alert.roomName}',
+                              textAlign: TextAlign.center,
+                              style: bodyStyle,
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${ca.year}-${ca.month}-${ca.day}',
-                            textAlign: TextAlign.center,
-                            style: bodyStyle,
+                          Expanded(
+                            child: Text(
+                              '${ca.year}-${ca.month}-${ca.day}',
+                              textAlign: TextAlign.center,
+                              style: bodyStyle,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 16.0),
-                    height: 1,
-                    color: Color(0xFF129BFF),
-                  )
-                ],
-              );
-            },
-            itemExtent: 40,
-            itemCount: kMockRealtimeAlert.length,
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16.0),
+                      height: 1,
+                      color: Color(0xFF129BFF),
+                    )
+                  ],
+                );
+              },
+              itemExtent: 40,
+              itemCount: alertsModel.historyAlertsRx.length,
+            ),
           ),
         )
       ],
@@ -399,74 +408,52 @@ class AlertStatCharts extends StatefulWidget {
 }
 
 class _AlertStatChartsState extends State<AlertStatCharts> {
-  Future<List<int>>? res;
-
   @override
   void initState() {
-    res = getData();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        //异步操作的future对象
-        future: res,
-        builder: (BuildContext context, AsyncSnapshot<List<int>> snapshot) {
-          if (snapshot.hasData) {
-            //通过snapshot.data，你可以访问到res所代表的异步操作返回的List<int>类型的数据。
-            List<int> data = snapshot.data!;
-            //测试数据
-            // List<int> dataTest = [80,79,60,97,77,65,77,56,90,60,77,59,0];
-            // List<int> dataTest = [30,29,10,47,27,15,27,6,40,10,27,9,0];
-            // List<int> dataTest = [0,0,0,0,0,0,0,0,0,0,0,0,0];
-            // List<int> dataTest = [1,1,2,3,1,2,3,1,1,1,1,1,1];
-            // List<int> dataTest = [5,6,5,9,5,5,5,5,5,5,1,6,1];
-            // List<int> dataTest = [30,29,10,47,27];
-            // List<int> dataTest = [0,0,0,0,0];
-            // List<int> dataTest = [1,1,2,3,1];
-            List<int> dataTest = [5,6,5,9,5];
-            return Container(
-              padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
-              height: 271,
-              child: Row(
-                children: [
-                  const SizedBox(
-                    width: 16.0,
-                  ),
-                  Expanded(flex: 1, child: _buildCamAlertTypeTable()),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  Expanded(flex: 2, child: _buildCamDataStatTable(data)),
-                  const SizedBox(
-                    width: 20,
-                  ),
-                  SizedBox(width: 400, child: _buildCamAlertTable(dataTest))
-                ],
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return Text('Error: ${snapshot.error}');
-          } else {
-            return CircularProgressIndicator();
-          }
-        });
+    List<int> dataTest = [5, 6, 5, 9, 5];
+    return Container(
+      padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
+      height: 271,
+      child: Row(
+        children: [
+          const SizedBox(
+            width: 16.0,
+          ),
+          Expanded(flex: 1, child: _buildCamAlertTypeTable()),
+          const SizedBox(
+            width: 20,
+          ),
+          Expanded(flex: 2, child: _buildCamDataStatTable()),
+          const SizedBox(
+            width: 20,
+          ),
+          SizedBox(width: 400, child: _buildCamAlertTable(dataTest))
+        ],
+      ),
+    );
   }
 
   Widget _buildCamAlertTable(List<int> res) {
     ///左侧提示语句
     final li = kMockAlertsData.toList();
+
     ///y轴最大值，设置最小值是10，如果小于10，则等于10
-    double yMax = _getMaxValueForDemo1(res)*1.1;
-    yMax = yMax < 10?10:yMax;
+    double yMax = _getMaxValueForDemo1(res) * 1.1;
+    yMax = yMax < 10 ? 10 : yMax;
 
     ///y轴刻度
     List<LocalAxisItem> items = _getYAxisItem(res);
+
     ///将传进来的数据进行转换
     List<LocalBrnProgressBarItem> barItems = [];
-    for(int i=0;i<res.length;i++){
-      barItems.add(LocalBrnProgressBarItem(text: res[i].toString(),value: res[i].toDouble()));
+    for (int i = 0; i < res.length; i++) {
+      barItems.add(LocalBrnProgressBarItem(
+          text: res[i].toString(), value: res[i].toDouble()));
     }
 
     return Frame(
@@ -481,33 +468,34 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: li
                   .map((e) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      padding: EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                          border: Border.all(
-                              color: Defaults.colors10[li.indexOf(e)])),
-                      child: ColoredBox(
-                          color: Defaults.colors10[li.indexOf(e)]),
-                    ),
-                    SizedBox(
-                      width: 6.0,
-                    ),
-                    Expanded(
-                      child: Text(
-                        '${e}',
-                        style: TextStyle(color: Color(0xFF415B73),fontSize: 12),
-                        overflow: TextOverflow.clip,
-                      ),
-                    )
-                  ],
-                ),
-              ))
+                        padding: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 12,
+                              height: 12,
+                              padding: EdgeInsets.all(1),
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Defaults.colors10[li.indexOf(e)])),
+                              child: ColoredBox(
+                                  color: Defaults.colors10[li.indexOf(e)]),
+                            ),
+                            SizedBox(
+                              width: 6.0,
+                            ),
+                            Expanded(
+                              child: Text(
+                                '${e}',
+                                style: TextStyle(
+                                    color: Color(0xFF415B73), fontSize: 12),
+                                overflow: TextOverflow.clip,
+                              ),
+                            )
+                          ],
+                        ),
+                      ))
                   .toList(),
             ),
           ),
@@ -522,18 +510,17 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
               LocalAxisItem(showText: '画面五'),
             ]),
             barBundleList: [
-              LocalBrnProgressBarBundle(
-                barList: barItems
-              ),
+              LocalBrnProgressBarBundle(barList: barItems),
             ],
             yAxis: LocalChartAxisY(
-              ///Y轴坐标刻度
-                axisItemList: items
-            ),
+
+                ///Y轴坐标刻度
+                axisItemList: items),
             singleBarWidth: 8,
             barGroupSpace: 32,
             barMaxValue: yMax,
-            onBarItemClickInterceptor: (barBundleIndex, barBundle, barGroupIndex, barItem) {
+            onBarItemClickInterceptor:
+                (barBundleIndex, barBundle, barGroupIndex, barItem) {
               return true;
             },
           ),
@@ -668,73 +655,79 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     );
   }
 
-  _buildCamDataStatTable(res) {
-    List<int> alertsData = res;
-    return Frame(
-        title: Text("报警数据统计"),
-        content: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Expanded(
-                child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 0,
-                ),
+  _buildCamDataStatTable() {
+    return Obx(
+      () {
+        final alerts = alertsModel.rtAlertsRx;
+        List<int> alertsData = getRtLines(alerts);
+        return Frame(
+            title: Text("报警数据统计"),
+            content: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Expanded(
-                  child: BrnBrokenLine(
-                    showPointDashLine: true,
-                    yHintLineOffset: 30,
-                    isTipWindowAutoDismiss: false,
-                    lines: [
-                      BrnPointsLine(
-                        isShowPointText: false,
-                        lineWidth: 3,
-                        pointRadius: 4,
-                        isShowPoint: true,
-                        isCurve: true,
-                        points: _linePointsForDemo1(res),
-                        shaderColors: [
-                          Colors.green.withOpacity(0.3),
-                          Colors.green.withOpacity(0.01)
-                        ],
-                        lineColor: Colors.green,
-                      )
-                    ],
-                    size: Size(
-                      MediaQuery.of(context).size.width / 3 + 100,
-                      MediaQuery.of(context).size.height / 5 - 50,
+                    child: Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 0,
                     ),
-                    isShowXHintLine: true,
-                    //X 轴刻度数据
-                    xDialValues: _getXDialValuesForDemo1(alertsData),
-                    //X 轴展示范围最小值
-                    xDialMin: 0,
-                    //X 轴展示范围最大值
-                    xDialMax:
-                        _getXDialValuesForDemo1(alertsData).length.toDouble(),
-                    //Y 轴刻度数据
-                    yDialValues: _getYDialValuesForDemo1(alertsData),
-                    //Y 轴展示范围最小值
-                    yDialMin: 0,
-                    //Y 轴展示范围最大值,断言>0
-                    yDialMax: _getMaxValueForDemo1(alertsData) <= 10
-                        ? 10
-                        : _getMaxValueForDemo1(alertsData),
-                    isHintLineSolid: false,
-                    isShowYDialText: true,
-                    isShowXDialText: true,
-                  ),
-                )
+                    Expanded(
+                      child: BrnBrokenLine(
+                        showPointDashLine: true,
+                        yHintLineOffset: 30,
+                        isTipWindowAutoDismiss: false,
+                        lines: [
+                          BrnPointsLine(
+                            isShowPointText: false,
+                            lineWidth: 3,
+                            pointRadius: 4,
+                            isShowPoint: true,
+                            isCurve: true,
+                            points: _linePointsForDemo1(alertsData),
+                            shaderColors: [
+                              Colors.green.withOpacity(0.3),
+                              Colors.green.withOpacity(0.01)
+                            ],
+                            lineColor: Colors.green,
+                          )
+                        ],
+                        size: Size(
+                          MediaQuery.of(context).size.width / 3 + 100,
+                          MediaQuery.of(context).size.height / 5 - 50,
+                        ),
+                        isShowXHintLine: true,
+                        //X 轴刻度数据
+                        xDialValues: _getXDialValuesForDemo1(alertsData),
+                        //X 轴展示范围最小值
+                        xDialMin: 0,
+                        //X 轴展示范围最大值
+                        xDialMax: _getXDialValuesForDemo1(alertsData)
+                            .length
+                            .toDouble(),
+                        //Y 轴刻度数据
+                        yDialValues: _getYDialValuesForDemo1(alertsData),
+                        //Y 轴展示范围最小值
+                        yDialMin: 0,
+                        //Y 轴展示范围最大值,断言>0
+                        yDialMax: _getMaxValueForDemo1(alertsData) <= 10
+                            ? 10
+                            : _getMaxValueForDemo1(alertsData),
+                        isHintLineSolid: false,
+                        isShowYDialText: true,
+                        isShowXDialText: true,
+                      ),
+                    )
+                  ],
+                ))
               ],
-            ))
-          ],
-        ));
+            ));
+      },
+    );
   }
 
   List<BrnPointData> _linePointsForDemo1(List<int> brokenData) {
-    List<int> hours = List<int>.generate(13, (index) => index);
+    List<int> hours = List<int>.generate(12, (index) => index);
     return hours.map((hour) {
       int dataIndex = hour; // 获取对应的brokenData索引
       int value = brokenData[hour];
@@ -755,8 +748,8 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       );
     }).toList();
   }
-  
-  List<LocalAxisItem> _getYAxisItem(List<int> axisData){
+
+  List<LocalAxisItem> _getYAxisItem(List<int> axisData) {
     double max = _getMaxValueForDemo1(axisData) * 1.1;
     int step = ((max - 0) / 5).ceil();
     List<LocalAxisItem> yAxisData = [];
@@ -769,17 +762,17 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
           showText: (0 + index * step).ceilToDouble().toInt().toString(),
         ));
       }
-    }else{
+    } else {
       for (int index = 0; index <= 5; index++) {
         yAxisData.add(LocalAxisItem(
           showText: (0 + index * step).ceilToDouble().toInt().toString(),
         ));
       }
     }
+
     ///把0去掉
     yAxisData.removeAt(0);
     return yAxisData;
-    
   }
 
   List<BrnDialItem> _getYDialValuesForDemo1(List<int> brokenData) {
@@ -844,38 +837,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       ));
     }
     return _xDialValue;
-  }
-
-  Future<List<int>> getData() async {
-    // res[0] = (await alertsModel.getAlertsFromTo(0, 2)).length;
-    List<Alerts> list1 = await alertsModel.getAlertsFromTo(0, 2);
-    List<Alerts> list2 = await alertsModel.getAlertsFromTo(2, 4);
-    List<Alerts> list3 = await alertsModel.getAlertsFromTo(4, 6);
-    List<Alerts> list4 = await alertsModel.getAlertsFromTo(6, 8);
-    List<Alerts> list5 = await alertsModel.getAlertsFromTo(8, 10);
-    List<Alerts> list6 = await alertsModel.getAlertsFromTo(10, 12);
-    List<Alerts> list7 = await alertsModel.getAlertsFromTo(12, 14);
-    List<Alerts> list8 = await alertsModel.getAlertsFromTo(14, 16);
-    List<Alerts> list9 = await alertsModel.getAlertsFromTo(16, 18);
-    List<Alerts> list10 = await alertsModel.getAlertsFromTo(18, 20);
-    List<Alerts> list11 = await alertsModel.getAlertsFromTo(20, 22);
-    List<Alerts> list12 = await alertsModel.getAlertsFromTo(22, 24);
-    List<int> res = [
-      list1.length,
-      list2.length,
-      list3.length,
-      list4.length,
-      list5.length,
-      list6.length,
-      list7.length,
-      list8.length,
-      list9.length,
-      list10.length,
-      list11.length,
-      list12.length,
-      0
-    ];
-    return res;
   }
 }
 

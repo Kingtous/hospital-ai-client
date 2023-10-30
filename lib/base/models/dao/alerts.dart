@@ -48,7 +48,7 @@ class Alerts {
   final int createAt;
 
   @ColumnInfo(name: 'img')
-  final Uint8List img;
+  final Uint8List? img;
 
   @ColumnInfo(name: 'alert_type')
   final int alertType;
@@ -83,9 +83,39 @@ abstract class AlertDao {
   @Query('SELECT * FROM alerts WHERE create_at >= :st')
   Future<List<Alerts>> getAlertsFrom(int st);
 
-  @Query('DELETE FROM alerts WHERE create_at <= :st')
-  Future<void> deleteAlertsBefore(int st);
+  
+  // @ColumnInfo(name: 'create_at')
+  // final int createAt;
 
-  @Query('SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams))')
+  // @ColumnInfo(name: 'img')
+  // final Uint8List img;
+
+  // @ColumnInfo(name: 'alert_type')
+  // final int alertType;
+
+  // @ColumnInfo(name: 'cam_id')
+  // final int camId;
+
+  // @ColumnInfo(name: 'cam_name')
+  // final String camName;
+
+  // @ColumnInfo(name: 'room_id')
+  // final int roomId;
+
+  // @ColumnInfo(name: 'room_name')
+  // final String roomName;
+
+  @Query(
+      'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= :st')
+  Future<List<Alerts>> getAlertsFromNoImg(int st);
+
+  @Query('DELETE FROM alerts WHERE create_at <= :st')
+  Future<int?> deleteAlertsBefore(int st);
+
+  @Query(
+      'SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams))')
   Future<List<Alerts>> getAlertsInCamsFrom(List<int> cams, int st, int ed);
+
+  @Query("DELETE FROM alerts WHERE create_at < datetime('now', '-15 days')")
+  Future<int?> deleteOldAlerts();
 }

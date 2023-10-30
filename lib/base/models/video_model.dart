@@ -6,6 +6,7 @@ import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/camera_model.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit/media_kit.dart';
 
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
@@ -62,7 +63,7 @@ class VideoModel {
     if (cam.camType == CamType.rtsp.index) {
       final url =
           "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}02";
-      final rtspCam = RTSPCamera(cam.name, rtspUrl: url);
+      final rtspCam = RTSPCamera(cam.name, rtspUrl: url, dbId: cam.id!);
       await rtspCam.init();
       _playerMap[cam] = rtspCam;
       return true;
@@ -180,6 +181,6 @@ class VideoModel {
     // debugPrint("onAlertTick, check alerts in ${DateTime.now()}");
     await alertsModel
         .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
-    timer = Timer(const Duration(milliseconds: 200), _onAlertTick);
+    timer = Timer(const Duration(milliseconds: kAlertIntervalMs), _onAlertTick);
   }
 }

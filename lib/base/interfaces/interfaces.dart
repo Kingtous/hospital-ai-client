@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
@@ -37,7 +39,9 @@ Future<void> setupDependencies() async {
   it.registerSingleton<VideoModel>(VideoModel(), dispose: (m) {
     m.dispose();
   });
-  it.registerSingleton<AlertsModel>(AlertsModel());
+  it.registerSingleton<AlertsModel>(AlertsModel(), dispose: (m) {
+    return m.close();
+  });
   final r = RoleModel();
   await r.init();
   it.registerSingleton<RoleModel>(r);
@@ -48,7 +52,7 @@ Future<void> setupDependencies() async {
   // init
   kNativeAlertApi.alert_init();
   await videoModel.init();
-  compute((message) => recordModel.refresh(), null);
+  unawaited(recordModel.refresh());
 }
 
 VideoModel get videoModel => it.get();
