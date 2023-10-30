@@ -111,7 +111,7 @@ class _$AppDB extends AppDB {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `rel_room_cam` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `room_id` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, FOREIGN KEY (`room_id`) REFERENCES `room` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB NOT NULL, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, `cam_name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `room_name` TEXT NOT NULL, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
+            'CREATE TABLE IF NOT EXISTS `alerts` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `create_at` INTEGER NOT NULL, `img` BLOB, `alert_type` INTEGER NOT NULL, `cam_id` INTEGER NOT NULL, `cam_name` TEXT NOT NULL, `room_id` INTEGER NOT NULL, `room_name` TEXT NOT NULL, FOREIGN KEY (`cam_id`) REFERENCES `cam` (`id`) ON UPDATE NO ACTION ON DELETE CASCADE)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `recorder` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `name` TEXT NOT NULL, `ip` TEXT NOT NULL, `port` INTEGER NOT NULL, `u` TEXT NOT NULL, `p` TEXT NOT NULL)');
 
@@ -830,6 +830,13 @@ class _$RoomDao extends RoomDao {
   }
 
   @override
+  Future<List<String>> getCamNamesByRoom(int roomId) async {
+    return _queryAdapter.queryList('SELECT name FROM cam WHERE room_id = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as String,
+        arguments: [roomId]);
+  }
+
+  @override
   Future<List<RoomCam>> getAll() async {
     return _queryAdapter.queryList('SELECT * FROM rel_room_cam',
         mapper: (Map<String, Object?> row) => RoomCam(
@@ -855,14 +862,6 @@ class _$RoomDao extends RoomDao {
   @override
   Future<void> deleteRoomCam(RoomCam r) async {
     await _roomCamDeletionAdapter.delete(r);
-  }
-
-  @override
-  Future<List<String>> getCamNamesByRoom(int roomId) {
-    return _queryAdapter.queryList(
-        'SELECT name FROM cam WHERE room_id = :roomId',
-        mapper: (Map<String, Object?> row) => row['name'] as String,
-        arguments: [roomId]);
   }
 }
 
@@ -919,7 +918,7 @@ class _$AlertDao extends AlertDao {
         mapper: (Map<String, Object?> row) => Alerts(
             row['id'] as int?,
             row['create_at'] as int,
-            row['img'] as Uint8List,
+            row['img'] as Uint8List?,
             row['cam_id'] as int,
             row['alert_type'] as int,
             row['cam_name'] as String,
@@ -934,7 +933,7 @@ class _$AlertDao extends AlertDao {
         mapper: (Map<String, Object?> row) => Alerts(
             row['id'] as int?,
             row['create_at'] as int,
-            row['img'] as Uint8List,
+            row['img'] as Uint8List?,
             row['cam_id'] as int,
             row['alert_type'] as int,
             row['cam_name'] as String,
@@ -944,9 +943,17 @@ class _$AlertDao extends AlertDao {
   }
 
   @override
-  Future<void> deleteAlertsBefore(int st) async {
-    await _queryAdapter.queryNoReturn(
-        'DELETE FROM alerts WHERE create_at <= ?1',
+  Future<List<Alerts>> getAlertsFromNoImg(int st) async {
+    return _queryAdapter.queryList(
+        'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= ?1',
+        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
+        arguments: [st]);
+  }
+
+  @override
+  Future<int?> deleteAlertsBefore(int st) async {
+    return _queryAdapter.query('DELETE FROM alerts WHERE create_at <= ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as int,
         arguments: [st]);
   }
 
@@ -964,8 +971,15 @@ class _$AlertDao extends AlertDao {
         'SELECT * FROM alerts WHERE (create_at BETWEEN ?1 AND ?2) AND (cam_id IN (' +
             _sqliteVariablesForCams +
             '))',
-        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
+        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
         arguments: [st, ed, ...cams]);
+  }
+
+  @override
+  Future<int?> deleteOldAlerts() async {
+    return _queryAdapter.query(
+        'DELETE FROM alerts WHERE create_at < datetime(\'now\', \'-15 days\')',
+        mapper: (Map<String, Object?> row) => row.values.first as int);
   }
 
   @override

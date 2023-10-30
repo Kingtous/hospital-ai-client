@@ -64,6 +64,20 @@ class NativeLibrary {
           'get_latest_alert_msg');
   late final _get_latest_alert_msg =
       _get_latest_alert_msgPtr.asFunction<ffi.Pointer<Alert> Function()>();
+
+  void free_alert(
+    ffi.Pointer<Alert> alert,
+  ) {
+    return _free_alert(
+      alert,
+    );
+  }
+
+  late final _free_alertPtr =
+      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Alert>)>>(
+          'free_alert');
+  late final _free_alert =
+      _free_alertPtr.asFunction<void Function(ffi.Pointer<Alert>)>();
 }
 
 /// AI报警Header
@@ -78,6 +92,15 @@ final class Alert extends ffi.Struct {
 
   @ffi.Size()
   external int img_size;
+
+  @ffi.Int()
+  external int width;
+
+  @ffi.Int()
+  external int height;
+
+  @ffi.Int()
+  external int stride;
 }
 
 final class PredictBean extends ffi.Struct {
@@ -86,7 +109,8 @@ final class PredictBean extends ffi.Struct {
   @ffi.Size()
   external int len;
 
-  external ffi.Pointer<ffi.Char> cam_id;
+  @ffi.Int()
+  external int cam_id;
 
   @ffi.Int()
   external int width;
