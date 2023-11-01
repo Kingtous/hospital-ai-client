@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:bruno/bruno.dart';
@@ -244,6 +245,7 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   }
 
   Widget _buildRtAlertTable() {
+    print("---------------------------实时报警刷新了--------------------------------");
     return Frame(
       title: Text('实时报警'),
       content: Obx(
@@ -415,7 +417,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
   @override
   Widget build(BuildContext context) {
-    List<int> dataTest = [5, 6, 5, 9, 5];
     return Container(
       padding: const EdgeInsets.only(top: 20.0, bottom: 20.0),
       height: 271,
@@ -432,195 +433,284 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
           const SizedBox(
             width: 20,
           ),
-          SizedBox(width: 400, child: _buildCamAlertTable(dataTest))
+          SizedBox(
+            child: FutureBuilder(
+              future: videoModel.getAllCamNames(),
+              builder: (context,names){
+                return SizedBox(width: 400, child: _buildCamAlertTable(names.data!));
+              },
+            ),
+
+          )
+          // SizedBox(width: 400, child: _buildCamAlertTable())
         ],
       ),
     );
   }
 
-  Widget _buildCamAlertTable(List<int> res) {
-    ///左侧提示语句
-    final li = kMockAlertsData.toList();
+  Widget _buildCamAlertTable(List<String> names) {
+    return Obx(
+            () {
+              // final li = kMockAlertsData.toList();
+              ///对摄像头名称进行排序
+              names.sort();
 
-    ///y轴最大值，设置最小值是10，如果小于10，则等于10
-    double yMax = _getMaxValueForDemo1(res) * 1.1;
-    yMax = yMax < 10 ? 10 : yMax;
+              ///获取前五个画面的报警数量，如果画面数量小于5则按照实际画面数量来写，否则最多五个值。
+              final alerts = alertsModel.historyAlertsRx;
+              print("---------------------------------------科室报警统计："+alerts.toString());
+              print("-----科-----室-----报-----警-----统-----计-----刷-----新-----了-----");
+              Map<String,int> temp_res = {};
 
-    ///y轴刻度
-    List<LocalAxisItem> items = _getYAxisItem(res);
+              ///初始化值为0
+              for(int i = 0; i<5 && i<names.length; i++){
+                temp_res[names[i]] = 0;
+              }
+              print(temp_res);
 
-    ///将传进来的数据进行转换
-    List<LocalBrnProgressBarItem> barItems = [];
-    for (int i = 0; i < res.length; i++) {
-      barItems.add(LocalBrnProgressBarItem(
-          text: res[i].toString(), value: res[i].toDouble()));
-    }
+              ///对不同名称的摄像头报警数量进行统计
+              for(int i=0;i<alerts.length;i++){
+                temp_res[alerts[i].camName] = temp_res[alerts[i].camName]! + 1;
+              }
 
-    return Frame(
-      title: Text('科室报警统计'),
-      content: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(width: 25,),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: li
-                  .map((e) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 4.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              padding: EdgeInsets.all(1),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: Defaults.colors10[li.indexOf(e)])),
-                              child: ColoredBox(
-                                  color: Defaults.colors10[li.indexOf(e)]),
-                            ),
-                            SizedBox(
-                              width: 6.0,
-                            ),
-                            Expanded(
-                              child: Text(
-                                '${e}',
-                                style: TextStyle(
-                                    color: Color(0xFF415B73), fontSize: 12),
-                                overflow: TextOverflow.clip,
+
+              ///最多统计五个数量
+              int index_sum = names.length<=5? names.length:5;
+              int cur_index = 0;
+              List<int> alertsData = [];
+
+              ///将前五个画面的数量放入指定集合当中
+              for (var entry in temp_res.entries) {
+                if(cur_index>=index_sum){
+                  break;
+                }
+                var value = entry.value;
+                alertsData.add(value);
+                cur_index++;
+              }
+
+              ///左侧提示语句
+              List<String> AlertsTextData = ["画面一", "画面二", "画面三", "画面四", "画面五"];
+              List<String> li = [];
+              for(int i=0;i<alertsData.length;i++){
+                li.add(AlertsTextData[i]);
+              }
+
+              ///x轴文字
+              List<LocalAxisItem> xItems = [];
+              for(int i=0;i<alertsData.length;i++){
+                xItems.add(LocalAxisItem(showText: AlertsTextData[i]));
+              }
+
+              ///y轴最大值，设置最小值是10，如果小于10，则等于10
+              double yMax = _getMaxValueForDemo1(alertsData) * 1.1;
+              yMax = yMax < 10 ? 10 : yMax;
+
+              ///y轴刻度
+              List<LocalAxisItem> items = _getYAxisItem(alertsData);
+
+              ///将传进来的数据进行转换
+              List<LocalBrnProgressBarItem> barItems = [];
+              for (int i = 0; i < alertsData.length; i++) {
+                barItems.add(LocalBrnProgressBarItem(
+                    text: alertsData[i].toString(), value: alertsData[i].toDouble()));
+              }
+
+              print(li);
+              print(xItems);
+
+              return Frame(
+                title: Text('科室报警统计'),
+                content: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 25,),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: li
+                            .map((e) => Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 12,
+                                height: 12,
+                                padding: EdgeInsets.all(1),
+                                decoration: BoxDecoration(
+                                    border: Border.all(
+                                        color: Defaults.colors10[li.indexOf(e)])),
+                                child: ColoredBox(
+                                    color: Defaults.colors10[li.indexOf(e)]),
                               ),
-                            )
-                          ],
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ),
-          //定制化组件
-          BarChart(
-            barChartStyle: LocalBarChartStyle.vertical,
-            xAxis: LocalChartAxisX(axisItemList: [
-              LocalAxisItem(showText: '画面一'),
-              LocalAxisItem(showText: '画面二'),
-              LocalAxisItem(showText: '画面三'),
-              LocalAxisItem(showText: '画面四'),
-              LocalAxisItem(showText: '画面五'),
-            ]),
-            barBundleList: [
-              LocalBrnProgressBarBundle(barList: barItems),
-            ],
-            yAxis: LocalChartAxisY(
+                              SizedBox(
+                                width: 6.0,
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${e}',
+                                  style: TextStyle(
+                                      color: Color(0xFF415B73), fontSize: 12),
+                                  overflow: TextOverflow.clip,
+                                ),
+                              )
+                            ],
+                          ),
+                        ))
+                            .toList(),
+                      ),
+                    ),
+                    //定制化组件
+                    BarChart(
+                      barChartStyle: LocalBarChartStyle.vertical,
+                      xAxis: LocalChartAxisX(axisItemList: xItems,
+                          // [
+                          //   LocalAxisItem(showText: '画面一'),
+                          //   LocalAxisItem(showText: '画面二'),
+                          //   LocalAxisItem(showText: '画面三'),
+                          //   LocalAxisItem(showText: '画面四'),
+                          //   LocalAxisItem(showText: '画面五'),
+                          // ],
+                          // leadingSpace :(238-(axisItemList.length * 8))/(widget.xAxis.axisItemList.length+1)
+                          leadingSpace: (238-(alertsData.length * 8))/(alertsData.length+1)
+                      ),
+                      barBundleList: [
+                        LocalBrnProgressBarBundle(barList: barItems),
+                      ],
+                      yAxis: LocalChartAxisY(
 
-                ///Y轴坐标刻度
-                axisItemList: items),
-            singleBarWidth: 8,
-            barGroupSpace: 32,
-            barMaxValue: yMax,
-            onBarItemClickInterceptor:
-                (barBundleIndex, barBundle, barGroupIndex, barItem) {
-              return true;
-            },
-          ),
-          //官网组件
-          // BrnProgressBarChart(
-          //   barChartStyle: BarChartStyle.vertical,
-          //   xAxis: ChartAxis(axisItemList: [
-          //     AxisItem(showText: '示例1'),
-          //     AxisItem(showText: '示例2'),
-          //     AxisItem(showText: '示例3'),
-          //     AxisItem(showText: '示例4'),
-          //     AxisItem(showText: '示例5'),
-          //     AxisItem(showText: '示例6'),
-          //     AxisItem(showText: '示例7'),
-          //     AxisItem(showText: '示例8'),
-          //     AxisItem(showText: '示例9'),
-          //     AxisItem(showText: '示例10'),
-          //   ]),
-          //   barBundleList: [
-          //     BrnProgressBarBundle(barList: [
-          //       BrnProgressBarItem(
-          //           text: '示例11', value: 5, hintValue: 15, showBarValueText: "1122334"),
-          //       BrnProgressBarItem(text: '示例12', value: 20, selectedHintText: '示例12:20'),
-          //       BrnProgressBarItem(
-          //           text: '示例13',
-          //           value: 30,
-          //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
-          //       BrnProgressBarItem(text: '示例14', value: 25),
-          //       BrnProgressBarItem(text: '示例15', value: 21),
-          //       BrnProgressBarItem(text: '示例16', value: 28),
-          //       BrnProgressBarItem(text: '示例17', value: 15),
-          //       BrnProgressBarItem(text: '示例18', value: 11),
-          //       BrnProgressBarItem(text: '示例19', value: 30),
-          //       BrnProgressBarItem(text: '示例110', value: 24),
-          //     ], colors: [
-          //       Color(0xff1545FD),
-          //       Color(0xff0984F9)
-          //     ]),
-          //     BrnProgressBarBundle(barList: [
-          //       BrnProgressBarItem(text: '示例21', value: 20, hintValue: 15),
-          //       BrnProgressBarItem(text: '示例22', value: 15, selectedHintText: '示例12:20'),
-          //       BrnProgressBarItem(
-          //           text: '示例23',
-          //           value: 30,
-          //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
-          //       BrnProgressBarItem(text: '示例24', value: 20),
-          //       BrnProgressBarItem(text: '示例25', value: 28),
-          //       BrnProgressBarItem(text: '示例26', value: 25),
-          //       BrnProgressBarItem(text: '示例27', value: 17),
-          //       BrnProgressBarItem(text: '示例28', value: 14),
-          //       BrnProgressBarItem(text: '示例29', value: 36),
-          //       BrnProgressBarItem(text: '示例210', value: 29),
-          //     ], colors: [
-          //       Color(0xff01D57D),
-          //       Color(0xff01D57D)
-          //     ]),
-          //   ],
-          //   yAxis: ChartAxis(axisItemList: [
-          //     AxisItem(showText: '10'),
-          //     AxisItem(showText: '20'),
-          //     AxisItem(showText: '30')
-          //   ]),
-          //   singleBarWidth: 30,
-          //   barGroupSpace: 30,
-          //   barMaxValue: 60,
-          //   onBarItemClickInterceptor: (barBundleIndex, barBundle, barGroupIndex, barItem) {
-          //     return true;
-          //   },
-          // )
-        ],
-      ),
-    );
+                        ///Y轴坐标刻度
+                          axisItemList: items),
+                      singleBarWidth: 8,
+                      // barGroupSpace: 32,
+                      barMaxValue: yMax,
+                      onBarItemClickInterceptor:
+                          (barBundleIndex, barBundle, barGroupIndex, barItem) {
+                        return true;
+                      },
+                    ),
+                    //官网组件
+                    // BrnProgressBarChart(
+                    //   barChartStyle: BarChartStyle.vertical,
+                    //   xAxis: ChartAxis(axisItemList: [
+                    //     AxisItem(showText: '示例1'),
+                    //     AxisItem(showText: '示例2'),
+                    //     AxisItem(showText: '示例3'),
+                    //     AxisItem(showText: '示例4'),
+                    //     AxisItem(showText: '示例5'),
+                    //     AxisItem(showText: '示例6'),
+                    //     AxisItem(showText: '示例7'),
+                    //     AxisItem(showText: '示例8'),
+                    //     AxisItem(showText: '示例9'),
+                    //     AxisItem(showText: '示例10'),
+                    //   ]),
+                    //   barBundleList: [
+                    //     BrnProgressBarBundle(barList: [
+                    //       BrnProgressBarItem(
+                    //           text: '示例11', value: 5, hintValue: 15, showBarValueText: "1122334"),
+                    //       BrnProgressBarItem(text: '示例12', value: 20, selectedHintText: '示例12:20'),
+                    //       BrnProgressBarItem(
+                    //           text: '示例13',
+                    //           value: 30,
+                    //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
+                    //       BrnProgressBarItem(text: '示例14', value: 25),
+                    //       BrnProgressBarItem(text: '示例15', value: 21),
+                    //       BrnProgressBarItem(text: '示例16', value: 28),
+                    //       BrnProgressBarItem(text: '示例17', value: 15),
+                    //       BrnProgressBarItem(text: '示例18', value: 11),
+                    //       BrnProgressBarItem(text: '示例19', value: 30),
+                    //       BrnProgressBarItem(text: '示例110', value: 24),
+                    //     ], colors: [
+                    //       Color(0xff1545FD),
+                    //       Color(0xff0984F9)
+                    //     ]),
+                    //     BrnProgressBarBundle(barList: [
+                    //       BrnProgressBarItem(text: '示例21', value: 20, hintValue: 15),
+                    //       BrnProgressBarItem(text: '示例22', value: 15, selectedHintText: '示例12:20'),
+                    //       BrnProgressBarItem(
+                    //           text: '示例23',
+                    //           value: 30,
+                    //           selectedHintText: '示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30\n示例13:30'),
+                    //       BrnProgressBarItem(text: '示例24', value: 20),
+                    //       BrnProgressBarItem(text: '示例25', value: 28),
+                    //       BrnProgressBarItem(text: '示例26', value: 25),
+                    //       BrnProgressBarItem(text: '示例27', value: 17),
+                    //       BrnProgressBarItem(text: '示例28', value: 14),
+                    //       BrnProgressBarItem(text: '示例29', value: 36),
+                    //       BrnProgressBarItem(text: '示例210', value: 29),
+                    //     ], colors: [
+                    //       Color(0xff01D57D),
+                    //       Color(0xff01D57D)
+                    //     ]),
+                    //   ],
+                    //   yAxis: ChartAxis(axisItemList: [
+                    //     AxisItem(showText: '10'),
+                    //     AxisItem(showText: '20'),
+                    //     AxisItem(showText: '30')
+                    //   ]),
+                    //   singleBarWidth: 30,
+                    //   barGroupSpace: 30,
+                    //   barMaxValue: 60,
+                    //   onBarItemClickInterceptor: (barBundleIndex, barBundle, barGroupIndex, barItem) {
+                    //     return true;
+                    //   },
+                    // )
+                  ],
+                ),
+              );
+            }
+      );
+
   }
 
   Widget _buildCamAlertTypeTable() {
-    final li = kMockDataType.entries.toList();
-    return Frame(
-      title: Text('报警类型分布'),
-      content: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Expanded(
-            child: KPieChart(
-              data: KPieChartData(
-                  kMockDataType.map(
-                      (key, value) => MapEntry(key.toHumanString(), value)),
-                  '例'),
-            ),
-          ),
-          SizedBox(
-            width: 8,
-          ),
-          Expanded(
-            child: Column(
+    return Obx(
+        (){
+          print("-----------------------------------------------报警类型分布的刷新---------------------");
+          // final li = data.entries.toList();
+          final alerts = alertsModel.historyAlertsRx;
+          int whiteNum = 0;
+          Map<AlertType, int> data = {AlertType.whiteShirt:0,AlertType.other:0};
+          for(int i=0;i<alerts.length;i++){
+            if(alerts[i].alertType == 1) {
+              whiteNum++;
+            }
+          }
+          data[AlertType.whiteShirt] = whiteNum;
+          data[AlertType.other] = alerts.length-whiteNum;
+          final li = data.entries.toList();
+
+          return Frame(
+            title: Text('报警类型分布'),
+            content: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
-              children: li
-                  .map((e) => Padding(
+              children: [
+                SizedBox(
+                  width: 150,
+                  height: 150,
+                  // flex: 3,
+                  child: KPieChart(
+                    data: KPieChartData(
+                        data.map(
+                                (key, value) => MapEntry(key.toHumanString(), value)),
+                        '例'),
+                  ),
+                ),
+                const SizedBox(
+                  width: 16.0,
+                ),
+                SizedBox(
+                  width: 150,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: li
+                          .map((e) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4.0),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -648,19 +738,28 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                           ],
                         ),
                       ))
-                  .toList(),
+                          .toList(),
+                    ),
+                  ),
+                )
+              ],
             ),
-          )
-        ],
-      ),
+          );
+        }
+
     );
+
   }
 
   _buildCamDataStatTable() {
+    print("???????????????????????????????????????????????????????????????/");
     return Obx(
       () {
+        print("这里刷新了吗？");
         final alerts = alertsModel.rtAlertsRx;
         List<int> alertsData = getRtLines(alerts);
+        print("---------------------------------------数据报警统计："+alertsData.toString());
+        print("----------我----------刷----------新----------了----------");
         return Frame(
             title: Text("报警数据统计"),
             content: Row(
@@ -816,6 +915,8 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   }
 
   double _getMaxValueForDemo1(List<int> brokenData) {
+    ///如果此时没有数据，默认最大值为0
+    if(brokenData.length == 0) return 0;
     double maxValue = double.tryParse(brokenData[0].toString()) ?? 0;
     for (int point in brokenData) {
       maxValue = max(double.tryParse(point.toString()) ?? 0, maxValue);

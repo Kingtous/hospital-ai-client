@@ -9,6 +9,8 @@ import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit/media_kit.dart';
 
+import 'dao/alerts.dart';
+
 const kRTSPVideoModelJsonKey = 'rtsp_video_model';
 
 class VideoModel {
@@ -72,9 +74,14 @@ class VideoModel {
     }
   }
 
-  Future<bool> checkCamName(String name,Room room) async {
-    List<String> names = await appDB.roomDao.getCamNamesByRoom(room.id!);
+  Future<bool> checkCamName(String name) async {
+    List<String> names = await appDB.camDao.getCamNames();
     return !names.contains(name);
+  }
+
+  Future<List<String>> getAllCamNames() async{
+    List<String> names = await appDB.camDao.getCamNames();
+    return names;
   }
 
   Future<List<Cam>> getAllowedCams() async {
@@ -182,5 +189,14 @@ class VideoModel {
     await alertsModel
         .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
     timer = Timer(const Duration(milliseconds: kAlertIntervalMs), _onAlertTick);
+  }
+
+  Future<Map<AlertType, int>> getAlertsType() async {
+    List<Alerts> white_res = await appDB.alertDao.getAlertsTypeNoImg();
+    Map<AlertType, int> res = <AlertType, int>{
+      AlertType.whiteShirt: white_res.length,
+      AlertType.other: alertsModel.historyAlertsRx.length-white_res.length
+    };
+    return res;
   }
 }

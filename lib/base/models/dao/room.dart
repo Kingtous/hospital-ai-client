@@ -95,9 +95,6 @@ abstract class RoomDao {
       'SELECT * FROM cam WHERE id IN (SELECT cam_id FROM rel_room_cam WHERE room_id = :roomId)')
   Future<List<Cam>> getCamsByRoom(int roomId);
 
-  @Query('SELECT name FROM cam WHERE room_id = :roomId')
-  Future<List<String>> getCamNamesByRoom(int roomId);
-
   @Query('SELECT * FROM rel_room_cam')
   Future<List<RoomCam>> getAll();
 }

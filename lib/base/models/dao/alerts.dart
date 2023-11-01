@@ -118,4 +118,7 @@ abstract class AlertDao {
 
   @Query("DELETE FROM alerts WHERE create_at < datetime('now', '-15 days')")
   Future<int?> deleteOldAlerts();
+
+  @Query('select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1')
+  Future<List<Alerts>> getAlertsTypeNoImg();
 }

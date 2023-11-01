@@ -108,8 +108,11 @@ class BrnProgressBarChartState extends State<BarChart> {
       if (widget.yAxis.axisItemList.isNotEmpty) {
         width += LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
       }
+      print(widget.minWidth.toString()+"--------"+width.toString());
+      // return Size(
+      //     widget.minWidth > width ? widget.minWidth-15 : width-15, widget.height);
       return Size(
-          widget.minWidth > width ? widget.minWidth-15 : width-15, widget.height);
+          253-15, widget.height);
     } else {
       return Size.zero;
     }
@@ -191,9 +194,12 @@ class BrnProgressBarChartState extends State<BarChart> {
                         xAxis: widget.xAxis,
                         yAxis: widget.yAxis,
                         barChartStyle: widget.barChartStyle,
+                        ///单个柱状图宽度
                         singleBarWidth: widget.singleBarWidth,
                         barMaxValue: widget.barMaxValue,
-                        barGroupSpace: widget.barGroupSpace,
+                        ///柱状图之间的间距，根据个数来进行间距的调整
+                        // barGroupSpace: widget.barGroupSpace,
+                        barGroupSpace: (238-(widget.xAxis.axisItemList.length*widget.singleBarWidth))/(widget.xAxis.axisItemList.length+1),
                         barBundleList: widget.barBundleList,
                         onBarItemClickInterceptor:
                             widget.onBarItemClickInterceptor,

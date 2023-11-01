@@ -107,6 +107,7 @@ class LocalChartAxisX {
 
   LocalChartAxisX({
     required this.axisItemList,
+    required this.leadingSpace,
     this.axisStyle = LocalAxisStyle.axisStyleSolid,
     this.inclineText = false,
   });

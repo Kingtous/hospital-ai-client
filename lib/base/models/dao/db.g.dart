@@ -401,6 +401,12 @@ class _$CamDao extends CamDao {
       });
     }
   }
+
+  @override
+  Future<List<String>> getCamNames() async {
+    return _queryAdapter.queryList('SELECT name FROM cam',
+      mapper: (Map<String, Object?> row) => row.values.first as String,);
+  }
 }
 
 class _$AreaUserDao extends AreaUserDao {
@@ -830,13 +836,6 @@ class _$RoomDao extends RoomDao {
   }
 
   @override
-  Future<List<String>> getCamNamesByRoom(int roomId) async {
-    return _queryAdapter.queryList('SELECT name FROM cam WHERE room_id = ?1',
-        mapper: (Map<String, Object?> row) => row.values.first as String,
-        arguments: [roomId]);
-  }
-
-  @override
   Future<List<RoomCam>> getAll() async {
     return _queryAdapter.queryList('SELECT * FROM rel_room_cam',
         mapper: (Map<String, Object?> row) => RoomCam(
@@ -991,6 +990,13 @@ class _$AlertDao extends AlertDao {
   @override
   Future<int> deleteAlert(Alerts a) {
     return _alertsDeletionAdapter.deleteAndReturnChangedRows(a);
+  }
+
+  @override
+  Future<List<Alerts>> getAlertsTypeNoImg() {
+    return _queryAdapter.queryList(
+        'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE alert_type = 1',
+        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String));
   }
 }
 
