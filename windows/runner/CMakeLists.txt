@@ -17,8 +17,6 @@ add_executable(${BINARY_NAME} WIN32
   "runner.exe.manifest"
 )
 
-include_directories("onnxruntime/include")
-
 # Apply the standard set of build settings. This can be removed for applications
 # that need different build settings.
 apply_standard_settings(${BINARY_NAME})
@@ -42,10 +40,6 @@ target_compile_definitions(${BINARY_NAME} PRIVATE "NOMINMAX")
 target_link_libraries(${BINARY_NAME} PRIVATE flutter flutter_wrapper_app)
 target_link_libraries(${BINARY_NAME} PRIVATE "dwmapi.lib")
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
-# onnx-runtime
-target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/runner/onnxruntime/include")
-target_link_libraries(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/runner/onnxruntime/lib/onnxruntime.lib")
-
 # Run the Flutter tool portions of the build. This must not be removed.
 add_dependencies(${BINARY_NAME} flutter_assemble)
 

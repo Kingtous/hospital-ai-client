@@ -4,8 +4,6 @@
 #include <cstdlib>
 #include <thread>
 
-#include <onnxruntime_cxx_api.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -14,7 +12,7 @@ Alert* tmp_alert = nullptr;
 
 DllExport void alert_init() {
   // 获取onnx runtime的版本
-  auto version = Ort::GetVersionString();
+  // auto version = Ort::GetVersionString();
 }
 
 /// 由Flutter主动调用，用于判断是否准备好
