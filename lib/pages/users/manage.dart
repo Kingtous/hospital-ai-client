@@ -531,7 +531,7 @@ class AlertDetailDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return ContentDialog(
       style: kContentDialogStyle,
-      constraints: BoxConstraints.loose(Size(700, 400)),
+      constraints: BoxConstraints.loose(Size(1000, 500)),
       content: Container(
         child: Frame(
             title: Text('报警详情'),
@@ -554,14 +554,15 @@ class AlertDetailDialog extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Expanded(
+                            flex: 2,
                             child: Container(
                               decoration: BoxDecoration(
                                   color: Colors.black,
                                   border: Border.all(color: Colors.red)),
                               child: Image.memory(
                                 alert.img ?? Uint8List(0),
-                                width: 256,
-                                height: 144,
+                                width: 500,
+                                height: 300,
                                 errorBuilder: (context, _, st) {
                                   return Container();
                                 },
@@ -569,7 +570,7 @@ class AlertDetailDialog extends StatelessWidget {
                             ),
                           ),
                           SizedBox(
-                            width: 16.0,
+                            width: 32.0,
                           ),
                           Expanded(
                             child: Column(
@@ -579,7 +580,7 @@ class AlertDetailDialog extends StatelessWidget {
                                 Text('报警科室：${alert.roomName}',
                                     style: kTextStyle),
                                 SizedBox(
-                                  height: 8.0,
+                                  height: 16.0,
                                 ),
                                 Text.rich(TextSpan(children: [
                                   TextSpan(text: '报警类型：', style: kTextStyle),
@@ -590,7 +591,7 @@ class AlertDetailDialog extends StatelessWidget {
                                           color: Colors.red)),
                                 ])),
                                 SizedBox(
-                                  height: 8.0,
+                                  height: 16.0,
                                 ),
                                 Text(
                                     '报警时间：${t.year}年${t.month}年${t.day}日 ${t.hour}时${t.minute}分${t.second}秒',
