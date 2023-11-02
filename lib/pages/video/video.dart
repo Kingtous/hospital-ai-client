@@ -434,10 +434,10 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
           ),
           SizedBox(
             child: FutureBuilder(
-              future: videoModel.getAllCamNames(),
-              builder: (context, names) {
+              future: videoModel.getAllowedCams(),
+              builder: (context, allowedCams) {
                 return SizedBox(
-                    width: 400, child: _buildCamAlertTable(names.data!));
+                    width: 400, child: _buildCamAlertTable(allowedCams.data!));
               },
             ),
           )
@@ -447,9 +447,15 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     );
   }
 
-  Widget _buildCamAlertTable(List<String> names) {
+  Widget _buildCamAlertTable(List<Cam> cams) {
     return Obx(() {
+      ///对names进行初始化
+      List<String> names = [];
+      for(int i=0;i<cams.length;i++){
+        names.add(cams[i].name);
+      }
       // final li = kMockAlertsData.toList();
+
       ///对摄像头名称进行排序
       names.sort();
 
@@ -464,7 +470,9 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
       ///对不同名称的摄像头报警数量进行统计
       for (int i = 0; i < alerts.length; i++) {
-        temp_res[alerts[i].camName] = temp_res[alerts[i].camName]! + 1;
+        if(temp_res.containsKey(alerts[i].camName)){
+          temp_res[alerts[i].camName] = temp_res[alerts[i].camName]! + 1;
+        }
       }
 
       ///最多统计五个数量
