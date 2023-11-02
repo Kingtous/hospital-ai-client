@@ -455,9 +455,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
       ///获取前五个画面的报警数量，如果画面数量小于5则按照实际画面数量来写，否则最多五个值。
       final alerts = alertsModel.historyAlertsRx;
-      print(
-          "---------------------------------------科室报警统计：" + alerts.toString());
-      print("-----科-----室-----报-----警-----统-----计-----刷-----新-----了-----");
       Map<String, int> temp_res = {};
 
       ///初始化值为0
@@ -663,8 +660,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
   Widget _buildCamAlertTypeTable() {
     return Obx(() {
-      print(
-          "-----------------------------------------------报警类型分布的刷新---------------------");
       // final li = data.entries.toList();
       final alerts = alertsModel.historyAlertsRx;
       int whiteNum = 0;
