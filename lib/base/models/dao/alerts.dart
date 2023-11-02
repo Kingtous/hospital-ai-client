@@ -106,7 +106,7 @@ abstract class AlertDao {
   // final String roomName;
 
   @Query(
-      'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= :st')
+      'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= :st ORDER BY create_at DESC')
   Future<List<Alerts>> getAlertsFromNoImg(int st);
 
   @Query('DELETE FROM alerts WHERE create_at <= :st')
