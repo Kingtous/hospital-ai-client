@@ -44,7 +44,7 @@ dependencies:
   media_kit_video:
     path: ../media-kit/media_kit_video
   media_kit_libs_video: ^1.0.1
-  fluent_ui: ^4.7.3
+  fluent_ui: ^4.7.7
   shared_preferences: ^2.2.1
   get: ^4.6.5
   loading_animation_widget: ^1.2.0+4

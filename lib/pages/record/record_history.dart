@@ -81,11 +81,13 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
     if (selectedDate.value == null && selectedCams.isEmpty) {
       return recordModel.recs;
     }
-    return recordModel.recs.where((element) { 
+    return recordModel.recs.where((element) {
       if (selectedCams.contains(element.cam)) {
         final sdt = selectedDate.value;
         if (sdt != null) {
-          if (element.dt.year == sdt.year && element.dt.month == sdt.month && element.dt.day == sdt.day) {
+          if (element.dt.year == sdt.year &&
+              element.dt.month == sdt.month &&
+              element.dt.day == sdt.day) {
             return true;
           } else {
             return false;
@@ -129,67 +131,159 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
                       ],
                     ),
                   ),
-                  Expanded(
-                    child: Obx(
-                      () {
-                        final list = getFilteredList().toList();
-                        return ListView.builder(
-                          itemBuilder: (context, index) {
-                            final item = list[index];
-                            return Container(
-                              padding: const EdgeInsets.all(2.0),
-                              margin: const EdgeInsets.all(2.0),
-                              child: Obx(
-                                () => Button(
-                                  style: item == selectedMediaFile.value
-                                      ? ButtonStyle(
-                                          backgroundColor:
-                                              ButtonState.all(kHighlightColor),
-                                          border:
-                                              ButtonState.all(BorderSide.none))
-                                      : ButtonStyle(
-                                          border:
-                                              ButtonState.all(BorderSide.none)),
-                                  child: Tooltip(
-                                    message: item.f.path,
-                                    child: Row(
-                                      children: [
-                                        Icon(FluentIcons.video),
-                                        SizedBox(
-                                          width: 4.0,
-                                        ),
-                                        Expanded(
-                                            child: Text(
-                                        "${item.cam.name} ${item.dt.year}年${item.dt.month}月${item.dt.day}日${item.dt.hour}:${item.dt.minute}:${item.dt.second}",
-                                          overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,
-                                          style: kTextStyle,
-                                          textAlign: TextAlign.start,
-                                        )),
-                                        GestureDetector(
-                                          onTap: () => onDeleteRecord(item),
-                                          child: Icon(
-                                            FluentIcons.delete,
-                                            color: Colors.red,
-                                          ),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    if (selectedMediaFile.value == item) {
-                                      return;
-                                    }
-                                    selectedMediaFile.value = item;
-                                    loadVideo();
-                                  },
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  FutureBuilder(
+                      future: videoModel.getAllowedCams(),
+                      builder: (context, data) {
+                        if (!data.hasData) {
+                          return Offstage();
+                        }
+                        final cams = data.data!;
+                        if (cams.isEmpty) {
+                          return Offstage();
+                        }
+                        return Column(
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(width: 50, child: Text('摄像头')),
+                                SizedBox(
+                                  width: 8.0,
                                 ),
-                              ),
-                            );
-                          },
-                          itemCount: list.length,
+                                Expanded(
+                                  child: Obx(
+                                    () => DropDownButton(
+                                        title: Text(selectedCams.isEmpty
+                                            ? '请选择'
+                                            : selectedCams.first.name),
+                                        items: cams
+                                            .map((e) => MenuFlyoutItem(
+                                                selected:
+                                                    selectedCams.isNotEmpty &&
+                                                        selectedCams.first == e,
+                                                text: Text(
+                                                  e.name,
+                                                  style: kTextStyle,
+                                                ),
+                                                onPressed: () {
+                                                  selectedCams.value = [e];
+                                                }))
+                                            .toList()),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 4.0,
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(width: 50, child: Text('日期')),
+                                SizedBox(
+                                  width: 8.0,
+                                ),
+                                Expanded(
+                                    child: Obx(() => DatePicker(
+                                        contentPadding: EdgeInsets.zero,
+                                        onChanged: (dt) {
+                                          selectedDate.value = dt.copyWith(
+                                              hour: 0,
+                                              minute: 0,
+                                              millisecond: 0,
+                                              microsecond: 0);
+                                        },
+                                        selected: selectedDate.value))),
+                                SizedBox(
+                                  width: 8.0,
+                                ),
+                                GestureDetector(
+                                    onTap: () {
+                                      selectedDate.value = null;
+                                    },
+                                    child: Icon(FluentIcons.delete))
+                              ],
+                            )
+                          ],
                         );
-                      },
+                      }),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  Divider(),
+                  SizedBox(
+                    height: 8.0,
+                  ),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Obx(
+                            () {
+                              final list = getFilteredList().toList();
+                              return ListView.builder(
+                                itemBuilder: (context, index) {
+                                  final item = list[index];
+                                  return Container(
+                                    padding: const EdgeInsets.all(2.0),
+                                    margin: const EdgeInsets.all(2.0),
+                                    child: Obx(
+                                      () => Button(
+                                        style: item == selectedMediaFile.value
+                                            ? ButtonStyle(
+                                                backgroundColor:
+                                                    ButtonState.all(
+                                                        kHighlightColor),
+                                                border: ButtonState.all(
+                                                    BorderSide.none))
+                                            : ButtonStyle(
+                                                border: ButtonState.all(
+                                                    BorderSide.none)),
+                                        child: Tooltip(
+                                          message: item.f.path,
+                                          child: Row(
+                                            children: [
+                                              Icon(FluentIcons.video),
+                                              SizedBox(
+                                                width: 4.0,
+                                              ),
+                                              Expanded(
+                                                  child: Text(
+                                                "${item.cam.name} (${item.dt.year}年${item.dt.month}月${item.dt.day}日 ${item.dt.hour}时${item.dt.minute}分${item.dt.second}秒)",
+                                                overflow: TextOverflow.ellipsis,
+                                                maxLines: 1,
+                                                style: kTextStyle,
+                                                textAlign: TextAlign.start,
+                                              )),
+                                              GestureDetector(
+                                                onTap: () =>
+                                                    onDeleteRecord(item),
+                                                child: Icon(
+                                                  FluentIcons.delete,
+                                                  color: Colors.red,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                        onPressed: () {
+                                          if (selectedMediaFile.value == item) {
+                                            return;
+                                          }
+                                          selectedMediaFile.value = item;
+                                          loadVideo();
+                                        },
+                                      ),
+                                    ),
+                                  );
+                                },
+                                itemCount: list.length,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
