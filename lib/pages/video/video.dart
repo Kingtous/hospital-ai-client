@@ -245,7 +245,6 @@ class _AlertStatTablesState extends State<AlertStatTables> {
   }
 
   Widget _buildRtAlertTable() {
-    print("---------------------------实时报警刷新了--------------------------------");
     return Frame(
       title: Text('实时报警'),
       content: Obx(
@@ -457,8 +456,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
 
               ///获取前五个画面的报警数量，如果画面数量小于5则按照实际画面数量来写，否则最多五个值。
               final alerts = alertsModel.historyAlertsRx;
-              print("---------------------------------------科室报警统计："+alerts.toString());
-              print("-----科-----室-----报-----警-----统-----计-----刷-----新-----了-----");
               Map<String,int> temp_res = {};
 
               ///初始化值为0
@@ -489,16 +486,16 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
               }
 
               ///左侧提示语句
-              List<String> AlertsTextData = ["画面一", "画面二", "画面三", "画面四", "画面五"];
+              // List<String> AlertsTextData = ["画面一", "画面二", "画面三", "画面四", "画面五"];
               List<String> li = [];
               for(int i=0;i<alertsData.length;i++){
-                li.add(AlertsTextData[i]);
+                li.add(names[i]);
               }
 
               ///x轴文字
               List<LocalAxisItem> xItems = [];
               for(int i=0;i<alertsData.length;i++){
-                xItems.add(LocalAxisItem(showText: AlertsTextData[i]));
+                xItems.add(LocalAxisItem(showText: names[i]));
               }
 
               ///y轴最大值，设置最小值是10，如果小于10，则等于10
@@ -668,7 +665,6 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   Widget _buildCamAlertTypeTable() {
     return Obx(
         (){
-          print("-----------------------------------------------报警类型分布的刷新---------------------");
           // final li = data.entries.toList();
           final alerts = alertsModel.historyAlertsRx;
           int whiteNum = 0;
@@ -752,14 +748,10 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
   }
 
   _buildCamDataStatTable() {
-    print("???????????????????????????????????????????????????????????????/");
     return Obx(
       () {
-        print("这里刷新了吗？");
         final alerts = alertsModel.rtAlertsRx;
         List<int> alertsData = getRtLines(alerts);
-        print("---------------------------------------数据报警统计："+alertsData.toString());
-        print("----------我----------刷----------新----------了----------");
         return Frame(
             title: Text("报警数据统计"),
             content: Row(
