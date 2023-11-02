@@ -77,10 +77,11 @@ abstract class AlertDao {
   @delete
   Future<int> deleteAlert(Alerts a);
 
-  @Query('SELECT * FROM alerts WHERE create_at BETWEEN :st AND :ed')
+  @Query(
+      'SELECT * FROM alerts WHERE create_at BETWEEN :st AND :ed ORDER BY create_at DESC')
   Future<List<Alerts>> getAlertsFromTo(int st, int ed);
 
-  @Query('SELECT * FROM alerts WHERE create_at >= :st')
+  @Query('SELECT * FROM alerts WHERE create_at >= :st ORDER BY create_at DESC')
   Future<List<Alerts>> getAlertsFrom(int st);
 
   
@@ -113,12 +114,16 @@ abstract class AlertDao {
   Future<int?> deleteAlertsBefore(int st);
 
   @Query(
-      'SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams))')
+      'SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams)) ORDER BY create_at DESC')
   Future<List<Alerts>> getAlertsInCamsFrom(List<int> cams, int st, int ed);
 
   @Query("DELETE FROM alerts WHERE create_at < datetime('now', '-15 days')")
   Future<int?> deleteOldAlerts();
 
-  @Query('select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1')
+  @Query(
+      'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1 ORDER BY create_at DESC')
   Future<List<Alerts>> getAlertsTypeNoImg();
+
+  @Query('select * from alerts where id = :id')
+  Future<Alerts?> getFullAlertsById(int id);
 }

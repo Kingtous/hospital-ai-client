@@ -364,6 +364,12 @@ class _$CamDao extends CamDao {
   }
 
   @override
+  Future<List<String>> getCamNames() async {
+    return _queryAdapter.queryList('SELECT name FROM cam',
+        mapper: (Map<String, Object?> row) => row.values.first as String);
+  }
+
+  @override
   Future<int> insertCam(Cam cam) {
     return _camInsertionAdapter.insertAndReturnId(
         cam, OnConflictStrategy.abort);
@@ -400,12 +406,6 @@ class _$CamDao extends CamDao {
         return transactionDatabase.camDao.addCam(cam, room);
       });
     }
-  }
-
-  @override
-  Future<List<String>> getCamNames() async {
-    return _queryAdapter.queryList('SELECT name FROM cam',
-      mapper: (Map<String, Object?> row) => row.values.first as String,);
   }
 }
 
@@ -913,22 +913,15 @@ class _$AlertDao extends AlertDao {
     int ed,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM alerts WHERE create_at BETWEEN ?1 AND ?2',
-        mapper: (Map<String, Object?> row) => Alerts(
-            row['id'] as int?,
-            row['create_at'] as int,
-            row['img'] as Uint8List?,
-            row['cam_id'] as int,
-            row['alert_type'] as int,
-            row['cam_name'] as String,
-            row['room_id'] as int,
-            row['room_name'] as String),
+        'SELECT * FROM alerts WHERE create_at BETWEEN ?1 AND ?2 ORDER BY create_at DESC',
+        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
         arguments: [st, ed]);
   }
 
   @override
   Future<List<Alerts>> getAlertsFrom(int st) async {
-    return _queryAdapter.queryList('SELECT * FROM alerts WHERE create_at >= ?1',
+    return _queryAdapter.queryList(
+        'SELECT * FROM alerts WHERE create_at >= ?1 ORDER BY create_at DESC',
         mapper: (Map<String, Object?> row) => Alerts(
             row['id'] as int?,
             row['create_at'] as int,
@@ -969,7 +962,7 @@ class _$AlertDao extends AlertDao {
     return _queryAdapter.queryList(
         'SELECT * FROM alerts WHERE (create_at BETWEEN ?1 AND ?2) AND (cam_id IN (' +
             _sqliteVariablesForCams +
-            '))',
+            ')) ORDER BY create_at DESC',
         mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
         arguments: [st, ed, ...cams]);
   }
@@ -982,6 +975,36 @@ class _$AlertDao extends AlertDao {
   }
 
   @override
+  Future<List<Alerts>> getAlertsTypeNoImg() async {
+    return _queryAdapter.queryList(
+        'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1 ORDER BY create_at DESC',
+        mapper: (Map<String, Object?> row) => Alerts(
+            row['id'] as int?,
+            row['create_at'] as int,
+            row['img'] as Uint8List?,
+            row['cam_id'] as int,
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String));
+  }
+
+  @override
+  Future<Alerts?> getFullAlertsById(int id) async {
+    return _queryAdapter.query('select * from alerts where id = ?1',
+        mapper: (Map<String, Object?> row) => Alerts(
+            row['id'] as int?,
+            row['create_at'] as int,
+            row['img'] as Uint8List?,
+            row['cam_id'] as int,
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String),
+        arguments: [id]);
+  }
+
+  @override
   Future<int> insertAlert(Alerts a) {
     return _alertsInsertionAdapter.insertAndReturnId(
         a, OnConflictStrategy.abort);
@@ -990,13 +1013,6 @@ class _$AlertDao extends AlertDao {
   @override
   Future<int> deleteAlert(Alerts a) {
     return _alertsDeletionAdapter.deleteAndReturnChangedRows(a);
-  }
-
-  @override
-  Future<List<Alerts>> getAlertsTypeNoImg() {
-    return _queryAdapter.queryList(
-        'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE alert_type = 1',
-        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String));
   }
 }
 

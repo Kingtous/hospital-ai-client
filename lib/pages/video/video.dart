@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
-import 'package:flutter/material.dart' hide Colors;
 import 'package:get/get.dart';
 import 'package:graphic/graphic.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
@@ -13,6 +12,7 @@ import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:hospital_ai_client/components/bar_chart.dart';
+import 'package:hospital_ai_client/pages/users/manage.dart';
 
 import '../../base/models/dao/alerts.dart';
 import '../../components/local_chart_axis.dart';
@@ -246,7 +246,7 @@ class _AlertStatTablesState extends State<AlertStatTables> {
 
   Widget _buildRtAlertTable() {
     return Frame(
-      title: Text('实时报警'),
+      title: const Text('实时报警'),
       content: Obx(
         () => ListView.builder(
           itemBuilder: ((context, index) {
@@ -269,19 +269,26 @@ class _AlertStatTablesState extends State<AlertStatTables> {
                     width: 14.0,
                   ),
                   Text(
-                    "${dt.toLocal().toString()}",
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  Expanded(
-                      child: Text(
                     '${item.roomName}-${item.camName}',
                     style: TextStyle(color: Color(0xFF415B73)),
-                  )),
-                  MouseRegion(
-                    cursor: SystemMouseCursors.click,
+                  ),
+                  SizedBox(
+                    width: 6.0,
+                  ),
+                  Expanded(
                     child: Text(
-                      '查看',
-                      style: TextStyle(color: Color(0xFFFF222F)),
+                      "${dt.year}年${dt.month}月${dt.day}日 ${dt.hour}时${dt.minute}分${dt.second}秒",
+                      style: kTextStyle.copyWith(fontSize: 10),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => _onToggleAlertDetail(item),
+                    child: MouseRegion(
+                      cursor: SystemMouseCursors.click,
+                      child: Text(
+                        '查看',
+                        style: TextStyle(color: Color(0xFFFF222F)),
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -296,6 +303,12 @@ class _AlertStatTablesState extends State<AlertStatTables> {
         ),
       ),
     );
+  }
+
+  _onToggleAlertDetail(Alerts alert) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDetailDialog(id: alert.id!));
   }
 
   Widget _buildHistoryAlertTable() {

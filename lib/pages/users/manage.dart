@@ -13,15 +13,19 @@
 // limitations under the License.
 
 import 'dart:async';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/get.dart';
 // import 'package:flutter/material.dart' hide FilledButton, ButtonStyle;
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
+import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/area.dart';
 import 'package:hospital_ai_client/base/models/dao/user.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:path/path.dart' hide context;
 
 class UserManagePage extends StatefulWidget {
   const UserManagePage({super.key});
@@ -347,34 +351,38 @@ class AddUserDialog extends StatelessWidget {
       // title: ,
       constraints: BoxConstraints.tight(const Size(540, 420)),
       content: Frame(
-        title: const Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('新增账号'),
-        ],
-      ),
-        content: Column(
-          children: [
-            Expanded(child: _buildDialog(context)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-              Expanded(
-                child: FilledButton(
-                          child: const Text('保存'), onPressed: () => _onStore(context)),
-              ),
-              SizedBox(width: 16.0,),
-        Expanded(
-          child: Button(
-            child: const Text('取消'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
+          title: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('新增账号'),
+            ],
           ),
-        )
-            ],)
-          ],
-        )),
+          content: Column(
+            children: [
+              Expanded(child: _buildDialog(context)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                        child: const Text('保存'),
+                        onPressed: () => _onStore(context)),
+                  ),
+                  SizedBox(
+                    width: 16.0,
+                  ),
+                  Expanded(
+                    child: Button(
+                      child: const Text('取消'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  )
+                ],
+              )
+            ],
+          )),
     );
   }
 
@@ -510,6 +518,91 @@ class AddUserDialog extends StatelessWidget {
                 );
               })
         ],
+      ),
+    );
+  }
+}
+
+class AlertDetailDialog extends StatelessWidget {
+  final int id;
+  const AlertDetailDialog({super.key, required this.id});
+
+  @override
+  Widget build(BuildContext context) {
+    return ContentDialog(
+      style: kContentDialogStyle,
+      constraints: BoxConstraints.loose(Size(700, 400)),
+      content: Container(
+        child: Frame(
+            title: Text('报警详情'),
+            content: FutureBuilder(
+                future: alertsModel.getFullAlerts(id),
+                builder: (context, data) {
+                  if (!data.hasData) {
+                    return Center(
+                        child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: const ProgressRing()));
+                  } else {
+                    final alert = data.data!;
+                    final t =
+                        DateTime.fromMillisecondsSinceEpoch(alert.createAt);
+                    return Padding(
+                      padding: const EdgeInsets.all(56.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  border: Border.all(color: Colors.red)),
+                              child: Image.memory(
+                                alert.img ?? Uint8List(0),
+                                width: 256,
+                                height: 144,
+                                errorBuilder: (context, _, st) {
+                                  return Container();
+                                },
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 16.0,
+                          ),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('报警科室：${alert.roomName}',
+                                    style: kTextStyle),
+                                SizedBox(
+                                  height: 8.0,
+                                ),
+                                Text.rich(TextSpan(children: [
+                                  TextSpan(text: '报警类型：', style: kTextStyle),
+                                  TextSpan(
+                                      text:
+                                          '${AlertType.values[alert.alertType].toHumanString()}',
+                                      style: kTextStyle.copyWith(
+                                          color: Colors.red)),
+                                ])),
+                                SizedBox(
+                                  height: 8.0,
+                                ),
+                                Text(
+                                    '报警时间：${t.year}年${t.month}年${t.day}日 ${t.hour}时${t.minute}分${t.second}秒',
+                                    style: kTextStyle),
+                              ],
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                })),
       ),
     );
   }
@@ -680,29 +773,36 @@ class UserRoleDialog extends StatelessWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Expanded(child: ListView(children: [...allRoles
-                          .map((e) => Padding(
-                                padding: const EdgeInsets.all(4.0),
-                                child: Row(
-                                  children: [
-                                    Obx(
-                                      () => Checkbox(
-                                        checked: currentRolesObx.contains(e),
-                                        onChanged: (v) {
-                                          v = v ?? false;
-                                          if (v) {
-                                            currentRolesObx.add(e);
-                                          } else {
-                                            currentRolesObx.remove(e);
-                                          }
-                                        },
-                                        content: Text(e.areaName),
+                      Expanded(
+                        child: ListView(
+                          children: [
+                            ...allRoles
+                                .map((e) => Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: Row(
+                                        children: [
+                                          Obx(
+                                            () => Checkbox(
+                                              checked:
+                                                  currentRolesObx.contains(e),
+                                              onChanged: (v) {
+                                                v = v ?? false;
+                                                if (v) {
+                                                  currentRolesObx.add(e);
+                                                } else {
+                                                  currentRolesObx.remove(e);
+                                                }
+                                              },
+                                              content: Text(e.areaName),
+                                            ),
+                                          )
+                                        ],
                                       ),
-                                    )
-                                  ],
-                                ),
-                              ))
-                          .toList(),],),),
+                                    ))
+                                .toList(),
+                          ],
+                        ),
+                      ),
                       Row(
                         // mainAxisAlignment: MainAxisAlignment.end,
                         children: [

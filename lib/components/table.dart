@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import 'package:flutter/material.dart';
-import 'package:hospital_ai_client/components/charts.dart';
-import 'package:hospital_ai_client/constants.dart';
+import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' show Icons;
 
 class Frame extends StatefulWidget {
   final Widget title;
@@ -57,11 +56,17 @@ class _FrameState extends State<Frame> {
                 width: 8.0,
               ),
               widget.title,
-              const Expanded(
+              Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                        },
+                        child: const MouseRegion(
+                            cursor: SystemMouseCursors.click,
+                            child: Icon(Icons.close)))
                   ],
                 ),
               )
@@ -86,8 +91,7 @@ class _FrameState extends State<Frame> {
           const SizedBox(
             height: 8.0,
           ),
-          Expanded(
-              child: widget.content)
+          Expanded(child: widget.content)
         ],
       ),
     );

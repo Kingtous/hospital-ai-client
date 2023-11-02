@@ -69,3 +69,6 @@ RecordModel get recordModel => it.get();
 
 const kThumbNailLiveHeight = 207;
 const kThumbNailLiveWidth = 368;
+
+const kAlertWidth = 640;
+const kAlertHeight = 1088;

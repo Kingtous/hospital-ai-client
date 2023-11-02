@@ -391,8 +391,7 @@ class RTSPCamera extends PlayableDevice
                                     setState(() {});
                                     return;
                                   }
-                                  bool res =
-                                      await videoModel.checkCamName(id);
+                                  bool res = await videoModel.checkCamName(id);
                                   if (!res) {
                                     msg = "摄像头名称已存在，请重新输入";
                                     setState(() {});
@@ -508,9 +507,6 @@ Future<void> _screenshot(_ScreenshotData data) async {
             case 'data':
               sz = value.u.ba.ref.size;
               bytes = value.u.ba.ref.data;
-              // bytes
-              //     .asTypedList(sz)
-              //     .setAll(0, value.u.ba.ref.data.cast<Uint8>().asTypedList(sz));
               break;
           }
           break;

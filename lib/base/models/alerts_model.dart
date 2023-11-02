@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ffi';
+import 'dart:io';
 import 'package:ffi/ffi.dart';
 import 'dart:isolate';
 
@@ -14,14 +15,23 @@ import 'package:hospital_ai_client/constants.dart';
 import 'package:hospital_ai_client/generated_bindings.dart';
 import 'dart:ui' as ui;
 import 'package:image/image.dart' as image;
+import 'package:path/path.dart';
 
 class AlertsModel {
   RxList<Alerts> rtAlertsRx = RxList<Alerts>();
   RxList<Alerts> historyAlertsRx = RxList<Alerts>();
   Timer? _timer;
+  Timer? _timerDel;
   AlertsModel() {
     _timer = Timer.periodic(
         const Duration(seconds: kDebugMode ? 5 : kKeepDays), refreshAlerts);
+    _timerDel = Timer.periodic(const Duration(hours: 12), (timer) async {
+      final now = DateTime.now();
+      final before = DateTime.fromMillisecondsSinceEpoch(
+          now.millisecondsSinceEpoch - 1000 * 60 * 60 * 24 * kKeepDays);
+      // 删除老的alerts
+      await appDB.alertDao.deleteAlertsBefore(before.millisecondsSinceEpoch);
+    });
   }
 
   Future<void> refreshAlerts(Timer timer) async {
@@ -30,9 +40,6 @@ class AlertsModel {
         now.millisecondsSinceEpoch - 1000 * 60 * 60 * 24 * kKeepDays);
     final today = DateTime.fromMillisecondsSinceEpoch(
         now.millisecondsSinceEpoch - 1000 * 60 * 60 * 24);
-
-    // 删除老的alerts
-    await appDB.alertDao.deleteAlertsBefore(before.millisecondsSinceEpoch);
     // 历史7天
     final lists =
         await appDB.alertDao.getAlertsFromNoImg(before.millisecondsSinceEpoch);
@@ -46,6 +53,7 @@ class AlertsModel {
 
   Future<void> close() async {
     _timer?.cancel();
+    _timerDel?.cancel();
   }
 
   Future<List<Alerts>> getAlertsFromTo(int st, int ed) async {
@@ -60,6 +68,10 @@ class AlertsModel {
             .getAlertsInCamsFrom(cams.map((e) => e.id!).toList(), st, ed);
       }
     }
+  }
+
+  Future<Alerts?> getFullAlerts(int id) async {
+    return appDB.alertDao.getFullAlertsById(id);
   }
 
   Future<Alerts?> trigger(
@@ -87,43 +99,47 @@ class AlertsModel {
     // check alerts
     var p = kNativeAlertApi.get_latest_alert_msg();
     while (p.address != 0) {
-      p.ref.img;
-      final imgBuf = p.ref.img.cast<Uint8>().asTypedList(p.ref.img_size);
       final cams = await appDB.camDao.getCamById(p.ref.cam_id);
-      await Future.microtask(() {
-        final completer = Completer();
+      await Future.microtask(() async {
         try {
-          ui.decodeImageFromPixels(
-              imgBuf, p.ref.width, p.ref.height, ui.PixelFormat.bgra8888,
-              (img) async {
-            if (cams.isNotEmpty) {
-              final cam = cams.first;
-              final rooms = await appDB.roomDao.getRoomById(cam.roomId);
-              if (rooms.isNotEmpty) {
-                final png =
-                    await img.toByteData(format: ui.ImageByteFormat.png);
-                if (png == null) {
-                  return;
-                }
-                final room = rooms.first;
-                Alerts newAlerts = Alerts(
-                    null,
-                    DateTime.now().millisecondsSinceEpoch,
-                    png.buffer.asUint8List(),
-                    p.ref.cam_id,
-                    p.ref.alert_type,
-                    cam.name,
-                    room.id!,
-                    room.roomName);
-                await appDB.alertDao.insertAlert(newAlerts);
-              }
+          final pixels = image.Image(
+            width: p.ref.width,
+            height: p.ref.height,
+            numChannels: 4,
+          );
+          final c = p.ref.img.cast<Uint8>();
+          for (final pixel in pixels) {
+            final x = pixel.x;
+            final y = pixel.y;
+            final i = (y * p.ref.stride) + (x * 4);
+            pixel.b = c[i];
+            pixel.g = c[i + 1];
+            pixel.r = c[i + 2];
+            pixel.a = c[i + 3];
+          }
+          final jpg = image.encodeJpg(
+              image.copyResize(pixels, width: kAlertWidth),
+              quality: 60);
+          if (cams.isNotEmpty) {
+            final cam = cams.first;
+            final rooms = await appDB.roomDao.getRoomById(cam.roomId);
+            if (rooms.isNotEmpty) {
+              final room = rooms.first;
+              Alerts newAlerts = Alerts(
+                  null,
+                  DateTime.now().millisecondsSinceEpoch,
+                  jpg.buffer.asUint8List(),
+                  p.ref.cam_id,
+                  p.ref.alert_type,
+                  cam.name,
+                  room.id!,
+                  room.roomName);
+              await appDB.alertDao.insertAlert(newAlerts);
             }
-            completer.complete();
-          });
+          }
         } catch (e) {
-          completer.completeError(e);
+          print(e);
         }
-        return completer.future;
       });
       kNativeAlertApi.free_alert(p);
       p = kNativeAlertApi.get_latest_alert_msg();
