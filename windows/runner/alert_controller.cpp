@@ -4,6 +4,11 @@
 #include <cstdlib>
 #include <thread>
 
+#include <opencv2/core/core.hpp>
+#include <onnxruntime/onnxruntime_c_api.h>
+#include <opencv2/opencv.hpp>
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -12,7 +17,9 @@ Alert* tmp_alert = nullptr;
 
 DllExport void alert_init() {
   // 获取onnx runtime的版本
-  // auto version = Ort::GetVersionString();
+  auto version = ORT_API_VERSION;
+  printf("onnx runtime version %d\n", version);
+  printf("cv version %s\n", CV_VERSION);
 }
 
 /// 由Flutter主动调用，用于判断是否准备好
@@ -22,6 +29,7 @@ DllExport int is_alert_ready() { return 1; }
 /// 返回0表示成功。
 /// 注意：bgra_data生命周期由Flutter管理，异步的话请做拷贝
 DllExport int post_alert_img(PredictBean* bean) {
+  Mat img;
   // for debug, please impl this.
   if (tmp_alert == nullptr) {
     tmp_alert = (Alert*)malloc(sizeof(Alert));

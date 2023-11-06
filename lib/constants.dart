@@ -15,7 +15,7 @@ const kDbName = 'cam.db';
 const kHeaderHeight = 35.0;
 const kDefaultName = '监控平台';
 const kKeepDays = 15;
-const kAlertIntervalMs = 500;
+const kAlertIntervalMs = 5000;
 
 const kBgColor = Color(0xFFEFF4FA);
 const kRadius = 8.0;

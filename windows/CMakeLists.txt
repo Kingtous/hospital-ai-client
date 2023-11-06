@@ -100,6 +100,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/bins" DESTINATION "${BUILD_BUNDLE
 # 拷贝SQLite3.dll
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../deps/sqlite3.dll" DESTINATION "${BUILD_BUNDLE_DIR}"
   COMPONENT Runtime)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/libs/opencv_world481.dll" DESTINATION "${BUILD_BUNDLE_DIR}"
+  COMPONENT Runtime)
 
 # Install the AOT library on non-Debug builds only.
 install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_DATA_DIR}"
