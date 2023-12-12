@@ -20,7 +20,8 @@ import 'package:hospital_ai_client/pages/users/manage.dart';
 import 'package:window_manager/window_manager.dart';
 
 class AppHeader extends StatefulWidget {
-  const AppHeader({super.key});
+  final bool isLanding;
+  const AppHeader({super.key, this.isLanding = false});
 
   @override
   State<AppHeader> createState() => _AppHeaderState();
@@ -52,6 +53,7 @@ class _AppHeaderState extends State<AppHeader> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
+                    if (!widget.isLanding)
                     const AppHeaderAvatar(),
                     WindowCaptionButton.minimize(
                       brightness: Brightness.dark,
@@ -153,7 +155,8 @@ class _AppHeaderAvatarState extends State<AppHeaderAvatar> {
         builder: (context) => MenuFlyout(
               items: [
                 MenuFlyoutItem(text: const Text('登出'), onPressed: _logout),
-                MenuFlyoutItem(text: const Text('修改密码'), onPressed: _changePassword)
+                MenuFlyoutItem(
+                    text: const Text('修改密码'), onPressed: _changePassword)
               ],
             ));
   }

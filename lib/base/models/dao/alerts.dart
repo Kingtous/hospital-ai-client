@@ -39,6 +39,8 @@ extension ToString on AlertType {
       parentColumns: ['id'],
       entity: Cam,
       onDelete: ForeignKeyAction.cascade)
+], indices: [
+  Index(value: ['create_at'], name: 'index_time')
 ])
 class Alerts {
   @PrimaryKey(autoGenerate: true)
@@ -78,10 +80,10 @@ abstract class AlertDao {
   Future<int> deleteAlert(Alerts a);
 
   @Query(
-      'SELECT * FROM alerts WHERE create_at BETWEEN :st AND :ed ORDER BY create_at DESC')
+      'SELECT * FROM alerts WHERE create_at BETWEEN :st AND :ed')
   Future<List<Alerts>> getAlertsFromTo(int st, int ed);
 
-  @Query('SELECT * FROM alerts WHERE create_at >= :st ORDER BY create_at DESC')
+  @Query('SELECT * FROM alerts WHERE create_at >= :st')
   Future<List<Alerts>> getAlertsFrom(int st);
 
   
@@ -107,21 +109,21 @@ abstract class AlertDao {
   // final String roomName;
 
   @Query(
-      'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= :st ORDER BY create_at DESC')
+      'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= :st')
   Future<List<Alerts>> getAlertsFromNoImg(int st);
 
   @Query('DELETE FROM alerts WHERE create_at <= :st')
   Future<int?> deleteAlertsBefore(int st);
 
   @Query(
-      'SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams)) ORDER BY create_at DESC')
+      'SELECT * FROM alerts WHERE (create_at BETWEEN :st AND :ed) AND (cam_id IN (:cams))')
   Future<List<Alerts>> getAlertsInCamsFrom(List<int> cams, int st, int ed);
 
   @Query("DELETE FROM alerts WHERE create_at < datetime('now', '-15 days')")
   Future<int?> deleteOldAlerts();
 
   @Query(
-      'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1 ORDER BY create_at DESC')
+      'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1')
   Future<List<Alerts>> getAlertsTypeNoImg();
 
   @Query('select * from alerts where id = :id')

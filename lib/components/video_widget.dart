@@ -36,12 +36,11 @@ class _VideoLiveState extends State<VideoLive> {
     final player = videoModel.get(widget.cam);
     if (player != null && player is CanPlayViaPlayer) {
       isExist = true;
-      controller = widget.type == LiveType.thumbnail
-          ? player.thumbNailController
-          : VideoController(player.player,
-              configuration: VideoControllerConfiguration(
-                  height: widget.height?.toInt(),
-                  width: widget.width?.toInt()));
+      controller = VideoController(player.player,
+          configuration: VideoControllerConfiguration(
+              hwdec: widget.type == LiveType.thumbnail ? "no" : null,
+              enableHardwareAcceleration:
+                  widget.type == LiveType.thumbnail ? false : true));
       Future.delayed(Duration.zero, () async {
         if (player is RTSPCamera) {
           if (!player.inited) {
@@ -92,8 +91,8 @@ class _VideoLiveState extends State<VideoLive> {
                 height: widget.height,
                 child: Video(
                   controller: controller,
-                  width: widget.width,
-                  height: widget.height,
+                  // width: widget.width,
+                  // height: widget.height,
                   // 不用开启
                   wakelock: false,
                   pauseUponEnteringBackgroundMode: true,

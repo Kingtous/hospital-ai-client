@@ -2,10 +2,12 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:get/state_manager.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/components/header.dart';
+import 'package:hospital_ai_client/constants.dart';
 import 'package:hospital_ai_client/pages/devices/devices.dart';
 import 'package:hospital_ai_client/pages/devices/roles.dart';
 import 'package:hospital_ai_client/pages/record/record_history.dart';
 import 'package:hospital_ai_client/pages/users/manage.dart';
+import 'package:hospital_ai_client/pages/video/about.dart';
 import 'package:hospital_ai_client/pages/video/video.dart';
 
 class HomePage extends StatefulWidget {
@@ -22,8 +24,12 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Row(
-          children: [Expanded(child: AppHeader())],
+        Obx(
+          () => kIsFullScreen.value
+              ? const Offstage()
+              : const Row(
+                  children: [Expanded(child: AppHeader())],
+                ),
         ),
         Expanded(
           child: Obx(
@@ -42,7 +48,6 @@ class _HomePageState extends State<HomePage> {
                         body: const VideoHomePage(),
                         title: const Text(
                           '监控大屏',
-                          style: TextStyle(color: Colors.white),
                         )),
                     if (userModel.isAdmin)
                     PaneItemSeparator(),
@@ -66,6 +71,11 @@ class _HomePageState extends State<HomePage> {
                           icon: const Icon(FluentIcons.video),
                           body: const RecordHistoryPage(),
                           title: const Text('视频录制')),
+                    if (userModel.isAdmin)
+                      PaneItem(
+                          icon: const Icon(FluentIcons.info),
+                          body: const AboutPage(),
+                          title: const Text('关于')),
                   ]),
               // content: VideoHomePage(),
             ),

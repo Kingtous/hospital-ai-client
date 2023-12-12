@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
@@ -15,6 +16,7 @@ import 'package:hospital_ai_client/base/models/video_model.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 
 final it = GetIt.instance;
 
@@ -23,6 +25,16 @@ Future<void> setupDependencies() async {
     await windowManager.ensureInitialized();
     windowManager.setMinimumSize(const Size(1000, 720));
     windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+  }
+}
+
+Future<void> setupDependenciesInApp() async {
+  // fs
+  final d = await path_provider.getApplicationDocumentsDirectory();
+  final dir = Directory.fromUri(
+      Uri.file('${d.path}\\hospital-client-pc\\', windows: true));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
   }
   final sp = await SharedPreferences.getInstance();
   final db = await $FloorAppDB
@@ -50,7 +62,9 @@ Future<void> setupDependencies() async {
   it.registerSingleton<BaseFilePicker>(FilePickerImpl());
   it.registerSingleton<RecordModel>(RecordModel());
   // init
-  kNativeAlertApi.alert_init();
+  if (kAlertSupported) {
+    kNativeAlertApi.alert_init();
+  }
   await videoModel.init();
   unawaited(recordModel.refresh());
 }

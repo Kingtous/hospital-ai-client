@@ -3,19 +3,27 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart';
 import 'package:hospital_ai_client/base/models/dao/alerts.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/generated_bindings.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
-const kDbVersion = 2;
+const kDbVersion = 3;
 const kDefaultAdminName = 'admin';
 const kDefaultAdminPassword = 'admin';
 const kDbName = 'cam.db';
 const kHeaderHeight = 35.0;
 const kDefaultName = '监控平台';
 const kKeepDays = 15;
-const kAlertIntervalMs = 5000;
+// Debug模式10s，Release模式1分钟
+const kAlertIntervalMs = kDebugMode ? 10000 : 1000 * 60 * 1;
+// 记得改db.g.dart
+var kdbPath = "";
+bool get kAlertSupported => Platform.isWindows;
 
 const kBgColor = Color(0xFFEFF4FA);
 const kRadius = 8.0;
@@ -28,6 +36,36 @@ const kContentDialogStyle = ContentDialogThemeData(
     bodyPadding: EdgeInsets.zero,
     decoration: BoxDecoration(color: Colors.transparent));
 final kNativeAlertApi = NativeLibrary(DynamicLibrary.process());
+final kLogger = Logger();
+
+void kSentryLogger(
+  SentryLevel level,
+  String message, {
+  String? logger,
+  Object? exception,
+  StackTrace? stackTrace,
+}) {
+  if (kDebugMode) {
+    switch (level) {
+      case SentryLevel.debug:
+        kLogger.d(message);
+        break;
+      case SentryLevel.info:
+        kLogger.i(message);
+        break;
+      case SentryLevel.fatal:
+        kLogger.f(message);
+        break;
+      case SentryLevel.warning:
+        kLogger.w(message);
+        break;
+      default:
+        kLogger.i(message);
+    }
+  }
+}
+
+final kIsFullScreen = false.obs;
 
 /// UI
 Widget get bgImage => SizedBox(
@@ -76,8 +114,20 @@ String getRtSpStreamUrl(Cam cam, {bool mainStream = true}) {
   return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}${mainStream ? '01' : '02'}";
 }
 
+String paddingNum(int z) {
+  if (z <= 10) {
+    return "0$z";
+  } else {
+    return "$z";
+  }
+}
+
+String toPlaybackDate(DateTime dt) {
+  return "${dt.year}${paddingNum(dt.month)}${paddingNum(dt.day)}T${paddingNum(dt.hour)}${paddingNum(dt.minute)}${paddingNum(dt.second)}Z";
+}
+
 String getRtspBackTrackUrl(Cam cam, DateTime start, DateTime end) {
-  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}02?starttime=${start.toUtc().toIso8601String()}&endtime=${end.toUtc().toIso8601String()}";
+  return "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Tracks/${cam.channelId}01?starttime=${toPlaybackDate(start)}&endtime=${toPlaybackDate(end)}";
 }
 
 final kMockRealtimeAlert = <Alerts>[
@@ -98,8 +148,12 @@ final kMockRealtimeAlert = <Alerts>[
 ];
 
 Future<Directory> getRecorderHistoryFolder() async {
-  return Directory.fromUri(Uri.file(
+  final dir = Directory.fromUri(Uri.file(
       "${(await getApplicationDocumentsDirectory()).path}/AI-RECORDER"));
+  if (!dir.existsSync()) {
+    dir.createSync(recursive: true);
+  }
+  return dir;
 }
 
 List<int> getRtLines(List<Alerts> alerts) {

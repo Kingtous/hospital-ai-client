@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:floor/floor.dart';
 import 'package:hospital_ai_client/base/models/dao/alerts.dart';
@@ -21,6 +22,7 @@ import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/base/models/dao/user.dart';
 import 'package:hospital_ai_client/constants.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:sqflite/sqflite.dart' as sqflite;
 
 part 'db.g.dart';
@@ -49,9 +51,12 @@ abstract class AppDB extends FloorDatabase {
 }
 
 final kMigrations = <Migration>[
-  Migration(1, kDbVersion, (db) async {
+  Migration(1, 2, (db) async {
     await db.execute('ALTER TABLE alerts ADD COLUMN room_id INTEGER;');
     await db.execute('ALTER TABLE alerts ADD COLUMN cam_name TEXT;');
     await db.execute('ALTER TABLE alerts ADD COLUMN room_name TEXT;');
-  })
+  }),
+  Migration(2, kDbVersion, (db) async {
+    await db.execute('CREATE INDEX index_time on alerts (create_at);');
+  }),
 ];

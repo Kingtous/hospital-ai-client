@@ -100,15 +100,15 @@ class BrnProgressBarChartState extends State<BarChart> {
       double width = MediaQuery.of(context).size.width;
       return Size(width, height);
     } else if (LocalBarChartStyle.vertical == widget.barChartStyle) {
-      double width = widget.xAxis.leadingSpace +
-          (widget.singleBarWidth * barBundleCount + widget.barGroupSpace) *
-              numberOfBars;
+      // double width = widget.xAxis.leadingSpace +
+      //     (widget.singleBarWidth * barBundleCount + widget.barGroupSpace) *
+      //         numberOfBars;
 
-      /// 有 y 轴需要加上 y 轴占用的宽度
-      if (widget.yAxis.axisItemList.isNotEmpty) {
-        width += LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
-      }
-      print(widget.minWidth.toString()+"--------"+width.toString());
+      // /// 有 y 轴需要加上 y 轴占用的宽度
+      // if (widget.yAxis.axisItemList.isNotEmpty) {
+      //   width += LocalBrnProgressBarChartPainter.maxYAxisWidth(widget.yAxis);
+      // }
+      // print(widget.minWidth.toString()+"--------"+width.toString());
       // return Size(
       //     widget.minWidth > width ? widget.minWidth-15 : width-15, widget.height);
       return Size(

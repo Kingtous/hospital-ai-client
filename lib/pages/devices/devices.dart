@@ -322,6 +322,11 @@ class _CameraTableState extends State<CameraTable> {
     });
   }
 
+  _updateDevice(Cam cam) async {
+    await RTSPCamera.updateDevice(context, cam);
+    setState(() {});
+  }
+
   Widget _buildTable(List<Cam> list) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,6 +377,13 @@ class _CameraTableState extends State<CameraTable> {
                       ),
                       Row(
                         children: [
+                          FilledButton(
+                            onPressed: () => _updateDevice(e),
+                            style: ButtonStyle(
+                                backgroundColor: ButtonState.all(Colors.blue)),
+                            child: const Text('更新'),
+                          ),
+                          SizedBox(width: 10,),
                           FilledButton(
                             onPressed: () => _toggleDelete(e),
                             style: ButtonStyle(

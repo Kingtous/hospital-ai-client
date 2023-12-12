@@ -28,6 +28,10 @@ abstract class UserDao {
   @Query('select * from users where phone = :phone')
   Future<User?> getUserByPhone(String phone);
 
+  @Query("SELECT * FROM users WHERE user_name LIKE '%' || :text || '%' OR phone LIKE '%' || :text || '%'")
+  Future<List<User>> getAllUserByUserNameOrPhone(String text);
+
+
   @update
   Future<void> updateUser(User user);
 

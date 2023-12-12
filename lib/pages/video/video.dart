@@ -1,18 +1,22 @@
 import 'dart:collection';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/material.dart' hide Colors, Tooltip, showDialog;
 import 'package:get/get.dart';
 import 'package:graphic/graphic.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/components/charts.dart';
+import 'package:hospital_ai_client/components/clock.dart';
 import 'package:hospital_ai_client/components/table.dart';
 import 'package:hospital_ai_client/components/video_widget.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:hospital_ai_client/components/bar_chart.dart';
 import 'package:hospital_ai_client/pages/users/manage.dart';
+import 'package:window_manager/window_manager.dart';
 
 import '../../base/models/dao/alerts.dart';
 import '../../components/local_chart_axis.dart';
@@ -55,6 +59,37 @@ class _VideoHomePageState extends State<VideoHomePage> {
           height: 88,
           width: double.infinity,
           fit: BoxFit.fill,
+        ),
+        Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const HomeDigitalClock(),
+                const SizedBox(
+                  width: 16.0,
+                ),
+                MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                      onTap: () async {
+                        if (await windowManager.isFullScreen()) {
+                          windowManager.setFullScreen(false);
+                          kIsFullScreen.value = false;
+                        } else {
+                          windowManager.setFullScreen(true);
+                          kIsFullScreen.value = true;
+                        }
+                      },
+                      child: Obx(() => kIsFullScreen.value
+                          ? const Icon(FluentIcons.back_to_window)
+                          : const Icon(FluentIcons.full_screen))),
+                ),
+              ],
+            ),
+          ),
         ),
         Align(
             alignment: AlignmentDirectional.bottomStart,
@@ -165,7 +200,7 @@ class _VideoHomePageState extends State<VideoHomePage> {
                                                 if (pages > 0)
                                                   Obx(
                                                     () => Text(
-                                                      '第${index.value + 1}/$pages页',
+                                                      '${index.value + 1}/$pages',
                                                       style: TextStyle(
                                                           color: Colors.blue),
                                                     ),
@@ -250,7 +285,8 @@ class _AlertStatTablesState extends State<AlertStatTables> {
       content: Obx(
         () => ListView.builder(
           itemBuilder: ((context, index) {
-            final item = alertsModel.rtAlertsRx[index];
+            final item = alertsModel
+                .rtAlertsRx[alertsModel.rtAlertsRx.length - index - 1];
             final dt = DateTime.fromMillisecondsSinceEpoch(item.createAt);
             return Container(
               height: 40,
@@ -269,7 +305,7 @@ class _AlertStatTablesState extends State<AlertStatTables> {
                     width: 14.0,
                   ),
                   Text(
-                    '${item.roomName}-${item.camName}',
+                    '${item.camName}',
                     style: TextStyle(color: Color(0xFF415B73)),
                   ),
                   SizedBox(
@@ -282,7 +318,7 @@ class _AlertStatTablesState extends State<AlertStatTables> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => _onToggleAlertDetail(item),
+                    onTap: () => _onToggleAlertDetail(context, item),
                     child: MouseRegion(
                       cursor: SystemMouseCursors.click,
                       child: Text(
@@ -305,18 +341,17 @@ class _AlertStatTablesState extends State<AlertStatTables> {
     );
   }
 
-  _onToggleAlertDetail(Alerts alert) {
-    showDialog(
-        context: context,
-        builder: (context) => AlertDetailDialog(id: alert.id!));
-  }
-
   Widget _buildHistoryAlertTable() {
     return const Frame(
       title: Text('历史列表'),
       content: HistoryAlertTable(),
     );
   }
+}
+
+_onToggleAlertDetail(BuildContext context, Alerts alert) {
+  showDialog(
+      context: context, builder: (context) => AlertDetailDialog(id: alert.id!));
 }
 
 class HistoryAlertTable extends StatefulWidget {
@@ -366,42 +401,49 @@ class _HistoryAlertTableState extends State<HistoryAlertTable> {
               itemBuilder: (context, index) {
                 var alert = alertsModel.historyAlertsRx[index];
                 var ca = DateTime.fromMillisecondsSinceEpoch(alert.createAt);
-                return Column(
-                  children: [
-                    Container(
-                      height: 39,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              AlertType.values[alert.alertType].toHumanString(),
-                              textAlign: TextAlign.center,
-                              style: bodyStyle,
-                            ),
+                return GestureDetector(
+                  onTap: () => _onToggleAlertDetail(context, alert),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 39,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  AlertType.values[alert.alertType]
+                                      .toHumanString(),
+                                  textAlign: TextAlign.center,
+                                  style: bodyStyle,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${alert.camName}',
+                                  textAlign: TextAlign.center,
+                                  style: bodyStyle,
+                                ),
+                              ),
+                              Expanded(
+                                child: Text(
+                                  '${ca.year}-${ca.month}-${ca.day} ${ca.hour}:${ca.minute}:${ca.second}',
+                                  textAlign: TextAlign.center,
+                                  style: bodyStyle,
+                                ),
+                              ),
+                            ],
                           ),
-                          Expanded(
-                            child: Text(
-                              '${alert.roomName}',
-                              textAlign: TextAlign.center,
-                              style: bodyStyle,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              '${ca.year}-${ca.month}-${ca.day}',
-                              textAlign: TextAlign.center,
-                              style: bodyStyle,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 16.0),
+                          height: 1,
+                          color: Color(0xFF129BFF),
+                        )
+                      ],
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16.0),
-                      height: 1,
-                      color: Color(0xFF129BFF),
-                    )
-                  ],
+                  ),
                 );
               },
               itemExtent: 40,
@@ -449,6 +491,9 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
             child: FutureBuilder(
               future: videoModel.getAllowedCams(),
               builder: (context, allowedCams) {
+                if (!allowedCams.hasData) {
+                  return Offstage();
+                }
                 return SizedBox(
                     width: 400, child: _buildCamAlertTable(allowedCams.data!));
               },
@@ -464,7 +509,7 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
     return Obx(() {
       ///对names进行初始化
       List<String> names = [];
-      for(int i=0;i<cams.length;i++){
+      for (int i = 0; i < cams.length; i++) {
         names.add(cams[i].name);
       }
       // final li = kMockAlertsData.toList();
@@ -477,24 +522,28 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       Map<String, int> temp_res = {};
 
       ///初始化值为0
-      for (int i = 0; i < 5 && i < names.length; i++) {
+      for(int i = 0; i<names.length; i++){
         temp_res[names[i]] = 0;
       }
 
       ///对不同名称的摄像头报警数量进行统计
       for (int i = 0; i < alerts.length; i++) {
-        if(temp_res.containsKey(alerts[i].camName)){
-          temp_res[alerts[i].camName] = temp_res[alerts[i].camName]! + 1;
-        }
+        temp_res[alerts[i].camName] = temp_res[alerts[i].camName]! + 1;
       }
+
+      // 将temp_res的键值对转换为List
+      List<MapEntry<String, int>> entries = temp_res.entries.toList();
+
+      // 使用sort方法对List进行排序，根据值（entry.value）进行比较
+      entries.sort((a, b) => b.value.compareTo(a.value));
 
       ///最多统计五个数量
       int index_sum = names.length <= 5 ? names.length : 5;
       int cur_index = 0;
       List<int> alertsData = [];
 
-      ///将前五个画面的数量放入指定集合当中
-      for (var entry in temp_res.entries) {
+      ///将数量最多的前五个画面放入指定集合当中
+      for (var entry in entries) {
         if (cur_index >= index_sum) {
           break;
         }
@@ -507,13 +556,14 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
       // List<String> AlertsTextData = ["画面一", "画面二", "画面三", "画面四", "画面五"];
       List<String> li = [];
       for (int i = 0; i < alertsData.length; i++) {
-        li.add(names[i]);
+        li.add(entries[i].key);
       }
 
       ///x轴文字
+      ///不显示
       List<LocalAxisItem> xItems = [];
       for (int i = 0; i < alertsData.length; i++) {
-        xItems.add(LocalAxisItem(showText: names[i]));
+        xItems.add(LocalAxisItem(showText: ''));
       }
 
       ///y轴最大值，设置最小值是10，如果小于10，则等于10
@@ -564,11 +614,16 @@ class _AlertStatChartsState extends State<AlertStatCharts> {
                                 width: 6.0,
                               ),
                               Expanded(
-                                child: Text(
-                                  '${e}',
-                                  style: TextStyle(
-                                      color: Color(0xFF415B73), fontSize: 12),
-                                  overflow: TextOverflow.clip,
+                                child: Tooltip(
+                                  message: e,  // 设置工具提示的完整文本
+                                  child: Text(
+                                    '${e.length <= 4 ? e : e.substring(0, 4) + "..." }',
+                                    style: TextStyle(
+                                      color: Color(0xFF415B73),
+                                      fontSize: 12,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                               )
                             ],
@@ -1063,7 +1118,18 @@ class VideoLiveMain extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ///气泡上的完整文字
+    String? res_name = this.e?.name;
     var e = this.e;
+    // e?.name = e.name.length > 4 ? e.name.substring(0,4):e.name;
+    ///显示出来的文字
+    String truncatedName = res_name == null
+        ? ""
+        : (res_name.length > 4 ? res_name.substring(0, 4) : res_name);
+
+    ///若大于4，则有"..."
+    String name_dot =
+        res_name == null ? "" : (res_name.length > 4 ? "..." : "");
     return e == null
         ? _buildPlaceHolder()
         : Row(
@@ -1078,13 +1144,28 @@ class VideoLiveMain extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    ...e.name.codeUnits.map((code) => Text(
-                          String.fromCharCode(code),
-                          style: const TextStyle(
-                              fontSize: 16.0,
-                              color: Color(0xFF5292CA),
-                              fontWeight: FontWeight.w400),
-                        ))
+                    Tooltip(
+                        message: res_name,
+                        child: Column(
+                          children: truncatedName.codeUnits
+                              .map((code) => Text(
+                                    String.fromCharCode(code),
+                                    style: const TextStyle(
+                                      fontSize: 16.0,
+                                      color: Color(0xFF5292CA),
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ))
+                              .toList(),
+                        )),
+                    Text(
+                      name_dot,
+                      style: const TextStyle(
+                        fontSize: 16.0,
+                        color: Color(0xFF5292CA),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    )
                   ],
                 ),
               ),

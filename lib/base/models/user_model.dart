@@ -77,6 +77,12 @@ class UserModel {
     return user..id = userId;
   }
 
+  Future<List<User>> searchByNameOrPhone(String text) async{
+    List<User> res = [];
+    res.addAll(await appDB.userDao.getAllUserByUserNameOrPhone(text) );
+    return res;
+  }
+
   Future<void> updateUser(User user) async {
     await appDB.userDao.updateUser(user);
   }

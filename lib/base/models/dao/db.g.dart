@@ -41,12 +41,15 @@ class _$AppDBBuilder {
 
   /// Creates the database and initializes it.
   Future<AppDB> build() async {
-    final path = name != null
-        ? await sqfliteDatabaseFactory.getDatabasePath(name!)
-        : ':memory:';
+    // final path = name != null
+    //     ? await sqfliteDatabaseFactory.getDatabasePath(name!)
+    //     : ':memory:';
+    final d = await path_provider.getApplicationDocumentsDirectory();
+    final p = '${d.path}\\hospital-client-pc\\cam.db';
     final database = _$AppDB();
+    kdbPath = p;
     database.database = await database.open(
-      path,
+      p,
       _migrations,
       _callback,
     );
@@ -716,6 +719,14 @@ class _$UserDao extends UserDao {
   }
 
   @override
+  Future<List<User>> getAllUserByUserNameOrPhone(String text) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM users WHERE user_name LIKE \'%\' || ?1 || \'%\' OR phone LIKE \'%\' || ?1 || \'%\'',
+        mapper: (Map<String, Object?> row) => User(row['id'] as int?, row['user_name'] as String, row['phone'] as String, row['pwd_md5'] as String),
+        arguments: [text]);
+  }
+
+  @override
   Future<int> createUser(User user) {
     return _userInsertionAdapter.insertAndReturnId(
         user, OnConflictStrategy.abort);
@@ -913,15 +924,22 @@ class _$AlertDao extends AlertDao {
     int ed,
   ) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM alerts WHERE create_at BETWEEN ?1 AND ?2 ORDER BY create_at DESC',
-        mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
+        'SELECT * FROM alerts WHERE create_at BETWEEN ?1 AND ?2',
+        mapper: (Map<String, Object?> row) => Alerts(
+            row['id'] as int?,
+            row['create_at'] as int,
+            row['img'] as Uint8List?,
+            row['cam_id'] as int,
+            row['alert_type'] as int,
+            row['cam_name'] as String,
+            row['room_id'] as int,
+            row['room_name'] as String),
         arguments: [st, ed]);
   }
 
   @override
   Future<List<Alerts>> getAlertsFrom(int st) async {
-    return _queryAdapter.queryList(
-        'SELECT * FROM alerts WHERE create_at >= ?1 ORDER BY create_at DESC',
+    return _queryAdapter.queryList('SELECT * FROM alerts WHERE create_at >= ?1',
         mapper: (Map<String, Object?> row) => Alerts(
             row['id'] as int?,
             row['create_at'] as int,
@@ -937,7 +955,7 @@ class _$AlertDao extends AlertDao {
   @override
   Future<List<Alerts>> getAlertsFromNoImg(int st) async {
     return _queryAdapter.queryList(
-        'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= ?1 ORDER BY create_at DESC',
+        'SELECT create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts WHERE create_at >= ?1',
         mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
         arguments: [st]);
   }
@@ -962,7 +980,7 @@ class _$AlertDao extends AlertDao {
     return _queryAdapter.queryList(
         'SELECT * FROM alerts WHERE (create_at BETWEEN ?1 AND ?2) AND (cam_id IN (' +
             _sqliteVariablesForCams +
-            ')) ORDER BY create_at DESC',
+            '))',
         mapper: (Map<String, Object?> row) => Alerts(row['id'] as int?, row['create_at'] as int, row['img'] as Uint8List?, row['cam_id'] as int, row['alert_type'] as int, row['cam_name'] as String, row['room_id'] as int, row['room_name'] as String),
         arguments: [st, ed, ...cams]);
   }
@@ -977,7 +995,7 @@ class _$AlertDao extends AlertDao {
   @override
   Future<List<Alerts>> getAlertsTypeNoImg() async {
     return _queryAdapter.queryList(
-        'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1 ORDER BY create_at DESC',
+        'select create_at, id, alert_type, cam_id, cam_name, room_id, room_name FROM alerts where alert_type = 1',
         mapper: (Map<String, Object?> row) => Alerts(
             row['id'] as int?,
             row['create_at'] as int,

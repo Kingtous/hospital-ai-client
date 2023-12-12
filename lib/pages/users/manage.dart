@@ -16,8 +16,11 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:bruno/bruno.dart';
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 // import 'package:flutter/material.dart' hide FilledButton, ButtonStyle;
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
 import 'package:hospital_ai_client/base/models/dao/alerts.dart';
@@ -76,6 +79,9 @@ class UserTable extends StatefulWidget {
 
 class _UserTableState extends State<UserTable> {
   List<String> kTableColumnNames = ['编号', '姓名', '手机号', '角色', '操作'];
+  String inputText = "";
+  List<User> selectedUsers = [];
+  bool flag = true;
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +93,11 @@ class _UserTableState extends State<UserTable> {
               child: ProgressRing(),
             );
           }
-          final users = data.data!;
+          if (flag) {
+            selectedUsers = data.data!;
+            flag = false;
+          }
+
           return Column(
             children: [
               Container(
@@ -118,13 +128,49 @@ class _UserTableState extends State<UserTable> {
                     const SizedBox(
                       width: 20.0,
                     ),
-                    SizedBox(
-                        width: 320,
-                        child: TextBox(
-                          prefix: const Icon(FluentIcons.search)
-                              .marginOnly(left: 8.0),
-                          placeholder: '请输入员工姓名、登录账号进行搜索',
-                        ))
+                    RawKeyboardListener(
+                      focusNode: FocusNode(),
+                      onKey: (RawKeyEvent event) {
+                        if (event.logicalKey == LogicalKeyboardKey.enter) {
+                          _selectUsers(inputText).then((value) {
+                            setState(() {
+                              selectedUsers = value;
+                            });
+                          });
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          SizedBox(
+                              width: 320,
+                              child: TextBox(
+                                prefix: const Icon(FluentIcons.search)
+                                    .marginOnly(left: 8.0),
+                                placeholder: '请输入员工姓名、登录账号进行搜索',
+                                controller:
+                                    TextEditingController(text: inputText),
+                                onChanged: (s) {
+                                  inputText = s;
+                                },
+                              )),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              inputText = '';
+                              setState(() {
+                                userModel
+                                    .getAllUsers()
+                                    .then((value) => selectedUsers = value);
+                              });
+                              print("object");
+                            },
+                            child: Icon(FluentIcons.delete),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -135,7 +181,7 @@ class _UserTableState extends State<UserTable> {
                       borderRadius: BorderRadius.circular(8.0),
                       color: Colors.white),
                   margin: const EdgeInsets.only(top: 16.0),
-                  child: buildUsers(users),
+                  child: buildUsers(selectedUsers),
                 ),
               )
             ],
@@ -160,6 +206,12 @@ class _UserTableState extends State<UserTable> {
                 }
               },
             ));
+  }
+
+  Future<List<User>> _selectUsers(String text) async {
+    List<User> res = await userModel.searchByNameOrPhone(text);
+    print(selectedUsers.length);
+    return res;
   }
 
   void _onEditPassword() {
@@ -549,7 +601,7 @@ class AlertDetailDialog extends StatelessWidget {
                     final t =
                         DateTime.fromMillisecondsSinceEpoch(alert.createAt);
                     return Padding(
-                      padding: const EdgeInsets.all(56.0),
+                      padding: const EdgeInsets.all(30.0),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -577,7 +629,7 @@ class AlertDetailDialog extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text('报警科室：${alert.roomName}',
+                                Text('报警科室：${alert.camName}',
                                     style: kTextStyle),
                                 SizedBox(
                                   height: 16.0,
@@ -596,6 +648,33 @@ class AlertDetailDialog extends StatelessWidget {
                                 Text(
                                     '报警时间：${t.year}年${t.month}年${t.day}日 ${t.hour}时${t.minute}分${t.second}秒',
                                     style: kTextStyle),
+                                SizedBox(
+                                  height: 8.0,
+                                ),
+                                Row(children: [
+                                  Button(
+                                      child: Text('导出'),
+                                      onPressed: () {
+                                        if (alert.img == null) {
+                                          return;
+                                        }
+                                        filePicker
+                                            .saveFile(
+                                                fileName:
+                                                    "${alert.camName}-${AlertType.values[alert.alertType].toHumanString()}-${t.year}年${t.month}年${t.day}日 ${t.hour}时${t.minute}分${t.second}秒.png")
+                                            .then((path) {
+                                          if (path == null) {
+                                            return;
+                                          }
+                                          final f = File(path);
+                                          if (!f.existsSync()) {
+                                            f.createSync(recursive: true);
+                                          }
+                                          f.writeAsBytes(alert.img!);
+                                          BrnToast.show('已保存至${path}', context);
+                                        });
+                                      })
+                                ])
                               ],
                             ),
                           )

@@ -14,6 +14,7 @@
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/material.dart' show Icons;
+import 'package:hospital_ai_client/constants.dart';
 
 class Frame extends StatefulWidget {
   final Widget title;
@@ -60,13 +61,19 @@ class _FrameState extends State<Frame> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: const MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: Icon(Icons.close)))
+                    Offstage(
+                      offstage: ModalRoute.of(context)?.settings.name == '' ||
+                          ModalRoute.of(context)?.settings.name == 'home',
+                      child: GestureDetector(
+                          onTap: () {
+                            Navigator.pop(context);
+                            // logger.d(
+                            // 'pop: current is ${ModalRoute.of(context)?.settings.name}');
+                          },
+                          child: const MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: Icon(Icons.close))),
+                    )
                   ],
                 ),
               )

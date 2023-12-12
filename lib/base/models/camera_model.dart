@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:ffi' hide Size;
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:ffi/ffi.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hospital_ai_client/base/interfaces/interfaces.dart';
+import 'package:hospital_ai_client/base/models/alerts_model.dart';
 import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/components/table.dart';
@@ -17,7 +19,30 @@ import 'package:media_kit_video/media_kit_video.dart';
 import 'package:media_kit/generated/libmpv/bindings.dart' as generated;
 import 'package:media_kit/src/player/native/core/native_library.dart'
     as MediaKitNative;
+import 'package:image/image.dart' as image;
+import 'package:path/path.dart';
+import 'package:uuid/uuid.dart';
 part 'camera_model.g.dart';
+
+const uuid = Uuid();
+
+Future<String> getYoloModelPicsPath() async {
+  try {
+    var dir = Directory("D:\\");
+    if (!await dir.exists()) {
+      dir = await getRecorderHistoryFolder();
+    }
+    var storeDir = Directory(join(dir.path, "yolo\\"));
+    if (!await storeDir.exists()) {
+      await storeDir.create(recursive: true);
+    }
+    final p = join(storeDir.path, "${uuid.v4()}.png");
+    return p;
+  } catch (e) {
+    kLogger.e(e);
+    return "";
+  }
+}
 
 abstract interface class PlayableSource {
   // playable id
@@ -35,7 +60,7 @@ abstract interface class PlayableSource {
 
   Future<void> dispose();
 
-  Future<void> postImgToAlert();
+  Future<AlertResult?> postImgToAlert();
 }
 
 abstract class PlayableDevice extends PlayableSource {
@@ -49,7 +74,7 @@ mixin GUIConfigurable on PlayableDevice {
 mixin CanPlayViaPlayer on PlayableDevice {
   Player get player;
 
-  VideoController get thumbNailController;
+  // VideoController get thumbNailController;
 }
 
 mixin CamStorable on PlayableDevice {
@@ -75,25 +100,27 @@ class RTSPCamera extends PlayableDevice
   StreamSubscription<String>? onError;
   @JsonKey(includeFromJson: false)
   StreamSubscription<bool>? onPlaying;
-  @override
-  @JsonKey(includeFromJson: false)
-  late VideoController thumbNailController;
+  // @override
+  // @JsonKey(includeFromJson: false)
+  // late VideoController thumbNailController;
   int dbId;
 
   RTSPCamera(this.id, {required this.rtspUrl, required this.dbId}) {
     assert(rtspUrl.startsWith('rtsp://'));
     player = Player(
-        configuration: const PlayerConfiguration(bufferSize: 16 * 1024 * 1024));
+        configuration: const PlayerConfiguration(
+            bufferSize: 32 * 1024 * 1024, muted: true));
     // no sound needed.
     player.setVolume(0.0);
     player.setPlaylistMode(PlaylistMode.loop);
     onError = player.stream.error.listen(_onStatus);
     onPlaying = player.stream.playing.listen((playing) {});
-    thumbNailController = VideoController(player,
-        configuration: const VideoControllerConfiguration(
-          width: kThumbNailLiveWidth,
-          height: kThumbNailLiveHeight,
-        ));
+    // thumbNailController = VideoController(player,
+    //     configuration: const VideoControllerConfiguration(
+    //       width: kThumbNailLiveWidth,
+    //       height: kThumbNailLiveHeight,
+    //       enableHardwareAcceleration: true,
+    //     ));
   }
 
   @override
@@ -105,6 +132,10 @@ class RTSPCamera extends PlayableDevice
   }
 
   void _onStatus(String evt) {
+    // no sound事件不需要响应
+    if (evt.contains('no sound')) {
+      return;
+    }
     print("RTSP Player Error: $evt. retrying after 2 secs...");
     onError?.cancel();
     timer?.cancel();
@@ -114,7 +145,7 @@ class RTSPCamera extends PlayableDevice
       if (self != null) {
         self.onError = player.stream.error.listen(_onStatus);
         await self.reload();
-        print("🔧reload ${self.id} on Error: $evt. retrying");
+        // print("🔧reload ${self.id} on Error: $evt. retrying");
         await self.startPlay();
       }
     });
@@ -130,13 +161,13 @@ class RTSPCamera extends PlayableDevice
 
   @override
   Future<void> pause() async {
-    debugPrint('pause rtsp from $rtspUrl');
+    // debugPrint('pause rtsp from $rtspUrl');
     await player.pause();
   }
 
   @override
   Future<void> reload() async {
-    debugPrint('reload rtsp from $rtspUrl');
+    // debugPrint('reload rtsp from $rtspUrl');
     await player.stop();
     await player.open(Media(rtspUrl), play: true);
   }
@@ -144,7 +175,7 @@ class RTSPCamera extends PlayableDevice
   @override
   Future<void> startPlay() async {
     if (player.state.playing) {
-      debugPrint('player $id is already playing, ignore [startPlay] requests');
+      // kLogger.w('player $id is already playing, ignore [startPlay] requests');
       // debugPrintStack();
       return;
     }
@@ -439,22 +470,225 @@ class RTSPCamera extends PlayableDevice
         });
   }
 
+  static Future<void> updateDevice(BuildContext context, Cam cam) async {
+    var id = cam.name;
+    var msg = "";
+    var channelId = cam.channelId;
+    var userName = cam.authUser;
+    var password = cam.password;
+    var port = cam.port;
+    var host = cam.host;
+    await showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return ContentDialog(
+              style: kContentDialogStyle,
+              constraints: BoxConstraints.loose(Size(500, 500)),
+              content: Frame(
+                title: const Text(
+                  '更新摄像头设备',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  ),
+                ),
+                content: Container(
+                  margin: EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: InfoBar(
+                              title: const Text('更新设备说明'),
+                              content: Text(msg.isNotEmpty ? msg : '设备名保证唯一'),
+                              severity: msg.isNotEmpty
+                                  ? InfoBarSeverity.warning
+                                  : InfoBarSeverity.info,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 8.0,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR IP'),
+                        ),
+                        controller: TextEditingController(text: host),
+                        autofillHints: ['172.0.0.2'],
+                        onChanged: (s) {
+                          cam.host = s;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 端口'),
+                        ),
+                        controller:
+                            TextEditingController(text: port.toString()),
+                        autofillHints: ['554'],
+                        onChanged: (s) {
+                          int? tmpPort = int.tryParse(s);
+                          cam.port = tmpPort ?? 554;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 用户名'),
+                        ),
+                        autofillHints: const ['admin'],
+                        controller: TextEditingController(text: userName),
+                        onChanged: (s) {
+                          cam.authUser = s;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('NVR 密码'),
+                        ),
+                        controller: TextEditingController(text: password),
+                        onChanged: (p) {
+                          cam.password = p;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      TextBox(
+                        prefix: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text('摄像头名称'),
+                        ),
+                        maxLength: 50,
+                        controller: TextEditingController(text: id),
+                        onChanged: (s) {
+                          cam.name = s;
+                        },
+                      ),
+                      SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ComboBox(
+                                value: cam.channelId,
+                                onChanged: (newChannelId) {
+                                  setState(() {
+                                    if (newChannelId == null) {
+                                      return;
+                                    }
+                                    cam.channelId = newChannelId;
+                                  });
+                                },
+                                items: [
+                                  ...List.generate(512, (idx) {
+                                    return ComboBoxItem(
+                                      child: Text('摄像头通道号 ${idx + 1}'),
+                                      value: idx + 1,
+                                    );
+                                  }),
+                                ]),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 16,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            child: FilledButton(
+                                child: const Text('确定'),
+                                onPressed: () async {
+                                  if (userName.isEmpty || password.isEmpty) {
+                                    msg = "用户名或密码不能为空";
+                                    setState(() {});
+                                    return;
+                                  }
+                                  if (host.isEmpty) {
+                                    msg = "地址内域名/IP地址不能为空";
+                                    setState(() {});
+                                    return;
+                                  }
+                                  bool res;
+
+                                  ///首先判断摄像头名称是否更新
+                                  if (cam.name != id) {
+                                    res =
+                                        await videoModel.checkCamName(cam.name);
+                                    if (!res) {
+                                      msg = "摄像头名称已存在，请重新输入";
+                                      setState(() {});
+                                      return;
+                                    }
+                                  }
+                                  res = await videoModel.updateCamInRoom(cam);
+                                  if (res) {
+                                    success(context, '更新成功');
+                                  } else {
+                                    warning(context, '更新失败');
+                                  }
+                                  Navigator.of(context).pop();
+                                }),
+                          ),
+                          SizedBox(
+                            width: 8.0,
+                          ),
+                          Expanded(
+                            child: Button(
+                                child: const Text('取消'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                }),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
+        });
+  }
+
   static RTSPCamera? fromDB(Cam cam) {
     return RTSPCamera(cam.name,
         rtspUrl: getRtSpStreamUrl(cam, mainStream: false), dbId: cam.id!);
   }
 
   @override
-  Future<void> postImgToAlert() {
+  Future<AlertResult?> postImgToAlert() async {
     final pp = (player.platform as NativePlayer);
-    return compute(
+    final path = await getYoloModelPicsPath();
+    kLogger.d('postImgToAlert temp path: $path');
+    return await compute(
         (msg) => _screenshot(msg),
-        _ScreenshotData(
-            pp.ctx.address, MediaKitNative.NativeLibrary.path, null, dbId));
+        _ScreenshotData(pp.ctx.address, MediaKitNative.NativeLibrary.path, null,
+            dbId, path));
   }
 }
 
-Future<void> _screenshot(_ScreenshotData data) async {
+Future<AlertResult?> _screenshot(_ScreenshotData data) async {
   Pointer<PredictBean> bean =
       calloc.allocate<PredictBean>(sizeOf<PredictBean>());
   // ---------
@@ -478,7 +712,7 @@ Future<void> _screenshot(_ScreenshotData data) async {
     arr.cast(),
     result.cast(),
   );
-
+  final alertResult = AlertResult()..type = 0;
   if (result.ref.format == generated.mpv_format.MPV_FORMAT_NODE_MAP) {
     int? w, h, stride;
     Pointer<Void>? bytes;
@@ -517,14 +751,44 @@ Future<void> _screenshot(_ScreenshotData data) async {
         stride != null &&
         bytes != null &&
         sz != null) {
+      // 随机生成一个uuid
+      final uuidStr = data.uuidPath;
+      final uuidPtr = uuidStr.toNativeUtf8();
       bean.ref.cam_id = data.camId;
       bean.ref.height = h;
       bean.ref.width = w;
       bean.ref.len = sz;
       bean.ref.stride = stride;
       bean.ref.bgra_data = bytes.cast();
-      kNativeAlertApi.post_alert_img(bean);
+      bean.ref.uuid = uuidPtr.cast();
+      int ret = kNativeAlertApi.post_alert_img(bean);
+      alertResult.type = ret;
+      calloc.free(uuidPtr);
+      if (ret > 0) {
+        // 编码成jpg
+        final pixels = image.Image(
+          width: w,
+          height: h,
+          numChannels: 4,
+        );
+        final c = bytes.cast<Uint8>();
+        for (final pixel in pixels) {
+          final x = pixel.x;
+          final y = pixel.y;
+          final i = (y * stride) + (x * 4);
+          pixel.b = c[i];
+          pixel.g = c[i + 1];
+          pixel.r = c[i + 2];
+          pixel.a = c[i + 3];
+        }
+        final jpg = image.encodeJpg(
+            image.copyResize(pixels, width: kAlertWidth),
+            quality: 60);
+        alertResult.jpg = jpg;
+      }
       calloc.free(bean);
+      // print(
+      //     "check ${data.camId}: 模型预测返回：$ret, 耗时：${DateTime.now().difference(t1).inMilliseconds}ms");
     }
   }
 
@@ -533,6 +797,7 @@ Future<void> _screenshot(_ScreenshotData data) async {
 
   calloc.free(arr);
   calloc.free(result.cast());
+  return alertResult;
 }
 
 class _ScreenshotData {
@@ -540,11 +805,13 @@ class _ScreenshotData {
   final String lib;
   final String? format;
   final int camId;
+  final String uuidPath;
 
   _ScreenshotData(
     this.ctx,
     this.lib,
     this.format,
     this.camId,
+    this.uuidPath,
   );
 }

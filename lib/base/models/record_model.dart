@@ -24,14 +24,15 @@ import 'package:hospital_ai_client/constants.dart';
 import 'package:path/path.dart';
 
 abstract class BaseFilePicker {
-  Future<String?> saveFile();
+  Future<String?> saveFile({String? fileName, List<String>? exts});
 }
 
 class FilePickerImpl extends BaseFilePicker {
   @override
-  Future<String?> saveFile() async {
+  Future<String?> saveFile({String? fileName, List<String>? exts}) async {
     final f = await FilePicker.platform
-        .saveFile(dialogTitle: "保存文件到", allowedExtensions: ["mp4"]);
+        .saveFile(
+        dialogTitle: "保存文件到", allowedExtensions: exts, fileName: fileName);
     return f;
   }
 }

@@ -22,9 +22,14 @@ jobs:
           git clone https://github.com/Kingtous/media-kit.git --depth=1
           popd
 
+      - name: Setup OpenCV
+        uses: Dovyski/setup-opencv-action@v1.1
+        with:
+          opencv-version: '4.8.1'
+
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.3'
+          flutter-version: '3.13.4'
           channel: 'stable'
       - run: flutter --version
 
@@ -35,7 +40,7 @@ jobs:
       - name: Rename
         shell: bash
         run: |
-          mv Output/setup.exe ./hospital-client-pc-installer-x86_64.exe
+          mv Output/ai_platform-setup.exe ./hospital-client-pc-installer-${{ env.VERSION }}-x86_64.exe
       - uses: ncipollo/release-action@v1
         with:
           tag: v${{ env.VERSION }}

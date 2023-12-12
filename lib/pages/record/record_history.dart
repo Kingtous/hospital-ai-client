@@ -305,13 +305,13 @@ class _RecordHistoryPageState extends State<RecordHistoryPage> {
         ],
       ),
     );
-    ;
   }
 
   onDeleteRecord(MediaRecordFs entry) async {
     if (entry.f.existsSync()) {
       entry.f.deleteSync();
       BrnToast.show("已删除", context);
+      recordModel.refresh();
     }
     if (selectedMediaFile.value == entry) {
       selectedMediaFile.value = null;

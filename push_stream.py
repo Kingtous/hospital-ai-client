@@ -24,7 +24,7 @@ import sys
 # NVR: rtsp://admin:z1234567@172.0.0.2:554/Streaming/Channels/101
 # 101指的是1通道，01主码流
 # 回放: rtsp://admin:z1234567@172.0.0.2:554/Streaming/Tracks/101\?starttime=20230927t080000z&endtime=20230927t200000z
-
+# rtsp://admin:z1234567@172.0.0.2:554/Streaming/Tracks/12101?starttime=20231123T115217Z&endtime=20231124T080000Z
 # ffmpeg -rtsp_transport tcp -i rtsp://admin:z1234567@172.0.0.2:554/Streaming/Channels/101?starttime=20230916t083812z&endtime=20230910t084816z -vcodec copy -acodec copy -f flv rtmp://localhost:8554/stream
 
 # 模拟海康
@@ -51,25 +51,27 @@ def push_video(video_path: str, channel_id: str):
 
 if __name__ == "__main__":
     ps = []
-    for p in push_video('./videos/1/D128_20230926190002.mp4', '1'):
+    # for p in push_video('./videos/1/D128_20230926190002.mp4', '1'):
+    #     ps.append(p)
+    for p in push_video('./videos/test.mp4', '1'):
         ps.append(p)
-    for p in push_video('./videos/1/D104_20230926142900.mp4', '2'):
-        ps.append(p)
-    for p in push_video('./videos/1/D47_20230926144009.mp4', '3'):
-        ps.append(p)
-    for p in push_video('./videos/1/D58_20230926144123.mp4', '4'):
-        ps.append(p)
-    for p in push_video('./videos/1/D123_20230926151703.mp4', '5'):
-        ps.append(p)
-    for p in push_video('./videos/1/D58_20230926144123.mp4', '6'):
-        ps.append(p)
-    for p in push_video('./videos/1/D127_20230926104305.mp4', '7'):
-        ps.append(p)
-    for p in push_video('./videos/1/D48_20230926153006.mp4', '8'):
-        ps.append(p)
-    for p in push_video('./videos/2/D61_20230926143703.mp4', '9'):
-        ps.append(p)
-    for p in push_video('./videos/2/D100_20230928125003.mp4', '10'):
-        ps.append(p)
+    # for p in push_video('./videos/1/D104_20230926142900.mp4', '2'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D47_20230926144009.mp4', '3'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D58_20230926144123.mp4', '4'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D123_20230926151703.mp4', '5'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D58_20230926144123.mp4', '6'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D127_20230926104305.mp4', '7'):
+    #     ps.append(p)
+    # for p in push_video('./videos/1/D48_20230926153006.mp4', '8'):
+    #     ps.append(p)
+    # for p in push_video('./videos/2/D61_20230926143703.mp4', '9'):
+    #     ps.append(p)
+    # for p in push_video('./videos/2/D100_20230928125003.mp4', '10'):
+    #     ps.append(p)
     for p in ps:
         p.join()

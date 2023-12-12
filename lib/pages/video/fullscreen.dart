@@ -19,9 +19,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'dart:convert';
 
-
 // 录像机是0区，我们是东八
-const int kUtcTimeMsOffset = 1000 * 60 * 60 * 8;
+const int kUtcTimeMsOffset = 0;
 
 class FullScreenLive extends StatefulWidget {
   final Cam cam;
@@ -318,7 +317,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
     // print('loading video ${cam.value}');
     var url = "";
     if (isLive.value) {
-      url = getRtSpStreamUrl(cam.value, mainStream: false);
+      url = getRtSpStreamUrl(cam.value, mainStream: true);
     } else {
       final st = DateTime.fromMillisecondsSinceEpoch(
           currentPlayingTim.value.millisecondsSinceEpoch +
@@ -328,6 +327,7 @@ class _FullScreenLiveState extends State<FullScreenLive> {
           (currentPlayingTim.value.millisecondsSinceEpoch + seconds * 1000) -
               kUtcTimeMsOffset);
       url = getRtspBackTrackUrl(cam.value, st, ed);
+      kLogger.d("backtrack: $url");
     }
     // print("playing: $url");
     player.setVolume(0);

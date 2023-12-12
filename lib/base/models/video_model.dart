@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
@@ -8,6 +9,7 @@ import 'package:hospital_ai_client/base/models/dao/cam.dart';
 import 'package:hospital_ai_client/base/models/dao/room.dart';
 import 'package:hospital_ai_client/constants.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import 'dao/alerts.dart';
 
@@ -74,12 +76,32 @@ class VideoModel {
     }
   }
 
+  Future<bool> updateCamInRoom(Cam cam) async {
+    if (_playerMap[cam] == null) {
+      return false;
+    }
+    await appDB.camDao.updateCam(cam);
+    final id = cam.id;
+    cam.id = id;
+    if (cam.camType == CamType.rtsp.index) {
+      final url =
+          "rtsp://${cam.authUser}:${cam.password}@${cam.host}:${cam.port}/Streaming/Channels/${cam.channelId}02";
+      final rtspCam = RTSPCamera(cam.name, rtspUrl: url, dbId: cam.id!);
+      await rtspCam.init();
+      _playerMap[cam] = rtspCam;
+      return true;
+    } else {
+      throw UnimplementedError('Unimplemented');
+    }
+  }
+
+
   Future<bool> checkCamName(String name) async {
     List<String> names = await appDB.camDao.getCamNames();
     return !names.contains(name);
   }
 
-  Future<List<String>> getAllCamNames() async{
+  Future<List<String>> getAllCamNames() async {
     List<String> names = await appDB.camDao.getCamNames();
     return names;
   }
@@ -185,9 +207,21 @@ class VideoModel {
   }
 
   void _onAlertTick() async {
+    // Only support windows now.
+    if (!kAlertSupported) {
+      return;
+    }
     // debugPrint("onAlertTick, check alerts in ${DateTime.now()}");
-    await alertsModel
-        .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
+    final trans = Sentry.startTransaction('onAlertTick', 'predict');
+    try {
+      await alertsModel
+          .trigger(_playerMap.entries.where((entry) => entry.key.enableAlert));
+    } catch (e) {
+      trans.throwable = e;
+      trans.status = const SpanStatus.internalError();
+    } finally {
+      trans.finish();
+    }
     timer = Timer(const Duration(milliseconds: kAlertIntervalMs), _onAlertTick);
   }
 
@@ -195,7 +229,7 @@ class VideoModel {
     List<Alerts> white_res = await appDB.alertDao.getAlertsTypeNoImg();
     Map<AlertType, int> res = <AlertType, int>{
       AlertType.whiteShirt: white_res.length,
-      AlertType.other: alertsModel.historyAlertsRx.length-white_res.length
+      AlertType.other: alertsModel.historyAlertsRx.length - white_res.length
     };
     return res;
   }

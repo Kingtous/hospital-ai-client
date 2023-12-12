@@ -52,59 +52,12 @@ class NativeLibrary {
           'post_alert_img');
   late final _post_alert_img =
       _post_alert_imgPtr.asFunction<int Function(ffi.Pointer<PredictBean>)>();
-
-  /// 由Flutter主动调用，用于获取最新的alert数据。
-  /// 注意：如果没有最新message，那么返回nullptr即可。否则，返回一个生命周期独立（不用free，交给flutter做内存管理）的Alert。
-  ffi.Pointer<Alert> get_latest_alert_msg() {
-    return _get_latest_alert_msg();
-  }
-
-  late final _get_latest_alert_msgPtr =
-      _lookup<ffi.NativeFunction<ffi.Pointer<Alert> Function()>>(
-          'get_latest_alert_msg');
-  late final _get_latest_alert_msg =
-      _get_latest_alert_msgPtr.asFunction<ffi.Pointer<Alert> Function()>();
-
-  void free_alert(
-    ffi.Pointer<Alert> alert,
-  ) {
-    return _free_alert(
-      alert,
-    );
-  }
-
-  late final _free_alertPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<Alert>)>>(
-          'free_alert');
-  late final _free_alert =
-      _free_alertPtr.asFunction<void Function(ffi.Pointer<Alert>)>();
-}
-
-/// AI报警Header
-final class Alert extends ffi.Struct {
-  @ffi.Int()
-  external int alert_type;
-
-  @ffi.Int()
-  external int cam_id;
-
-  external ffi.Pointer<ffi.Void> img;
-
-  @ffi.Size()
-  external int img_size;
-
-  @ffi.Int()
-  external int width;
-
-  @ffi.Int()
-  external int height;
-
-  @ffi.Int()
-  external int stride;
 }
 
 final class PredictBean extends ffi.Struct {
   external ffi.Pointer<ffi.Void> bgra_data;
+
+  external ffi.Pointer<ffi.Char> uuid;
 
   @ffi.Size()
   external int len;
